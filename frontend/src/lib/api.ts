@@ -4,17 +4,29 @@ import axios from 'axios';
 // CLIENT API CENTRALISÉ — ImmoGest Frontend
 // ════════════════════════════════════════════════════════════════
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5055';
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envUrl && !envUrl.includes('localhost')) {
+      return envUrl;
+    }
+    if (window.location.hostname.includes('vercel.app')) {
+      return 'https://immogest-api.onrender.com';
+    }
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5055';
+};
 
 export const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: `${getApiBaseUrl()}/api`,
   headers: { 'Content-Type': 'application/json' },
   timeout: 30000,
 });
 
-// ─── Intercepteur REQUEST : Injection automatique du JWT ──────
+// ─── Intercepteur REQUEST : Injection automatique du JWT & URL dynamic 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
+    config.baseURL = `${getApiBaseUrl()}/api`;
     const token = localStorage.getItem('access_token');
     if (token && token !== 'undefined' && token !== 'null') {
       config.headers.Authorization = `Bearer ${token}`;
