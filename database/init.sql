@@ -467,17 +467,14 @@ $$ LANGUAGE plpgsql;
 -- ═════════════════════════════════════════════════════════════
 -- PERMISSIONS (Sécurité au niveau base de données)
 -- ═════════════════════════════════════════════════════════════
--- Révoquer les accès publics
-REVOKE ALL ON SCHEMA immogest FROM PUBLIC;
-
--- Accorder les droits à l'utilisateur applicatif
-GRANT USAGE ON SCHEMA immogest TO immogest_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA immogest TO immogest_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA immogest TO immogest_user;
-GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA immogest TO immogest_user;
-
--- Permissions par défaut pour les futurs objets
-ALTER DEFAULT PRIVILEGES IN SCHEMA immogest
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO immogest_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA immogest
-    GRANT USAGE, SELECT ON SEQUENCES TO immogest_user;
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'immogest_user') THEN
+        GRANT USAGE ON SCHEMA immogest TO immogest_user;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA immogest TO immogest_user;
+        GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA immogest TO immogest_user;
+        GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA immogest TO immogest_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA immogest GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO immogest_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA immogest GRANT USAGE, SELECT ON SEQUENCES TO immogest_user;
+    END IF;
+END $$;

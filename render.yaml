@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: immogest-api
+    runtime: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    region: frankfurt
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        value: Host=ep-divine-dust-a2cycplf-pooler.eu-central-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_ap5ozqnMg7NJ;Ssl Mode=Require;Trust Server Certificate=true;
+      - key: JWT__Secret
+        value: ImmoGestSuperSecretKey2025!@#ChangeThisInProduction
+      - key: JWT__Issuer
+        value: ImmoGest
+      - key: JWT__Audience
+        value: ImmoGestClients
+      - key: JWT__ExpirationHours
+        value: "24"
+      - key: AllowedOrigins
+        value: "*"
