@@ -7,18 +7,15 @@ import axios from 'axios';
 const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl && !envUrl.includes('localhost')) {
-      return envUrl;
-    }
-    if (window.location.hostname.includes('vercel.app')) {
-      return 'https://immogest-api.onrender.com';
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('onrender')) {
+      return `${envUrl}/api`;
     }
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5055';
+  return '/api';
 };
 
 export const api = axios.create({
-  baseURL: `${getApiBaseUrl()}/api`,
+  baseURL: getApiBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
   timeout: 30000,
 });
@@ -26,9 +23,9 @@ export const api = axios.create({
 // ─── Intercepteur REQUEST : Injection automatique du JWT & URL dynamic 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    config.baseURL = `${getApiBaseUrl()}/api`;
+    config.baseURL = getApiBaseUrl();
     const token = localStorage.getItem('access_token');
-    if (token && token !== 'undefined' && token !== 'null') {
+    if (token && token !== 'undefined' && token !== 'null' && token !== 'demo-session-token') {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }

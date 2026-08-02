@@ -107,7 +107,7 @@ public class ProprietairesController : BaseController
     }
 
     [HttpPost]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<ProprietaireDto>> Create([FromBody] CreateProprietaireRequest req, CancellationToken ct)
     {
         var result = await _service.CreateAsync(req, CurrentUserId, ct);
@@ -115,12 +115,12 @@ public class ProprietairesController : BaseController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<ProprietaireDto>> Update(Guid id, [FromBody] UpdateProprietaireRequest req, CancellationToken ct)
         => Ok(await _service.UpdateAsync(id, req, CurrentUserId, ct));
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _service.DeleteAsync(id, ct);
@@ -169,7 +169,7 @@ public class MaisonsController : BaseController
         => Ok(await _service.GenerateIdmAsync(type, nbPieces, loyer, ville, ct));
 
     [HttpPost]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<MaisonDto>> Create([FromBody] CreateMaisonRequest req, CancellationToken ct)
     {
         var result = await _service.CreateAsync(req, CurrentUserId, ct);
@@ -177,12 +177,12 @@ public class MaisonsController : BaseController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<MaisonDto>> Update(Guid id, [FromBody] UpdateMaisonRequest req, CancellationToken ct)
         => Ok(await _service.UpdateAsync(id, req, CurrentUserId, ct));
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _service.DeleteAsync(id, ct);
@@ -214,7 +214,7 @@ public class LocatairesController : BaseController
     }
 
     [HttpPost]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<LocataireDto>> Create([FromBody] CreateLocataireRequest req, CancellationToken ct)
     {
         var result = await _service.CreateAsync(req, CurrentUserId, ct);
@@ -222,12 +222,12 @@ public class LocatairesController : BaseController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<LocataireDto>> Update(Guid id, [FromBody] UpdateLocataireRequest req, CancellationToken ct)
         => Ok(await _service.UpdateAsync(id, req, CurrentUserId, ct));
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _service.DeleteAsync(id, ct);
@@ -270,7 +270,7 @@ public class SouscriptionsController : BaseController
     }
 
     [HttpPost]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<SouscriptionDto>> Create([FromBody] CreateSouscriptionRequest req, CancellationToken ct)
     {
         var result = await _service.CreateAsync(req, CurrentUserId, ct);
@@ -278,12 +278,12 @@ public class SouscriptionsController : BaseController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<SouscriptionDto>> Update(Guid id, [FromBody] UpdateSouscriptionRequest req, CancellationToken ct)
         => Ok(await _service.UpdateAsync(id, req, CurrentUserId, ct));
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _service.DeleteAsync(id, ct);
@@ -348,7 +348,7 @@ public class ReglementsController : BaseController
         => Ok(await _service.UpdateAsync(id, req, CurrentUserId, ct));
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _service.DeleteAsync(id, ct);
@@ -389,7 +389,7 @@ public class DepensesController : BaseController
         => Ok(await _service.GetByLocataireAsync(locataireId, ct));
 
     [HttpPost]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<DepenseDto>> Create([FromBody] CreateDepenseRequest req, CancellationToken ct)
     {
         var result = await _service.CreateAsync(req, CurrentUserId, ct);
@@ -397,7 +397,7 @@ public class DepensesController : BaseController
     }
 
     [HttpPost("{id:guid}/piece-justificative")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<string>> UploadPieceJustificative(
         Guid id, IFormFile file, CancellationToken ct)
     {
@@ -413,12 +413,12 @@ public class DepensesController : BaseController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<ActionResult<DepenseDto>> Update(Guid id, [FromBody] UpdateDepenseRequest req, CancellationToken ct)
         => Ok(await _service.UpdateAsync(id, req, CurrentUserId, ct));
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "GestionnaireUp")]
+    [Authorize]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _service.DeleteAsync(id, ct);
