@@ -31,21 +31,42 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
-    if (!id || id === 'undefined') return NextResponse.json({ error: 'ID invalide.' }, { status: 400 });
-
-    // Nettoyage sécurisé des maisons et dépendances rattachées au propriétaire
-    const maisonsRes = await query(`SELECT id FROM immogest.maisons WHERE proprietaire_id = $1`, [id]);
-    for (const m of maisonsRes.rows) {
-      await query(`DELETE FROM immogest.depenses WHERE maison_id = $1`, [m.id]);
-      await query(`DELETE FROM immogest.reglements WHERE maison_id = $1`, [m.id]);
-      await query(`DELETE FROM immogest.souscriptions WHERE maison_id = $1`, [m.id]);
+    if (!id || id === 'undefined' || id === 'null') {
+      return NextResponse.json({ error: 'ID de propriétaire invalide.' }, { status: 400 });
     }
-    await query(`DELETE FROM immogest.maisons WHERE proprietaire_id = $1`, [id]);
-    await query(`DELETE FROM immogest.proprietaires WHERE id = $1`, [id]);
 
-    return NextResponse.json({ success: true });
+    // 1. Supprimer les dépenses liées aux maisons du propriétaire
+    await query(`
+      DELETE FROM immogest.depenses 
+      WHERE maison_id IN (SELECT id FROM immogest.maisons WHERE proprietaire_id = $1)
+    `, [id]);
+
+    // 2. Supprimer les règlements liés aux maisons du propriétaire
+    await query(`
+      DELETE FROM immogest.reglements 
+      WHERE maison_id IN (SELECT id FROM immogest.maisons WHERE proprietaire_id = $1)
+    `, [id]);
+
+    // 3. Supprimer les souscriptions liées aux maisons du propriétaire
+    await query(`
+      DELETE FROM immogest.souscriptions 
+      WHERE maison_id IN (SELECT id FROM immogest.maisons WHERE proprietaire_id = $1)
+    `, [id]);
+
+    // 4. Supprimer les maisons du propriétaire
+    await query(`DELETE FROM immogest.maisons WHERE proprietaire_id = $1`, [id]);
+
+    // 5. Supprimer le propriétaire
+    const res = await query(`DELETE FROM immogest.proprietaires WHERE id = $1 RETURNING id`, [id]);
+
+    if (res.rowCount === 0) {
+      await query(`DELETE FROM public.maisons WHERE proprietaire_id = $1`, [id]);
+      await query(`DELETE FROM public.proprietaires WHERE id = $1`, [id]);
+    }
+
+    return NextResponse.json({ success: true, message: 'Propriétaire supprimé.' });
   } catch (error: any) {
     console.error('Erreur DELETE /api/proprietaires/[id]:', error);
-    return NextResponse.json({ error: error.message || 'Erreur lors de la suppression.' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Erreur SQL lors de la suppression.' }, { status: 500 });
   }
 }

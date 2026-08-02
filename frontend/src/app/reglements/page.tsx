@@ -152,24 +152,24 @@ const DEMO_SOUSCRIPTIONS_R = [
   };
 
   const handleDelete = async (id: string) => {
+    if (!id) return;
     if (!confirm('Voulez-vous vraiment supprimer ce règlement ?')) return;
+
+    setReglements((prev) => prev.filter((r) => (r.Id || r.id) !== id));
+
     try {
       await reglementsApi.delete(id);
       toast.success('Règlement supprimé avec succès.');
       fetchData();
     } catch (err: any) {
+      console.error('Erreur de suppression règlement:', err);
+      fetchData();
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
-        (err.response?.status === 403 ? "Vous n'avez pas les droits nécessaires pour supprimer ce règlement." : null) ||
-        'Suppression impossible.';
-
-      if (id.startsWith('reg-') || !err.response) {
-        setReglements((prev) => prev.filter((r) => (r.Id || r.id) !== id));
-        toast.success('Règlement supprimé.');
-      } else {
-        toast.error(errorMessage);
-      }
+        err.message ||
+        'Suppression en base impossible.';
+      toast.error(`Échec de suppression : ${errorMessage}`);
     }
   };
 

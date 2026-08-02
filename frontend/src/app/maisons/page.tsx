@@ -160,24 +160,24 @@ export default function MaisonsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Voulez-vous vraiment supprimer cette maison ?')) return;
+    if (!id) return;
+    if (!confirm('Voulez-vous vraiment supprimer cette maison et ses éléments associés ?')) return;
+
+    setMaisons((prev) => prev.filter((m) => (m.Id || m.id) !== id));
+
     try {
       await maisonsApi.delete(id);
       toast.success('Maison supprimée avec succès.');
       fetchData();
     } catch (err: any) {
+      console.error('Erreur de suppression maison:', err);
+      fetchData();
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
-        (err.response?.status === 403 ? "Vous n'avez pas les droits nécessaires pour supprimer ce bien." : null) ||
-        'Suppression impossible.';
-
-      if (id.startsWith('mais-') || !err.response) {
-        setMaisons((prev) => prev.filter((m) => (m.Id || m.id) !== id));
-        toast.success('Maison supprimée.');
-      } else {
-        toast.error(errorMessage);
-      }
+        err.message ||
+        'Suppression en base impossible.';
+      toast.error(`Échec de suppression : ${errorMessage}`);
     }
   };
 

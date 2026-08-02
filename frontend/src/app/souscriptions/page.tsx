@@ -160,24 +160,24 @@ const DEMO_LOCATAIRES_S = [
   };
 
   const handleDelete = async (id: string) => {
+    if (!id) return;
     if (!confirm('Voulez-vous vraiment résilier/supprimer ce contrat ?')) return;
+
+    setSouscriptions((prev) => prev.filter((s) => (s.Id || s.id) !== id));
+
     try {
       await souscriptionsApi.delete(id);
       toast.success('Contrat supprimé avec succès.');
       fetchData();
     } catch (err: any) {
+      console.error('Erreur de suppression contrat:', err);
+      fetchData();
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
-        (err.response?.status === 403 ? "Vous n'avez pas les droits nécessaires pour supprimer ce contrat." : null) ||
-        'Suppression impossible.';
-
-      if (id.startsWith('sub-') || id.startsWith('sous-') || !err.response) {
-        setSouscriptions((prev) => prev.filter((s) => (s.Id || s.id) !== id));
-        toast.success('Contrat supprimé.');
-      } else {
-        toast.error(errorMessage);
-      }
+        err.message ||
+        'Suppression en base impossible.';
+      toast.error(`Échec de suppression : ${errorMessage}`);
     }
   };
 

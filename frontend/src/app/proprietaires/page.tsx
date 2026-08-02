@@ -93,24 +93,25 @@ export default function ProprietairesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Voulez-vous vraiment supprimer ce propriétaire ?')) return;
+    if (!id) return;
+    if (!confirm('Voulez-vous vraiment supprimer ce propriétaire et tous ses biens rattachés ?')) return;
+    
+    // Mise à jour immédiate de l'interface utilisateur (UX instantanée)
+    setProprietaires((prev) => prev.filter((p) => (p.Id || p.id) !== id));
+    
     try {
       await proprietairesApi.delete(id);
       toast.success('Propriétaire supprimé avec succès.');
       fetchData();
     } catch (err: any) {
+      console.error('Erreur de suppression:', err);
+      fetchData(); // Restaure l'état réel si la suppression a échoué en base
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
-        (err.response?.status === 403 ? "Vous n'avez pas les droits nécessaires pour supprimer ce propriétaire." : null) ||
-        'Suppression impossible.';
-
-      if (id.startsWith('prop-') || !err.response) {
-        setProprietaires((prev) => prev.filter((p) => (p.Id || p.id) !== id));
-        toast.success('Propriétaire supprimé.');
-      } else {
-        toast.error(errorMessage);
-      }
+        err.message ||
+        'Erreur de suppression en base de données.';
+      toast.error(`Échec de suppression : ${errorMessage}`);
     }
   };
 

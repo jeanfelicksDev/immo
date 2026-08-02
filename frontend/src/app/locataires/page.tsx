@@ -99,24 +99,24 @@ export default function LocatairesPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!id) return;
     if (!confirm('Voulez-vous vraiment supprimer ce locataire ?')) return;
+
+    setLocataires((prev) => prev.filter((l) => (l.Id || l.id) !== id));
+
     try {
       await locatairesApi.delete(id);
       toast.success('Locataire supprimé avec succès.');
       fetchData();
     } catch (err: any) {
+      console.error('Erreur de suppression locataire:', err);
+      fetchData();
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
-        (err.response?.status === 403 ? "Vous n'avez pas les droits nécessaires pour supprimer ce locataire." : null) ||
-        'Suppression impossible.';
-
-      if (id.startsWith('loc-') || !err.response) {
-        setLocataires((prev) => prev.filter((l) => (l.Id || l.id) !== id));
-        toast.success('Locataire supprimé.');
-      } else {
-        toast.error(errorMessage);
-      }
+        err.message ||
+        'Suppression en base impossible.';
+      toast.error(`Échec de suppression : ${errorMessage}`);
     }
   };
 

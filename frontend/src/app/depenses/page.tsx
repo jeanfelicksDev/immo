@@ -151,24 +151,24 @@ const DEMO_LOCATAIRES_D = [
   };
 
   const handleDelete = async (id: string) => {
+    if (!id) return;
     if (!confirm('Confirmer la suppression de cette dépense ?')) return;
+
+    setDepenses((prev) => prev.filter((d) => (d.Id || d.id) !== id));
+
     try {
       await depensesApi.delete(id);
       toast.success('Dépense supprimée avec succès.');
       fetchData();
     } catch (err: any) {
+      console.error('Erreur de suppression dépense:', err);
+      fetchData();
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
-        (err.response?.status === 403 ? "Vous n'avez pas les droits nécessaires pour supprimer cette dépense." : null) ||
-        'Suppression impossible.';
-
-      if (id.startsWith('dep-') || !err.response) {
-        setDepenses((prev) => prev.filter((d) => (d.Id || d.id) !== id));
-        toast.success('Dépense supprimée.');
-      } else {
-        toast.error(errorMessage);
-      }
+        err.message ||
+        'Suppression en base impossible.';
+      toast.error(`Échec de suppression : ${errorMessage}`);
     }
   };
 
