@@ -341,7 +341,7 @@ export default function MaisonsPage() {
                         <span>Bailleur: <strong className="text-slate-900 font-bold">{item.NomProprietaire || 'Non assigné'}</strong></span>
                         <div className="flex gap-1">
                           <button onClick={() => openEdit(item)} className="p-2 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition-colors">✏️</button>
-                          <button onClick={() => handleDelete(item.Id)} className="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">🗑️</button>
+                          <button onClick={() => handleDelete(item.Id || item.id)} className="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">🗑️</button>
                         </div>
                       </div>
                     </div>
@@ -361,7 +361,7 @@ export default function MaisonsPage() {
                 { key: 'actions', label: 'Actions', render: (r) => (
                   <div className="flex justify-end gap-1.5">
                     <button onClick={() => openEdit(r)} className="btn btn-secondary btn-sm">✏️</button>
-                    <button onClick={() => handleDelete(r.Id)} className="btn btn-danger btn-sm">🗑️</button>
+                    <button onClick={() => handleDelete(r.Id || r.id)} className="btn btn-danger btn-sm">🗑️</button>
                   </div>
                 ) },
               ]}

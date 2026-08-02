@@ -212,9 +212,9 @@ const DEMO_SOUSCRIPTIONS_R = [
     { key: 'actions', label: 'Actions',
       render: (r: any) => (
         <div className="flex justify-end gap-1.5">
-          <button onClick={() => handlePrintRecu(r)} className="btn btn-secondary btn-sm" title="Imprimer le reçu PDF">🧾 Reçu</button>
+          <button onClick={() => handlePrintRecu(r.Id || r.id)} className="btn btn-secondary btn-sm" title="Imprimer le reçu PDF">🧾 Reçu</button>
           <button onClick={() => openEdit(r)} className="btn btn-secondary btn-sm" title="Modifier">✏️</button>
-          <button onClick={() => handleDelete(r.Id)} className="btn btn-danger btn-sm" title="Supprimer">🗑️</button>
+          <button onClick={() => handleDelete(r.Id || r.id)} className="btn btn-danger btn-sm" title="Supprimer">🗑️</button>
         </div>
       )
     },

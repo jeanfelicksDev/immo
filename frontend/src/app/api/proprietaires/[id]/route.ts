@@ -31,7 +31,18 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
+    if (!id || id === 'undefined') return NextResponse.json({ error: 'ID invalide.' }, { status: 400 });
+
+    // Nettoyage sécurisé des maisons et dépendances rattachées au propriétaire
+    const maisonsRes = await query(`SELECT id FROM immogest.maisons WHERE proprietaire_id = $1`, [id]);
+    for (const m of maisonsRes.rows) {
+      await query(`DELETE FROM immogest.depenses WHERE maison_id = $1`, [m.id]);
+      await query(`DELETE FROM immogest.reglements WHERE maison_id = $1`, [m.id]);
+      await query(`DELETE FROM immogest.souscriptions WHERE maison_id = $1`, [m.id]);
+    }
+    await query(`DELETE FROM immogest.maisons WHERE proprietaire_id = $1`, [id]);
     await query(`DELETE FROM immogest.proprietaires WHERE id = $1`, [id]);
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Erreur DELETE /api/proprietaires/[id]:', error);

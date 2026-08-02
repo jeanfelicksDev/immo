@@ -204,7 +204,7 @@ const DEMO_LOCATAIRES_D = [
       render: (r: any) => (
         <div className="flex justify-end gap-1.5">
           <button onClick={() => openEdit(r)} className="btn btn-secondary btn-sm">✏️</button>
-          <button onClick={() => handleDelete(r.Id)} className="btn btn-danger btn-sm">🗑️</button>
+          <button onClick={() => handleDelete(r.Id || r.id)} className="btn btn-danger btn-sm">🗑️</button>
         </div>
       )
     },
