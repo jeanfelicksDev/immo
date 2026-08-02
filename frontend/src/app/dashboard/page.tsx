@@ -79,11 +79,6 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-600 flex items-center justify-center relative transition-colors">
-              <span className="material-symbols-outlined text-lg">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full"></span>
-            </button>
-            <div className="h-6 w-px bg-slate-200"></div>
             <Link href="/profil" className="flex items-center gap-3 hover:opacity-85 transition-all cursor-pointer">
               <div className="text-right">
                 <p className="text-xs font-bold text-slate-900 leading-none">Administrateur</p>

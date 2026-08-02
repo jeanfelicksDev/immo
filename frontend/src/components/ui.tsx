@@ -41,7 +41,6 @@ const navSections: NavSection[] = [
   {
     title: 'SYSTÈME',
     items: [
-      { href: '/notifications', label: 'Notifications', icon: 'notifications' },
       { href: '/profil',        label: 'Mon Profil & Réglages', icon: 'person' },
     ],
   },
