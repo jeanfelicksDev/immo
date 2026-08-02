@@ -56,22 +56,10 @@ public class AppDbContext : DbContext
         }
     }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
-
-        // Récupérer la liste des ID d'utilisateurs réellement existants en base
-        var existingUserIds = Utilisateurs.Select(u => u.Id).ToList();
-
-        Guid? validUserId = null;
-        if (_currentUserId.HasValue && _currentUserId.Value != Guid.Empty && existingUserIds.Contains(_currentUserId.Value))
-        {
-            validUserId = _currentUserId.Value;
-        }
-        else if (existingUserIds.Count > 0)
-        {
-            validUserId = existingUserIds[0];
-        }
+        Guid? activeUserId = _currentUserId.HasValue && _currentUserId.Value != Guid.Empty ? _currentUserId.Value : null;
 
         foreach (var entry in ChangeTracker.Entries())
         {
@@ -82,18 +70,16 @@ public class AppDbContext : DbContext
                     case EntityState.Added:
                         baseEntity.CreatedAt = now;
                         baseEntity.UpdatedAt = now;
-                        if (!baseEntity.CreatedBy.HasValue || !existingUserIds.Contains(baseEntity.CreatedBy.Value))
-                            baseEntity.CreatedBy = validUserId;
-                        if (!baseEntity.UpdatedBy.HasValue || !existingUserIds.Contains(baseEntity.UpdatedBy.Value))
-                            baseEntity.UpdatedBy = validUserId;
+                        if (!baseEntity.CreatedBy.HasValue && activeUserId.HasValue)
+                            baseEntity.CreatedBy = activeUserId;
+                        if (!baseEntity.UpdatedBy.HasValue && activeUserId.HasValue)
+                            baseEntity.UpdatedBy = activeUserId;
                         break;
 
                     case EntityState.Modified:
                         baseEntity.UpdatedAt = now;
-                        if (validUserId.HasValue)
-                            baseEntity.UpdatedBy = validUserId;
-                        else if (baseEntity.UpdatedBy.HasValue && !existingUserIds.Contains(baseEntity.UpdatedBy.Value))
-                            baseEntity.UpdatedBy = null;
+                        if (activeUserId.HasValue)
+                            baseEntity.UpdatedBy = activeUserId;
 
                         entry.Property(nameof(Domain.Common.BaseEntity.CreatedAt)).IsModified = false;
                         entry.Property(nameof(Domain.Common.BaseEntity.CreatedBy)).IsModified = false;
@@ -110,7 +96,7 @@ public class AppDbContext : DbContext
             }
         }
 
-        return await base.SaveChangesAsync(cancellationToken);
+        return base.SaveChangesAsync(cancellationToken);
     }
 
     private static string ToSnakeCase(string name)

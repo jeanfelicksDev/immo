@@ -93,9 +93,9 @@ public class ProprietaireService : IProprietaireService
 
     private async Task<Guid?> ResolveUserId(Guid userId, CancellationToken ct)
     {
-        if (userId != Guid.Empty) return userId;
-        var admin = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
-        return admin != Guid.Empty ? admin : null;
+        if (userId != Guid.Empty && await _db.Utilisateurs.AnyAsync(u => u.Id == userId, ct)) return userId;
+        var firstUser = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
+        return firstUser != Guid.Empty ? firstUser : null;
     }
 
     public async Task<PagedResult<ProprietaireDto>> GetAllAsync(PagedRequest req, CancellationToken ct = default)
@@ -200,9 +200,9 @@ public class MaisonService : IMaisonService
 
     private async Task<Guid?> ResolveUserId(Guid userId, CancellationToken ct)
     {
-        if (userId != Guid.Empty) return userId;
-        var admin = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
-        return admin != Guid.Empty ? admin : null;
+        if (userId != Guid.Empty && await _db.Utilisateurs.AnyAsync(u => u.Id == userId, ct)) return userId;
+        var firstUser = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
+        return firstUser != Guid.Empty ? firstUser : null;
     }
 
     public async Task<PagedResult<MaisonDto>> GetAllAsync(PagedRequest req, bool? disponibleOnly = null, Guid? proprietaireId = null, CancellationToken ct = default)
@@ -383,9 +383,9 @@ public class LocataireService : ILocataireService
 
     private async Task<Guid?> ResolveUserId(Guid userId, CancellationToken ct)
     {
-        if (userId != Guid.Empty) return userId;
-        var admin = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
-        return admin != Guid.Empty ? admin : null;
+        if (userId != Guid.Empty && await _db.Utilisateurs.AnyAsync(u => u.Id == userId, ct)) return userId;
+        var firstUser = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
+        return firstUser != Guid.Empty ? firstUser : null;
     }
 
     public async Task<PagedResult<LocataireDto>> GetAllAsync(PagedRequest req, CancellationToken ct = default)
@@ -519,9 +519,9 @@ public class DepenseService : IDepenseService
 
     private async Task<Guid?> ResolveUserId(Guid userId, CancellationToken ct)
     {
-        if (userId != Guid.Empty) return userId;
-        var admin = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
-        return admin != Guid.Empty ? admin : null;
+        if (userId != Guid.Empty && await _db.Utilisateurs.AnyAsync(u => u.Id == userId, ct)) return userId;
+        var firstUser = await _db.Utilisateurs.Select(u => u.Id).FirstOrDefaultAsync(ct);
+        return firstUser != Guid.Empty ? firstUser : null;
     }
 
     public async Task<PagedResult<DepenseDto>> GetAllAsync(PagedRequest req, TypeDepense? type = null, Guid? proprietaireId = null, Guid? locataireId = null, Guid? maisonId = null, DateOnly? dateDebut = null, DateOnly? dateFin = null, CancellationToken ct = default)
