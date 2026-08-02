@@ -20,4 +20,4 @@ services:
       - key: JWT__ExpirationHours
         value: "24"
       - key: AllowedOrigins
-        value: "*"
+        value: "https://immogest-app-ten.vercel.app,https://immogest.vercel.app,http://localhost:3000"

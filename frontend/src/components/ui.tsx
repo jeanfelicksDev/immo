@@ -16,7 +16,7 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    title: 'VUE D\'ENSEMBLE',
+    title: "VUE D'ENSEMBLE",
     items: [
       { href: '/dashboard', label: 'Tableau de Bord', icon: 'dashboard' },
     ],
@@ -24,9 +24,9 @@ const navSections: NavSection[] = [
   {
     title: 'GESTION IMMOBILIÈRE',
     items: [
+      { href: '/proprietaires', label: 'Propriétaires',       icon: 'real_estate_agent' },
       { href: '/maisons',       label: 'Biens & Maisons',     icon: 'domain' },
       { href: '/locataires',    label: 'Locataires',          icon: 'group' },
-      { href: '/proprietaires', label: 'Propriétaires',       icon: 'real_estate_agent' },
       { href: '/souscriptions', label: 'Contrats de Location',icon: 'description' },
     ],
   },
