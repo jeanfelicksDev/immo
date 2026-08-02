@@ -9,7 +9,7 @@ git add .
 
 echo.
 echo [2/3] Commit des modifications de production...
-git commit -m "feat: setup production environment with Neon Cloud DB, Vercel and Render"
+git commit -m "fix: update delete endpoints and cascading logic" --allow-empty
 
 echo.
 echo [3/3] Push vers GitHub pour declencher Vercel et Render...
