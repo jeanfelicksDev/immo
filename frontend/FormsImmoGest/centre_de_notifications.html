@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ImmoGest | Notifications Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "primary-fixed": "#dae2fd",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "tertiary-container": "#002117",
+                        "on-surface": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "surface-dim": "#d8dadc",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#bec6e0",
+                        "secondary": "#735c00",
+                        "outline-variant": "#c6c6cd",
+                        "inverse-surface": "#2d3133",
+                        "on-secondary-fixed-variant": "#574500",
+                        "on-background": "#191c1e",
+                        "surface-container": "#eceef0",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-tertiary-fixed": "#002117",
+                        "on-secondary-fixed": "#241a00",
+                        "background": "#f7f9fb",
+                        "surface-tint": "#565e74",
+                        "on-tertiary-container": "#528f79",
+                        "inverse-on-surface": "#eff1f3",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#ffe088",
+                        "tertiary-fixed": "#b0f0d6",
+                        "primary-container": "#131b2e",
+                        "on-surface-variant": "#45464d",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary-container": "#745c00",
+                        "secondary-container": "#fed65b",
+                        "secondary-fixed-dim": "#e9c349",
+                        "tertiary": "#000000",
+                        "surface-bright": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "on-primary-container": "#7c839b",
+                        "primary": "#000000",
+                        "outline": "#76777d",
+                        "surface-container-highest": "#e0e3e5",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f4f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "24px",
+                        "page-margin": "40px",
+                        "element-gap": "16px",
+                        "grid-gutter": "24px",
+                        "section-gap": "32px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .sidebar-glass {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+        }
+        .notification-unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 40%;
+            background-color: #735c00;
+            border-radius: 0 4px 4px 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-sm min-h-screen">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] sidebar-glass z-50 flex flex-col py-8 shadow-xl text-white">
+<div class="px-8 mb-10">
+<h1 class="font-display-lg text-headline-lg text-secondary-fixed tracking-tight">ImmoGest</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-primary-container font-semibold mt-1">Premium Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active state set to Dashboard as global hub -->
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-body-sm text-body-sm">Properties</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-sm text-body-sm">Tenants</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-sm text-body-sm">Finances</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-sm text-body-sm">Reports</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-xl border-l-4 border-secondary text-white font-semibold" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</nav>
+<div class="px-6 mb-8">
+<button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-lg font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-secondary/20">
+<span class="material-symbols-outlined">add</span>
+                Add New Property
+            </button>
+</div>
+<div class="border-t border-white/10 pt-6 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-all duration-200 hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-all duration-200 hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant h-20 flex items-center justify-between px-page-margin">
+<div class="flex items-center gap-8">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full w-64 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all" placeholder="Search across portfolio..." type="text"/>
+</div>
+<nav class="flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-4 font-semibold" href="#">Overview</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-4" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-4" href="#">Activity</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all relative">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full border-2 border-surface"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">mail</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right">
+<p class="font-semibold text-primary">Adrian Thorne</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">Senior Portfolio Manager</p>
+</div>
+<img class="w-10 h-10 rounded-full object-cover ring-2 ring-secondary/20" data-alt="A professional studio portrait of a sophisticated property manager in a sharp charcoal suit, against a minimalist architectural background with soft natural lighting and a high-end corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1olwRIaAK8QoatHbBWC7K7at40X4jn4qZzJQIo2hcFLXk5y76JzggbVSLMDRf_CdV4x2L96UOvxd43nHgG-sPnoyqYqART15VAfeyWrmP21Bp2SyR3tGeDadak462Qoe_6MLMuKb-RL-m_y5xBYalnl_qQU8ehfcfIM_PeryyoQi3nGQEalQoZZ7tcPRxVkbhXHYjOJi3pEEOmCZEShEA-nay8xKVEugdvIeYIpp39q7u3IIbxU9PFQ"/>
+</div>
+</div>
+</header>
+<!-- Notification Center Content -->
+<div class="flex-1 px-page-margin py-10 max-w-[1400px] w-full mx-auto">
+<div class="flex items-end justify-between mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Notification Center</h2>
+<p class="text-on-surface-variant mt-1">Manage your portfolio alerts and urgent maintenance requests.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-primary font-semibold hover:bg-surface-container-high rounded-lg transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+                        Mark all as read
+                    </button>
+<button class="px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+                        Alert Settings
+                    </button>
+</div>
+</div>
+<!-- Filters & Stats Bento Layout -->
+<div class="grid grid-cols-12 gap-grid-gutter mb-section-gap">
+<!-- Filter Sidebar/Panel -->
+<div class="col-span-12 lg:col-span-3 space-y-element-gap">
+<div class="glass-panel p-card-padding rounded-xl shadow-sm">
+<h3 class="font-label-caps text-label-caps text-outline uppercase mb-4">Filter by Category</h3>
+<div class="space-y-1">
+<button class="w-full flex items-center justify-between px-3 py-2 bg-primary/5 text-primary rounded-lg font-semibold transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">list</span>
+                                    All Notifications
+                                </div>
+<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">24</span>
+</button>
+<button class="w-full flex items-center justify-between px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+                                    Payments
+                                </div>
+<span class="text-[10px] font-bold text-outline">12</span>
+</button>
+<button class="w-full flex items-center justify-between px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">build</span>
+                                    Maintenance
+                                </div>
+<span class="text-[10px] font-bold text-outline">5</span>
+</button>
+<button class="w-full flex items-center justify-between px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">description</span>
+                                    Lease Updates
+                                </div>
+<span class="text-[10px] font-bold text-outline">7</span>
+</button>
+</div>
+<div class="mt-8">
+<h3 class="font-label-caps text-label-caps text-outline uppercase mb-4">Urgency</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-error/10 text-error text-[12px] font-bold rounded-full border border-error/20 cursor-pointer hover:bg-error/20 transition-colors">Critical</span>
+<span class="px-3 py-1 bg-secondary/10 text-secondary text-[12px] font-bold rounded-full border border-secondary/20 cursor-pointer hover:bg-secondary/20 transition-colors">Warning</span>
+<span class="px-3 py-1 bg-on-tertiary-container/10 text-on-tertiary-container text-[12px] font-bold rounded-full border border-on-tertiary-container/20 cursor-pointer hover:bg-on-tertiary-container/20 transition-colors">Info</span>
+</div>
+</div>
+</div>
+<!-- Quick Insight Card -->
+<div class="bg-primary-container p-card-padding rounded-xl text-white overflow-hidden relative shadow-lg">
+
+<div class="relative z-10">
+<h4 class="font-title-md text-title-md leading-tight">Optimization Tip</h4>
+<p class="text-on-primary-container text-body-sm mt-2">You have 3 lease renewals expiring next week. Automated offers are ready.</p>
+<button class="mt-4 text-[12px] font-bold text-secondary-fixed flex items-center gap-1 hover:underline">
+                                Review Offers
+                                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Feed -->
+<div class="col-span-12 lg:col-span-9 space-y-4">
+<!-- Notification Date Group: Today -->
+<div class="mb-4">
+<h4 class="text-[11px] font-bold text-outline tracking-widest uppercase mb-4 px-2">Today — May 24, 2024</h4>
+<div class="space-y-3">
+<!-- Notification Item: Critical -->
+<div class="glass-panel p-5 rounded-xl flex gap-4 relative notification-unread group hover:shadow-md transition-all cursor-pointer border-l-4 border-l-error">
+<div class="flex-shrink-0 w-12 h-12 bg-error/10 rounded-full flex items-center justify-center text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h5 class="font-semibold text-primary text-lg">Urgent Maintenance: Water Leak</h5>
+<span class="text-[12px] text-outline">08:15 AM</span>
+</div>
+<p class="text-on-surface-variant text-body-sm leading-relaxed">Suite 402 at <span class="font-semibold text-primary">The Obsidian Towers</span> reported a major bathroom leak. Technician assigned (ID #4421).</p>
+<div class="mt-3 flex gap-2">
+<button class="px-3 py-1.5 bg-primary text-white text-[12px] font-semibold rounded-lg hover:bg-on-primary-fixed transition-colors">Approve Repair</button>
+<button class="px-3 py-1.5 border border-outline-variant text-[12px] font-semibold rounded-lg hover:bg-surface-container transition-colors">Call Technician</button>
+</div>
+</div>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined text-outline">more_vert</span></button>
+</div>
+</div>
+<!-- Notification Item: Payment -->
+<div class="glass-panel p-5 rounded-xl flex gap-4 relative notification-unread group hover:shadow-md transition-all cursor-pointer border-l-4 border-l-secondary">
+<div class="flex-shrink-0 w-12 h-12 bg-secondary-container/20 rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h5 class="font-semibold text-primary text-lg">Rent Received: Unit 12B</h5>
+<span class="text-[12px] text-outline">10:42 AM</span>
+</div>
+<p class="text-on-surface-variant text-body-sm leading-relaxed">Payment of <span class="font-bold text-on-tertiary-fixed-variant">$3,200.00</span> received from Sarah Miller via Bank Transfer.</p>
+<div class="mt-3 flex gap-4 text-[12px]">
+<span class="flex items-center gap-1 text-on-tertiary-fixed-variant font-bold"><span class="material-symbols-outlined text-[14px]">check_circle</span> Verified</span>
+<span class="text-outline">Inv #INV-2024-055</span>
+</div>
+</div>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined text-outline">archive</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Date Group: Yesterday -->
+<div class="pt-6">
+<h4 class="text-[11px] font-bold text-outline tracking-widest uppercase mb-4 px-2">Yesterday — May 23, 2024</h4>
+<div class="space-y-3">
+<!-- Notification Item: Lease -->
+<div class="glass-panel p-5 rounded-xl flex gap-4 group hover:shadow-md transition-all cursor-pointer opacity-80 hover:opacity-100">
+<div class="flex-shrink-0 w-12 h-12 bg-on-tertiary-container/10 rounded-full flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h5 class="font-semibold text-primary text-lg">Lease Expiration Warning</h5>
+<span class="text-[12px] text-outline">04:20 PM</span>
+</div>
+<p class="text-on-surface-variant text-body-sm leading-relaxed">3 Units at <span class="font-semibold text-primary">Harbor View Apartments</span> are set to expire in 60 days. Renewal packages have been generated.</p>
+<div class="mt-3 flex items-center gap-4">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold">JD</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-300 flex items-center justify-center text-[10px] font-bold">MK</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-400 flex items-center justify-center text-[10px] font-bold">+1</div>
+</div>
+<button class="text-[12px] font-bold text-primary hover:underline">Review All Tenants</button>
+</div>
+</div>
+</div>
+<!-- Notification Item: Info -->
+<div class="glass-panel p-5 rounded-xl flex gap-4 group hover:shadow-md transition-all cursor-pointer opacity-80 hover:opacity-100">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-outline">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h5 class="font-semibold text-primary text-lg">Weekly Portfolio Summary Ready</h5>
+<span class="text-[12px] text-outline">09:00 AM</span>
+</div>
+<p class="text-on-surface-variant text-body-sm leading-relaxed">Your performance report for May Week 3 is now available. Revenue is up <span class="text-on-tertiary-fixed-variant font-bold">4.2%</span> compared to last month.</p>
+</div>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined text-outline">download</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="py-8 flex justify-center">
+<button class="px-6 py-2 border border-outline-variant text-primary font-semibold rounded-full hover:bg-surface-container transition-all flex items-center gap-2">
+                            Load Previous Notifications
+                            <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contextual Dashboard Footer -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-grid-gutter pt-section-gap border-t border-outline-variant">
+<div class="flex items-center gap-4">
+<div class="p-3 bg-secondary/10 rounded-lg text-secondary">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-[12px] text-outline font-bold uppercase">Uptime</p>
+<p class="font-semibold text-primary">System Online 99.9%</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="p-3 bg-on-tertiary-container/10 rounded-lg text-on-tertiary-container">
+<span class="material-symbols-outlined">verified_user</span>
+</div>
+<div>
+<p class="text-[12px] text-outline font-bold uppercase">Security</p>
+<p class="font-semibold text-primary">256-bit Encrypted</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="p-3 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">help</span>
+</div>
+<div>
+<p class="text-[12px] text-outline font-bold uppercase">Support</p>
+<p class="font-semibold text-primary">Dedicated Concierge</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action for Quick Notification Search -->
+<button class="fixed bottom-10 right-10 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-50">
+<span class="material-symbols-outlined text-[28px]">search</span>
+</button>
+<script>
+        // Micro-interaction for "Mark all as read"
+        document.addEventListener('DOMContentLoaded', () => {
+            const markAllBtn = document.querySelector('button:contains("Mark all as read")');
+            // Simplified selector for demo purpose
+            const markBtn = Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Mark all as read'));
+            
+            if (markBtn) {
+                markBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.notification-unread').forEach(item => {
+                        item.classList.remove('notification-unread');
+                        item.classList.add('opacity-80');
+                    });
+                    // Update counter
+                    const counter = document.querySelector('.bg-primary.text-white.text-\\[10px\\]');
+                    if(counter) counter.textContent = '0';
+                    
+                    // Simple notification feedback
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-on-surface text-surface px-6 py-3 rounded-xl shadow-2xl z-[100] transition-all transform translate-y-20';
+                    toast.textContent = 'All notifications marked as read.';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.classList.remove('translate-y-20'), 100);
+                    setTimeout(() => {
+                        toast.classList.add('translate-y-20');
+                        setTimeout(() => toast.remove(), 500);
+                    }, 3000);
+                });
+            }
+        });
+    </script>
+</body></html>

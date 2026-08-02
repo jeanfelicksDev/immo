@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ImmoGest | Gestion des Propriétaires</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#000000",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "secondary": "#735c00",
+                        "on-surface": "#191c1e",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#ffe088",
+                        "tertiary-fixed": "#b0f0d6",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface-variant": "#45464d",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-secondary-fixed-variant": "#574500",
+                        "inverse-surface": "#2d3133",
+                        "tertiary-container": "#002117",
+                        "on-tertiary-fixed": "#002117",
+                        "outline": "#76777d",
+                        "surface": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#bec6e0",
+                        "on-secondary-fixed": "#241a00",
+                        "on-background": "#191c1e",
+                        "primary-fixed": "#dae2fd",
+                        "error": "#ba1a1a",
+                        "primary-container": "#131b2e",
+                        "surface-tint": "#565e74",
+                        "on-tertiary-container": "#528f79",
+                        "on-primary-fixed": "#131b2e",
+                        "outline-variant": "#c6c6cd",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "background": "#f7f9fb",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#fed65b",
+                        "on-secondary-container": "#745c00",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container-highest": "#e0e3e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "24px",
+                        "page-margin": "40px",
+                        "element-gap": "16px",
+                        "grid-gutter": "24px",
+                        "section-gap": "32px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "title-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb;
+            color: #191c1e;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .premium-card {
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+            transition: all 0.3s ease;
+        }
+        .premium-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08);
+        }
+        .glass-sidebar {
+            backdrop-filter: blur(12px);
+            background-color: rgba(15, 23, 42, 0.95);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="font-body-lg text-body-lg overflow-x-hidden">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-[280px] glass-sidebar text-secondary-fixed z-50 flex flex-col py-8 shadow-xl border-r border-white/10">
+<div class="px-8 mb-12">
+<h1 class="font-display-lg text-headline-lg text-secondary-fixed tracking-tight">ImmoGest</h1>
+<p class="text-white/50 font-body-sm text-body-sm mt-1 uppercase tracking-widest">Premium Management</p>
+</div>
+<nav class="flex-1 space-y-2 overflow-y-auto custom-scrollbar">
+<!-- Mapping JSON tab_labels and tab_icons -->
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-body-sm text-body-sm">Properties</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-xl border-l-4 border-secondary text-white font-semibold" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-sm text-body-sm">Tenants</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-sm text-body-sm">Finances</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-sm text-body-sm">Reports</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</nav>
+<div class="px-6 mb-8">
+<button class="w-full py-4 px-4 bg-secondary text-on-secondary rounded-lg font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-secondary/20">
+<span class="material-symbols-outlined">add_circle</span>
+<span>Add New Property</span>
+</button>
+</div>
+<div class="mt-auto border-t border-white/10 pt-6">
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-sm text-body-sm">Support</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-sm text-body-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen flex flex-col">
+<!-- TopAppBar Anchor -->
+<header class="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant h-20 flex items-center justify-between px-page-margin">
+<div class="flex items-center gap-8">
+<div class="relative group">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline">
+<span class="material-symbols-outlined">search</span>
+</span>
+<input class="bg-surface-container border border-outline-variant rounded-full py-2 pl-10 pr-4 focus:ring-2 focus:ring-primary/10 focus:outline-none w-64 transition-all focus:w-80" placeholder="Rechercher un propriétaire..." type="text"/>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-primary font-semibold border-b-2 border-secondary pb-4 text-title-md font-title-md" href="#">Overview</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-4 text-title-md font-title-md" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-4 text-title-md font-title-md" href="#">Activity</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all text-primary">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all text-primary">
+<span class="material-symbols-outlined">mail</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-body-sm font-semibold">Jean Dupont</p>
+<p class="text-[10px] text-outline uppercase tracking-wider">Directeur Associé</p>
+</div>
+<img class="w-10 h-10 rounded-full object-cover border-2 border-secondary/20" data-alt="A professional studio portrait of a mature male executive in a navy blue suit, set against a clean, minimal white background. The lighting is soft and high-end, characteristic of a corporate luxury environment. The man has a confident but approachable expression, perfectly representing the premium ImmoGest brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPlYDJIWNIvqI_7wTFw8qD0v4T1ON-CXHUoSnN503KRLWgbGnjQw6PwAVAkmUkxDW3v6V_oBKmTDFUfFmNwo0cHptj71ocBQNDVfUtvxPexIuHE0goAXZBVrFl2yMNZVNNggipnc6fOHh-HCkgJ8V0BvOs6g2g9p8KjLw7KsCgWGH-zSXFRBTfG3QM8O_1v41LmhDjHPDwSR-6qAUOJmu1nDVYxzKAj6w9MHIbNR0v8oMBNXoJRk06Vg"/>
+</div>
+</div>
+</header>
+<!-- Canvas Area -->
+<div class="p-page-margin">
+<!-- Header Section -->
+<div class="mb-section-gap flex justify-between items-end">
+<div>
+<h2 class="font-display-lg text-headline-lg text-primary tracking-tight">Gestion des Propriétaires</h2>
+<p class="text-on-surface-variant mt-2">Gérez vos relations clients et visualisez la performance de chaque portefeuille.</p>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center gap-2 px-6 py-3 border border-outline-variant rounded-lg font-semibold hover:bg-white transition-colors">
+<span class="material-symbols-outlined">download</span>
+<span>Exporter</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-lg shadow-primary/20 active:scale-95 transition-all">
+<span class="material-symbols-outlined">person_add</span>
+<span>Nouveau Propriétaire</span>
+</button>
+</div>
+</div>
+<!-- Stats Overview - Premium Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-grid-gutter mb-section-gap">
+<div class="premium-card p-card-padding rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-secondary-container rounded-lg text-on-secondary-container">
+<span class="material-symbols-outlined">real_estate_agent</span>
+</div>
+<span class="text-green-600 font-bold text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +4%
+                        </span>
+</div>
+<p class="text-on-surface-variant font-label-caps uppercase tracking-wider text-xs">Propriétaires Actifs</p>
+<h3 class="text-3xl font-bold text-primary mt-1">124</h3>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-8xl">group</span>
+</div>
+</div>
+<div class="premium-card p-card-padding rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-tertiary-fixed rounded-lg text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined">home_work</span>
+</div>
+<span class="text-green-600 font-bold text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +12
+                        </span>
+</div>
+<p class="text-on-surface-variant font-label-caps uppercase tracking-wider text-xs">Unités sous Gestion</p>
+<h3 class="text-3xl font-bold text-primary mt-1">1,842</h3>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-8xl">domain</span>
+</div>
+</div>
+<div class="premium-card p-card-padding rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-primary-container rounded-lg text-primary-fixed">
+<span class="material-symbols-outlined">payments</span>
+</div>
+</div>
+<p class="text-on-surface-variant font-label-caps uppercase tracking-wider text-xs">Loyers Encaissés (Mensuel)</p>
+<h3 class="text-3xl font-bold text-primary mt-1">428.5k €</h3>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-8xl">account_balance</span>
+</div>
+</div>
+<div class="premium-card p-card-padding rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-error-container rounded-lg text-on-error-container">
+<span class="material-symbols-outlined">warning</span>
+</div>
+</div>
+<p class="text-on-surface-variant font-label-caps uppercase tracking-wider text-xs">Retards de Paiement</p>
+<h3 class="text-3xl font-bold text-error mt-1">3.2%</h3>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-8xl">schedule</span>
+</div>
+</div>
+</div>
+<!-- Owners Data Table -->
+<div class="premium-card rounded-xl overflow-hidden mb-section-gap">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+<div class="flex gap-4 items-center">
+<h4 class="font-bold text-primary">Liste des Propriétaires</h4>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed-variant rounded-full text-xs font-bold uppercase tracking-tight">Vip</span>
+<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold uppercase tracking-tight">Standard</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 text-outline text-[11px] uppercase font-bold tracking-widest border-b border-outline-variant">
+<th class="px-6 py-4">Propriétaire</th>
+<th class="px-6 py-4">Contact</th>
+<th class="px-6 py-4">Propriétés</th>
+<th class="px-6 py-4">Revenus (Mensuels)</th>
+<th class="px-6 py-4">Statut</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold">EM</div>
+<div>
+<p class="font-bold text-primary">Eleanor Maury</p>
+<p class="text-xs text-outline">ID: OWN-2024-001</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-medium">e.maury@example.com</p>
+<p class="text-xs text-outline">+33 6 12 34 56 78</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold">12</span>
+<span class="text-xs text-outline">unités</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="font-bold text-primary">24,500 €</span>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">Actif</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-outline hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold">RB</div>
+<div>
+<p class="font-bold text-primary">Robert Blanchard</p>
+<p class="text-xs text-outline">ID: OWN-2024-045</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-medium">blanchard.r@gmail.com</p>
+<p class="text-xs text-outline">+33 7 89 01 23 45</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold">5</span>
+<span class="text-xs text-outline">unités</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="font-bold text-primary">8,900 €</span>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold border border-yellow-200">En Revue</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-outline hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed-dim/20 flex items-center justify-center text-tertiary font-bold">SH</div>
+<div>
+<p class="font-bold text-primary">Sophie Hérard</p>
+<p class="text-xs text-outline">ID: OWN-2023-912</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-medium">herard.sophie@lux.fr</p>
+<p class="text-xs text-outline">+33 6 45 67 89 01</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold">28</span>
+<span class="text-xs text-outline">unités</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="font-bold text-primary">62,100 €</span>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">Actif</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-outline hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-error-container/20 flex items-center justify-center text-error font-bold">GL</div>
+<div>
+<p class="font-bold text-primary">Gérard Lemaire</p>
+<p class="text-xs text-outline">ID: OWN-2022-118</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-medium">g.lemaire@free.fr</p>
+<p class="text-xs text-outline">+33 1 45 12 33 44</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold">1</span>
+<span class="text-xs text-outline">unité</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="font-bold text-primary">1,250 €</span>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">Inactif</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-outline hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-6 bg-surface-container-low flex justify-between items-center border-t border-outline-variant">
+<p class="text-sm text-outline">Affichage de 1 à 4 sur 124 propriétaires</p>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-white transition-colors font-bold">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-white transition-colors font-bold">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Asymmetric Bento-like grid for insights -->
+<div class="grid grid-cols-12 gap-grid-gutter">
+<div class="col-span-8 premium-card p-card-padding rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-bold text-title-md font-title-md">Croissance du Portefeuille</h4>
+<select class="bg-surface-container border border-outline-variant rounded-lg text-sm px-3 py-1">
+<option>Derniers 12 mois</option>
+<option>Dernières 2 ans</option>
+</select>
+</div>
+<!-- Placeholder for Chart -->
+<div class="h-64 bg-surface-container-low rounded-lg relative overflow-hidden flex items-end px-4 pb-4">
+<div class="flex-1 bg-primary/10 h-1/4 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-2/5 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-1/3 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-1/2 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-secondary h-3/4 mx-1 rounded-t-sm transition-all hover:bg-secondary-fixed"></div>
+<div class="flex-1 bg-primary h-5/6 mx-1 rounded-t-sm transition-all hover:bg-primary-container"></div>
+<div class="flex-1 bg-primary/10 h-1/2 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-2/3 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-3/5 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-3/4 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-5/6 mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 h-full mx-1 rounded-t-sm transition-all hover:bg-primary/20"></div>
+<div class="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-20">
+<div class="border-t border-outline"></div>
+<div class="border-t border-outline"></div>
+<div class="border-t border-outline"></div>
+<div class="border-t border-outline"></div>
+</div>
+</div>
+</div>
+<div class="col-span-4 flex flex-col gap-grid-gutter">
+<div class="premium-card p-card-padding rounded-xl flex-1 flex flex-col justify-center items-center text-center">
+<div class="w-16 h-16 bg-secondary-fixed-dim/20 rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-secondary text-3xl">verified</span>
+</div>
+<h5 class="font-bold text-primary">Score de Confiance Moyen</h5>
+<p class="text-4xl font-extrabold text-secondary mt-2">9.8/10</p>
+<p class="text-xs text-outline mt-1 px-4">Basé sur les historiques de paiement et la maintenance des propriétés.</p>
+</div>
+<div class="premium-card p-card-padding rounded-xl bg-primary text-white">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary">workspace_premium</span>
+<span class="font-label-caps uppercase tracking-widest text-[10px]">Programme Elite</span>
+</div>
+<h5 class="font-bold text-lg">Devenez gestionnaire Or</h5>
+<p class="text-sm text-white/70 mt-2">Obtenez des outils d'analyse prédictive avancés en gérant plus de 150 unités.</p>
+<button class="mt-4 w-full py-2 bg-secondary text-on-secondary rounded font-bold text-sm hover:brightness-110 transition-all">En savoir plus</button>
+</div>
+</div>
+</div>
+</div>
+<footer class="mt-auto p-page-margin border-t border-outline-variant bg-white/50 text-outline text-xs flex justify-between items-center">
+<p>© 2024 ImmoGest Premium Property Management. Tous droits réservés.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Politique de Confidentialité</a>
+<a class="hover:text-primary transition-colors" href="#">Conditions de Service</a>
+<a class="hover:text-primary transition-colors" href="#">Système Status</a>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interactions and atmospheric logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.premium-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-4px)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Active state simulation for sidebar links (for demo purposes)
+            const navLinks = document.querySelectorAll('aside nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    navLinks.forEach(l => {
+                        l.classList.remove('bg-white/10', 'backdrop-blur-xl', 'border-l-4', 'border-secondary', 'text-white', 'font-semibold');
+                        l.classList.add('text-on-primary/70');
+                    });
+                    link.classList.add('bg-white/10', 'backdrop-blur-xl', 'border-l-4', 'border-secondary', 'text-white', 'font-semibold');
+                    link.classList.remove('text-on-primary/70');
+                });
+            });
+        });
+    </script>
+</body></html>

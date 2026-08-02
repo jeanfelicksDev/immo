@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ImmoGest | Gestion des Locataires</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#000000",
+                    "tertiary-fixed-dim": "#95d3ba",
+                    "secondary": "#735c00",
+                    "on-surface": "#191c1e",
+                    "surface-container-lowest": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary": "#000000",
+                    "surface-variant": "#e0e3e5",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#ffe088",
+                    "tertiary-fixed": "#b0f0d6",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-tertiary-fixed-variant": "#0b513d",
+                    "surface-bright": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#7c839b",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e6e8ea",
+                    "on-surface-variant": "#45464d",
+                    "primary-fixed-dim": "#bec6e0",
+                    "on-secondary-fixed-variant": "#574500",
+                    "inverse-surface": "#2d3133",
+                    "tertiary-container": "#002117",
+                    "on-tertiary-fixed": "#002117",
+                    "outline": "#76777d",
+                    "surface": "#f7f9fb",
+                    "surface-container": "#eceef0",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#bec6e0",
+                    "on-secondary-fixed": "#241a00",
+                    "on-background": "#191c1e",
+                    "primary-fixed": "#dae2fd",
+                    "error": "#ba1a1a",
+                    "primary-container": "#131b2e",
+                    "surface-tint": "#565e74",
+                    "on-tertiary-container": "#528f79",
+                    "on-primary-fixed": "#131b2e",
+                    "outline-variant": "#c6c6cd",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "background": "#f7f9fb",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#fed65b",
+                    "on-secondary-container": "#745c00",
+                    "surface-dim": "#d8dadc",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container-highest": "#e0e3e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "card-padding": "24px",
+                    "page-margin": "40px",
+                    "element-gap": "16px",
+                    "grid-gutter": "24px",
+                    "section-gap": "32px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Montserrat"],
+                    "body-sm": ["Inter"],
+                    "title-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "headline-lg": ["Montserrat"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #F8FAFC;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+        }
+        .sidebar-active-pill {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border-left: 4px solid #e9c349;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Fixed SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container z-50 flex flex-col py-8 shadow-xl border-r border-white/10">
+<div class="px-8 mb-12">
+<h1 class="font-display-lg text-headline-lg text-secondary-fixed tracking-tight">ImmoGest</h1>
+<p class="font-body-sm text-body-sm text-on-primary-container/60 mt-1 uppercase tracking-widest">Premium Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-body-sm text-body-sm">Properties</span>
+</a>
+<!-- Active Tab: Tenants -->
+<a class="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-xl border-l-4 border-secondary text-white font-semibold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-body-sm text-body-sm">Tenants</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-sm text-body-sm">Finances</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-sm text-body-sm">Reports</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</nav>
+<div class="px-6 mb-8">
+<button class="w-full py-4 bg-secondary text-on-secondary font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-secondary-fixed transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">add</span>
+                Add New Property
+            </button>
+</div>
+<div class="border-t border-white/10 pt-4 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-sm text-body-sm">Support</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-sm text-body-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-[280px] min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-page-margin h-20 shadow-sm">
+<div class="flex items-center gap-8">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-12 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary/10 w-80 transition-all text-body-sm" placeholder="Rechercher un locataire..." type="text"/>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-title-md text-title-md border-b-2 border-transparent pb-1" href="#">Overview</a>
+<a class="text-primary font-semibold border-b-2 border-secondary pb-1 font-title-md text-title-md" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-title-md text-title-md border-b-2 border-transparent pb-1" href="#">Activity</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">mail</span>
+</button>
+<div class="h-10 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="font-bold text-body-sm">Jean Dupont</p>
+<p class="text-xs text-on-surface-variant">Propriétaire Senior</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-secondary object-cover" data-alt="A professional headshot of a mature male property manager in a high-end corporate office. He is wearing a crisp white shirt and navy blue blazer, projecting confidence and trust. The lighting is soft and natural, with a blurred minimalist office interior in the background. The aesthetic is clean, professional, and follows a premium corporate visual language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPomMj35vMkmeh0jIWVeOr2e-Ta0kWInmQQvBEffX5O30f5r19uszkmO2aZqJmjw2mdoE1gjVf1Ut5pn5RuccsYuZz8spLt1dObIcc1Ux2jZ6hIj3cBh4Hh6C8uwYHbZcAQ0otAR1nF8nuOv6DoE5xqZTVuaFcmeLWQe7IiD4D0CeffamY8ONAJzGF5CgW9GfTumRitYZPhIMh-g68QSXMgEBVJ0vf-p7A8jhpGSSrpC9I0_Xx_EKTTg"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-page-margin max-w-[1600px] mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-section-gap">
+<div>
+<h2 class="font-display-lg text-headline-lg text-primary tracking-tight">Gestion des Locataires</h2>
+<p class="text-on-surface-variant font-body-lg mt-2">Gérez vos baux, suivez les paiements et communiquez avec vos résidents.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2.5 rounded-lg border border-outline-variant hover:bg-surface-container transition-all flex items-center gap-2 font-semibold">
+<span class="material-symbols-outlined">filter_list</span>
+                        Filtres
+                    </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-on-primary-container transition-all flex items-center gap-2 font-semibold shadow-md">
+<span class="material-symbols-outlined">person_add</span>
+                        Nouveau Locataire
+                    </button>
+</div>
+</div>
+<!-- Dashboard Quick Stats (Bento Style) -->
+<div class="grid grid-cols-12 gap-grid-gutter mb-section-gap">
+<div class="col-span-12 lg:col-span-4 glass-card p-card-padding rounded-xl flex items-center gap-6">
+<div class="w-14 h-14 rounded-full bg-secondary-fixed/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-3xl">group</span>
+</div>
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant uppercase">Total Locataires</p>
+<p class="text-headline-lg font-headline-lg">124</p>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 glass-card p-card-padding rounded-xl flex items-center gap-6 border-l-4 border-green-500">
+<div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined text-3xl">verified</span>
+</div>
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant uppercase">Paiements à jour</p>
+<p class="text-headline-lg font-headline-lg">98%</p>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 glass-card p-card-padding rounded-xl flex items-center gap-6 border-l-4 border-error">
+<div class="w-14 h-14 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-3xl">warning</span>
+</div>
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant uppercase">Retards de paiement</p>
+<p class="text-headline-lg font-headline-lg">3</p>
+</div>
+</div>
+</div>
+<!-- Tenants Table Card -->
+<div class="glass-card rounded-xl overflow-hidden border border-outline-variant">
+<div class="px-card-padding py-6 border-b border-outline-variant flex justify-between items-center bg-white/50">
+<h3 class="font-title-md text-title-md text-primary">Liste des Locataires Actifs</h3>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="text-body-sm">Afficher:</span>
+<select class="bg-transparent border-none focus:ring-0 font-semibold text-body-sm cursor-pointer">
+<option>Tous les immeubles</option>
+<option>Résidence Azure</option>
+<option>Le Grand Palais</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 border-b border-outline-variant">
+<th class="px-card-padding py-4 text-label-caps font-label-caps text-on-surface-variant">Locataire</th>
+<th class="px-card-padding py-4 text-label-caps font-label-caps text-on-surface-variant">Propriété / Unité</th>
+<th class="px-card-padding py-4 text-label-caps font-label-caps text-on-surface-variant">Période du Bail</th>
+<th class="px-card-padding py-4 text-label-caps font-label-caps text-on-surface-variant">Statut de Paiement</th>
+<th class="px-card-padding py-4 text-label-caps font-label-caps text-on-surface-variant">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Tenant Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-card-padding py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center font-bold text-primary">ML</div>
+<div>
+<p class="font-semibold text-body-lg text-primary">Marc Lavoine</p>
+<p class="text-body-sm text-on-surface-variant">marc.lavoine@email.com</p>
+</div>
+</div>
+</td>
+<td class="px-card-padding py-5">
+<p class="font-medium text-body-sm">Résidence Azure</p>
+<p class="text-xs text-on-surface-variant">Appartement 402, Bâtiment B</p>
+</td>
+<td class="px-card-padding py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">calendar_today</span>
+<p class="text-body-sm">01/01/24 - 31/12/26</p>
+</div>
+</td>
+<td class="px-card-padding py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                                        À jour
+                                    </span>
+</td>
+<td class="px-card-padding py-5">
+<button class="p-2 hover:bg-white rounded-full transition-all text-on-surface-variant group-hover:text-primary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Tenant Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-card-padding py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center font-bold text-secondary">SD</div>
+<div>
+<p class="font-semibold text-body-lg text-primary">Sophie Dubois</p>
+<p class="text-body-sm text-on-surface-variant">s.dubois@company.fr</p>
+</div>
+</div>
+</td>
+<td class="px-card-padding py-5">
+<p class="font-medium text-body-sm">Le Grand Palais</p>
+<p class="text-xs text-on-surface-variant">Penthouse A, Étage 12</p>
+</td>
+<td class="px-card-padding py-5">
+<div class="flex items-center gap-2 text-error">
+<span class="material-symbols-outlined text-sm">event_repeat</span>
+<p class="text-body-sm font-semibold">Expire dans 15 jours</p>
+</div>
+</td>
+<td class="px-card-padding py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                                        À jour
+                                    </span>
+</td>
+<td class="px-card-padding py-5">
+<button class="p-2 hover:bg-white rounded-full transition-all text-on-surface-variant group-hover:text-primary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Tenant Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-card-padding py-5">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Close up portrait of a young professional woman smiling. She has shoulder length dark hair and is wearing a stylish minimalist outfit. The photo is high contrast with studio-quality soft lighting, against a neutral light grey background that fits the professional property management software theme perfectly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfY0df3mkU4Ko3cghSAqFV4_rloLe2qH1kaM0cG5ixCyYtwu2L-cqscevuVSjb2IqwPmOzE3YngOd51QPuLznPHE4R7rI5HxfzIiFdJJAvlnuZbfirv7mI4JiXlsah9xOVwQeiGD1S2AwXan5VbZT9QQJYCTg0zJh6cfOqiJvv0XNC5MXW-R7kp6oGgOp-EcAjzI20q_eNbO76HlJ9IEcQ28l5CEGSbC5BT_fo5rBcJblpYQYoJLVfmQ"/>
+<div>
+<p class="font-semibold text-body-lg text-primary">Alice Moreau</p>
+<p class="text-body-sm text-on-surface-variant">a.moreau@email.com</p>
+</div>
+</div>
+</td>
+<td class="px-card-padding py-5">
+<p class="font-medium text-body-sm">Résidence Azure</p>
+<p class="text-xs text-on-surface-variant">Appartement 105, RDC</p>
+</td>
+<td class="px-card-padding py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">calendar_today</span>
+<p class="text-body-sm">15/05/23 - 14/05/26</p>
+</div>
+</td>
+<td class="px-card-padding py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-error-container text-on-error-container border border-error/20">
+                                        Retard (4j)
+                                    </span>
+</td>
+<td class="px-card-padding py-5">
+<button class="p-2 hover:bg-white rounded-full transition-all text-on-surface-variant group-hover:text-primary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-card-padding py-4 flex items-center justify-between bg-surface-container-low/30 border-t border-outline-variant">
+<p class="text-body-sm text-on-surface-variant">Affichage de 1 à 10 sur 124 locataires</p>
+<div class="flex gap-2">
+<button class="px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-all text-body-sm">Précédent</button>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-body-sm">1</button>
+<button class="px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-all text-body-sm">2</button>
+<button class="px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-all text-body-sm">3</button>
+<button class="px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-all text-body-sm">Suivant</button>
+</div>
+</div>
+</div>
+<!-- Contextual Insights Section -->
+<div class="mt-section-gap grid grid-cols-1 md:grid-cols-2 gap-grid-gutter">
+<div class="glass-card p-card-padding rounded-xl relative overflow-hidden">
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-title-md text-title-md text-primary">Prochains Renouvellements</h4>
+<span class="material-symbols-outlined text-secondary">history_edu</span>
+</div>
+<ul class="space-y-4">
+<li class="flex justify-between items-center p-3 hover:bg-white/50 rounded-lg transition-all cursor-pointer">
+<div>
+<p class="font-semibold text-body-sm">Sophie Dubois</p>
+<p class="text-xs text-on-surface-variant">Le Grand Palais, Penthouse A</p>
+</div>
+<span class="text-xs font-bold text-error">15 Janvier</span>
+</li>
+<li class="flex justify-between items-center p-3 hover:bg-white/50 rounded-lg transition-all cursor-pointer">
+<div>
+<p class="font-semibold text-body-sm">Luc Bertrand</p>
+<p class="text-xs text-on-surface-variant">Résidence Azure, Appt 204</p>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">02 Février</span>
+</li>
+</ul>
+<button class="mt-4 w-full py-2 text-secondary font-bold text-body-sm hover:underline">Voir tout le calendrier →</button>
+</div>
+</div>
+<div class="glass-card p-card-padding rounded-xl relative overflow-hidden">
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-title-md text-title-md text-primary">Requêtes de Maintenance</h4>
+<span class="material-symbols-outlined text-blue-500">engineering</span>
+</div>
+<ul class="space-y-4">
+<li class="flex items-start gap-4 p-3 hover:bg-white/50 rounded-lg transition-all cursor-pointer">
+<div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+<div>
+<p class="font-semibold text-body-sm">Fuite évier - Marc Lavoine</p>
+<p class="text-xs text-on-surface-variant">Soumis il y a 2h • Priorité : Moyenne</p>
+</div>
+</li>
+<li class="flex items-start gap-4 p-3 hover:bg-white/50 rounded-lg transition-all cursor-pointer">
+<div class="w-2 h-2 rounded-full bg-error mt-1.5 shrink-0 animate-pulse"></div>
+<div>
+<p class="font-semibold text-body-sm">Panne ascenseur - Résidence Azure</p>
+<p class="text-xs text-on-surface-variant">Soumis il y a 5h • Priorité : Critique</p>
+</div>
+</li>
+</ul>
+<button class="mt-4 w-full py-2 text-secondary font-bold text-body-sm hover:underline">Accéder au centre de support →</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Simuler une navigation vers les détails
+                console.log('Navigating to tenant details...');
+            });
+        });
+
+        // Simple smooth scroll for glass effects
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('shadow-md');
+            } else {
+                header.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile | ImmoGest Premium Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Montserrat:wght@600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "on-primary-fixed": "#131b2e",
+                "on-tertiary-fixed-variant": "#0b513d",
+                "primary-fixed": "#dae2fd",
+                "on-primary-fixed-variant": "#3f465c",
+                "tertiary-container": "#002117",
+                "on-surface": "#191c1e",
+                "on-secondary": "#ffffff",
+                "tertiary-fixed-dim": "#95d3ba",
+                "surface-dim": "#d8dadc",
+                "on-tertiary": "#ffffff",
+                "inverse-primary": "#bec6e0",
+                "secondary": "#735c00",
+                "outline-variant": "#c6c6cd",
+                "inverse-surface": "#2d3133",
+                "on-secondary-fixed-variant": "#574500",
+                "on-background": "#191c1e",
+                "surface-container": "#eceef0",
+                "on-error-container": "#93000a",
+                "on-primary": "#ffffff",
+                "surface-container-high": "#e6e8ea",
+                "primary-fixed-dim": "#bec6e0",
+                "on-tertiary-fixed": "#002117",
+                "on-secondary-fixed": "#241a00",
+                "background": "#f7f9fb",
+                "surface-tint": "#565e74",
+                "on-tertiary-container": "#528f79",
+                "inverse-on-surface": "#eff1f3",
+                "error": "#ba1a1a",
+                "secondary-fixed": "#ffe088",
+                "tertiary-fixed": "#b0f0d6",
+                "primary-container": "#131b2e",
+                "on-surface-variant": "#45464d",
+                "on-error": "#ffffff",
+                "surface-variant": "#e0e3e5",
+                "on-secondary-container": "#745c00",
+                "secondary-container": "#fed65b",
+                "secondary-fixed-dim": "#e9c349",
+                "tertiary": "#000000",
+                "surface-bright": "#f7f9fb",
+                "surface": "#f7f9fb",
+                "on-primary-container": "#7c839b",
+                "primary": "#000000",
+                "outline": "#76777d",
+                "surface-container-highest": "#e0e3e5",
+                "error-container": "#ffdad6",
+                "surface-container-lowest": "#ffffff",
+                "surface-container-low": "#f2f4f6"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+              },
+              "spacing": {
+                "card-padding": "24px",
+                "page-margin": "40px",
+                "element-gap": "16px",
+                "grid-gutter": "24px",
+                "section-gap": "32px"
+              },
+              "fontFamily": {
+                "title-md": ["Inter"],
+                "body-sm": ["Inter"],
+                "body-lg": ["Inter"],
+                "headline-lg-mobile": ["Montserrat"],
+                "display-lg": ["Montserrat"],
+                "headline-lg": ["Montserrat"],
+                "label-caps": ["Inter"]
+              },
+              "fontSize": {
+                "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-lg">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container flex flex-col py-8 shadow-xl bg-primary/95 backdrop-blur-md border-r border-white/10 z-50">
+<div class="px-8 mb-10">
+<h1 class="font-display-lg text-headline-lg text-secondary-fixed tracking-tight">ImmoGest</h1>
+<p class="font-body-sm text-body-sm text-on-primary/60">Premium Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-body-sm text-body-sm">Properties</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-sm text-body-sm">Tenants</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-sm text-body-sm">Finances</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-sm text-body-sm">Reports</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-xl border-l-4 border-secondary text-white font-semibold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</nav>
+<div class="px-6 mb-6">
+<button class="w-full py-3 px-4 bg-secondary-container text-on-secondary-container rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">add_circle</span>
+                Add New Property
+            </button>
+</div>
+<div class="mt-auto border-t border-white/10 pt-6 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-sm text-body-sm">Support</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-sm text-body-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopAppBar Anchor -->
+<header class="sticky top-0 z-40 w-full bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-page-margin h-20 ml-[280px] max-w-[calc(100%-280px)]">
+<div class="flex items-center gap-8 flex-1">
+<div class="relative w-full max-w-md focus-within:ring-2 focus-within:ring-primary/10 rounded-full">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-4 py-2 bg-surface-container-low border-none rounded-full text-body-sm focus:ring-1 focus:ring-primary" placeholder="Search properties or transactions..." type="text"/>
+</div>
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-1 border-b-2 border-transparent" href="#">Overview</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-1 border-b-2 border-transparent" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-1 border-b-2 border-transparent" href="#">Activity</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all relative">
+<span class="material-symbols-outlined text-outline">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all">
+<span class="material-symbols-outlined text-outline">mail</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all">
+<span class="material-symbols-outlined text-outline">apps</span>
+</button>
+</div>
+<div class="h-10 w-10 rounded-full border-2 border-secondary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior property manager in a high-end corporate setting, wearing a tailored navy blazer. The lighting is sophisticated and warm, creating a trustworthy and experienced aura. The background is a blurred modern office with glass partitions and soft architectural details in a light-mode color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfyITB_o-qh_zxu8QRWOjAjihE63Dj6RjRpvJ-ykNI_hGRtAtpKn9nXeVnXGKBo6m14qmgV59navSzyM3XTJ6WkW-63MubRZGUCGxcwsSHB8EX4Wew2NHk5EfLeAeo0tCUszlKxN3UiBkSxqYmnz4DDxmTXYMiBVU27xWUTP2Lw_JCmjpsZrrEq6q2jNChPuzdw-JZ_dbqvJK4bA_hpAXyn2gc56UuBOcsgLPz3sDMa3ELUrkHLXxCiA"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] p-page-margin">
+<div class="max-w-[1400px] mx-auto space-y-section-gap">
+<!-- Page Header -->
+<header class="flex justify-between items-end">
+<div>
+<span class="font-label-caps text-label-caps text-secondary uppercase tracking-widest">Account Settings</span>
+<h2 class="font-headline-lg text-headline-lg text-primary mt-2">User Profile</h2>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2 border border-outline rounded-lg font-semibold text-body-sm hover:bg-surface-container transition-all">Discard Changes</button>
+<button class="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-body-sm shadow-sm hover:shadow-md transition-all active:scale-[0.98]">Save Profile</button>
+</div>
+</header>
+<!-- Profile Bento Grid -->
+<div class="grid grid-cols-12 gap-grid-gutter">
+<!-- Personal Info Card (Main Focus) -->
+<section class="col-span-12 lg:col-span-8 glass-card rounded-xl p-card-padding shadow-sm">
+<div class="flex items-center gap-6 mb-8 border-b border-outline-variant pb-8">
+<div class="relative group">
+<div class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-4 border-white">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a sophisticated male executive with silver hair and a sharp navy suit. The environment is a brightly lit, high-ceilinged modern atrium with greenery and sunlight filtering through glass. The aesthetic is clean, professional, and reflects a high-end luxury lifestyle and property management context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANO9mtFYovXfHidzZeFBQLg-d4Yl75u-0SPxBlttK-jG3x4O1eo-Wkec8uNDkOae-xgMw7GLr5q4su8uuY7P2G3UtpW2pJESW85w9pIXUnkxRbWFMC7Yhdl-Gv6BS9UFdhC0tTPoaeUse78b3Jja21vUgfi8y69isXLeWkWBjWHhUWFf54QOcAJXwL7xSGEFnEjZz48aeT8riR5hV6qd9I2i_TisQviLMyBEYrPuNhuiyNJ0ZVXpiRuQ"/>
+</div>
+<button class="absolute -bottom-2 -right-2 p-2 bg-secondary text-white rounded-lg shadow-lg hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+</button>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-primary">Alexander Sterling</h3>
+<p class="text-on-surface-variant font-body-sm">Senior Portfolio Manager • Joined Oct 2021</p>
+<div class="flex gap-2 mt-3">
+<span class="px-3 py-1 bg-secondary-container/30 text-secondary font-label-caps text-[10px] rounded-full">PREMIUM AGENT</span>
+<span class="px-3 py-1 bg-tertiary-fixed/30 text-on-tertiary-fixed-variant font-label-caps text-[10px] rounded-full">VERIFIED</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-x-8 gap-y-6">
+<div class="space-y-2">
+<label class="font-label-caps text-[11px] text-outline uppercase">Full Name</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/10 transition-all text-body-sm" type="text" value="Alexander Sterling"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-[11px] text-outline uppercase">Email Address</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/10 transition-all text-body-sm" type="email" value="alex.sterling@immogest.com"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-[11px] text-outline uppercase">Phone Number</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/10 transition-all text-body-sm" type="tel" value="+1 (555) 890-2344"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-[11px] text-outline uppercase">Company Role</label>
+<select class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/10 transition-all text-body-sm">
+<option>Senior Portfolio Manager</option>
+<option>Asset Analyst</option>
+<option>Leasing Specialist</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Security Quick Actions -->
+<section class="col-span-12 lg:col-span-4 flex flex-col gap-grid-gutter">
+<div class="glass-card rounded-xl p-card-padding shadow-sm flex-1">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary">security</span>
+<h3 class="font-title-md text-title-md text-primary">Security</h3>
+</div>
+<ul class="space-y-4">
+<li class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">passkey</span>
+<div>
+<p class="text-body-sm font-semibold">Change Password</p>
+<p class="text-[12px] text-outline">Last updated 3 months ago</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</li>
+<li class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">shield_person</span>
+<div>
+<p class="text-body-sm font-semibold">Two-Factor Auth</p>
+<p class="text-[12px] text-tertiary-container font-medium">Currently Enabled</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</li>
+</ul>
+</div>
+<div class="glass-card rounded-xl p-card-padding shadow-sm bg-primary text-white">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-[11px] text-on-primary/60 uppercase">System Health</span>
+<span class="material-symbols-outlined text-secondary">verified</span>
+</div>
+<p class="font-title-md text-title-md mb-2">Secure Connection</p>
+<p class="text-body-sm text-on-primary/70 leading-relaxed mb-6">Your account is currently protected by enterprise-grade 256-bit encryption.</p>
+<div class="h-1 bg-white/20 rounded-full overflow-hidden">
+<div class="w-full h-full bg-secondary transition-all" style="width: 100%;"></div>
+</div>
+</div>
+</section>
+<!-- Portfolio Display -->
+<section class="col-span-12 lg:col-span-7 glass-card rounded-xl p-card-padding shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-title-md text-title-md text-primary">Managed Portfolio</h3>
+<a class="text-body-sm text-secondary font-semibold hover:underline flex items-center gap-1" href="#">
+                            View All Assets <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="relative rounded-xl overflow-hidden group cursor-pointer h-48 border border-outline-variant">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A luxurious modern skyscraper featuring glass and steel architecture against a twilight sky. The building facade reflects city lights in blue and gold tones. High-end real estate photography style, wide-angle lens, professional architecture lighting, corporate elegance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5J6wgN-kdH6SLqQl9oR3wMp7XT2o_rzDCaYRi6T-OysFZAQwusCtrlhweAgOm_568bO_Cx_tdt3hbXuDJRHbN2KFzZaONXAr4kNXfJeX5GSUWAyFv-nTmEaYrH1DHwmNnQIxO5F7xd562iu4NlWLQO-wLnMsknhwhJZxuoN2yeX8c0hAUGnrYiucpNJ6-kBU75hcaNUIxSCB8BOiDfbpE8BP2Qrr0UgwkkZDDOqZQxQGuNvbp76j9XQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex flex-col justify-end p-4">
+<p class="text-white font-semibold text-body-sm">The Glass Pavilion</p>
+<p class="text-white/70 text-[12px]">Financial District • 24 Units</p>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden group cursor-pointer h-48 border border-outline-variant">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A contemporary residential complex with minimalist white walls and wooden accents, surrounded by manicured gardens and reflecting pools. The scene is bathed in golden hour sunlight, creating long soft shadows and a sense of luxury tranquility. High-end real estate photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJfw93_dH50w6LOyI-1H-UZ046AK1lMZ0Ezr78jr6hCHkLVPbRijUdjcBTXe1vXLxJT20yvGzP70D6BnGZyenVyDjZuNzliLhxXq-ThEEnLPr-MZ_A3aRwHKO_Jr2Q0Orjql9exjLXdcgJUPl2O1n9K8HTM7MTVKivuFWBwRQrqG4wTpmJdcvxd9OLbxn_eAV4pxZ9dk-LJVl4SzceCamrSFyFKSky9sIPB436leZuB1KhkEeDAyiucg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex flex-col justify-end p-4">
+<p class="text-white font-semibold text-body-sm">Emerald Terraces</p>
+<p class="text-white/70 text-[12px]">Central Park West • 12 Units</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Notification Preferences -->
+<section class="col-span-12 lg:col-span-5 glass-card rounded-xl p-card-padding shadow-sm">
+<h3 class="font-title-md text-title-md text-primary mb-6">Notifications</h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-body-sm font-semibold">Maintenance Requests</p>
+<p class="text-[12px] text-outline">Real-time alerts for urgent tenant issues</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-body-sm font-semibold">Financial Reports</p>
+<p class="text-[12px] text-outline">Monthly revenue and expense summaries</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-body-sm font-semibold">Lease Expirations</p>
+<p class="text-[12px] text-outline">Notifications 60 days before contract end</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="pt-4 border-t border-outline-variant">
+<p class="text-[12px] font-bold text-secondary uppercase tracking-wider mb-2">Notification Method</p>
+<div class="flex gap-4">
+<button class="flex-1 py-2 bg-surface-container text-on-surface-variant rounded-lg text-body-sm font-semibold border-2 border-primary">Email</button>
+<button class="flex-1 py-2 bg-surface-container-low text-on-surface-variant rounded-lg text-body-sm font-semibold border-2 border-transparent">SMS</button>
+<button class="flex-1 py-2 bg-surface-container-low text-on-surface-variant rounded-lg text-body-sm font-semibold border-2 border-transparent">Push</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for switches and inputs
+        document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const parent = this.closest('label').nextElementSibling;
+                // Add visual feedback if needed
+            });
+        });
+
+        // Hover effect for managed portfolio cards
+        const portfolioCards = document.querySelectorAll('.group');
+        portfolioCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Future implementation for hover states
+            });
+        });
+    </script>
+</body></html>

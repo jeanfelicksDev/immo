@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ImmoGest - Dashboard Premium</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Montserrat:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e0e3e5",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "outline-variant": "#c6c6cd",
+                    "tertiary-fixed-dim": "#95d3ba",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-secondary-container": "#745c00",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#735c00",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#45464d",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#7c839b",
+                    "primary-fixed": "#dae2fd",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#528f79",
+                    "primary-fixed-dim": "#bec6e0",
+                    "on-tertiary-fixed-variant": "#0b513d",
+                    "surface": "#f7f9fb",
+                    "outline": "#76777d",
+                    "surface-container": "#eceef0",
+                    "on-primary-fixed": "#131b2e",
+                    "tertiary": "#000000",
+                    "secondary-container": "#fed65b",
+                    "tertiary-container": "#002117",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#002117",
+                    "surface-tint": "#565e74",
+                    "surface-dim": "#d8dadc",
+                    "surface-bright": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-low": "#f2f4f6",
+                    "secondary-fixed-dim": "#e9c349",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary-container": "#131b2e",
+                    "inverse-primary": "#bec6e0",
+                    "on-secondary-fixed-variant": "#574500",
+                    "surface-container-high": "#e6e8ea",
+                    "on-surface": "#191c1e",
+                    "background": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-background": "#191c1e",
+                    "secondary-fixed": "#ffe088",
+                    "tertiary-fixed": "#b0f0d6",
+                    "primary": "#000000",
+                    "on-secondary-fixed": "#241a00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "element-gap": "16px",
+                    "section-gap": "32px",
+                    "page-margin": "40px",
+                    "card-padding": "24px",
+                    "grid-gutter": "24px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Inter"],
+                    "title-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "label-caps": ["Inter"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Inter', sans-serif;
+            color: #191c1e;
+        }
+        .sidebar-glass {
+            background: linear-gradient(180deg, rgba(19, 27, 46, 0.98) 0%, rgba(15, 23, 42, 1) 100%);
+            backdrop-filter: blur(12px);
+        }
+        .kpi-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-indicator {
+            position: absolute;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #ffe088;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary flex flex-col py-8 sidebar-glass shadow-xl z-50 text-white">
+<!-- Brand Identity -->
+<div class="px-8 mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-fixed rounded-lg flex items-center justify-center">
+<span class="font-display-lg text-[20px] text-on-secondary-fixed">IG</span>
+</div>
+<div>
+<h1 class="font-display-lg text-[22px] tracking-tight leading-tight">ImmoGest</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-primary/50 font-bold">Premium Management</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 space-y-1">
+<!-- Dashboard Active -->
+<a class="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-xl border-l-4 border-secondary text-white font-semibold group transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-secondary-fixed">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary-fixed transition-colors">domain</span>
+<span class="font-body-sm text-body-sm">Properties</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary-fixed transition-colors">group</span>
+<span class="font-body-sm text-body-sm">Tenants</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary-fixed transition-colors">payments</span>
+<span class="font-body-sm text-body-sm">Finances</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary-fixed transition-colors">analytics</span>
+<span class="font-body-sm text-body-sm">Reports</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary-fixed transition-colors">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</nav>
+<!-- CTA & Footer -->
+<div class="px-6 mt-6">
+<button class="w-full py-3 bg-secondary-fixed text-on-secondary-fixed rounded-xl font-bold text-sm shadow-lg shadow-secondary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">
+                + Add New Property
+            </button>
+</div>
+<div class="mt-auto px-6 border-t border-white/10 pt-6 space-y-2">
+<a class="flex items-center gap-4 px-2 py-2 text-on-primary/70 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="text-sm">Support</span>
+</a>
+<a class="flex items-center gap-4 px-2 py-2 text-on-primary/70 hover:text-error transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="text-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 flex flex-col min-w-0">
+<!-- TopAppBar Anchor -->
+<header class="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant h-20 flex items-center justify-between px-page-margin">
+<div class="flex items-center gap-6">
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-outline-variant rounded-full pl-12 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none" placeholder="Rechercher une propriété..." type="text"/>
+</div>
+<nav class="hidden md:flex items-center gap-8 ml-4">
+<a class="text-primary font-semibold border-b-2 border-secondary pb-1 transition-all" href="#">Overview</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-1" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-1" href="#">Activity</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all text-on-surface-variant relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">mail</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold text-on-surface">Jean Dupont</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">Administrateur</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a real estate executive, middle-aged man with a friendly and trustworthy expression, wearing a tailored navy blazer and a crisp white shirt. The lighting is soft and flattering with a clean, high-key studio background that matches the minimalist corporate aesthetic of the application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_p6hQfSX2kg7mApP9Buw9Yh9YYMnOb5lEsGh56Awy7IQvMausGcK82qKC4BjhktyvcbtNvWZ0sMjAAmnNgS3twefo_zag5FNt6hIDuJrmsY2PJqq88zoKUAxa4rWBN-3OMyoj3FSCgh0xVxZD76y1b7ZnSunH7rLEnnuj58IphJ4XaYE8iMrVkEVWjA6qdW-vIozVAQI7mQYAqeX4loLi6v7WGvgBe_pYvnDumQOKTA2e3TjDLtKuuA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Canvas Content -->
+<div class="p-page-margin max-w-[1600px] w-full mx-auto space-y-section-gap">
+<!-- Page Header -->
+<div class="mb-10">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-1">Tableau de Bord</h2>
+<p class="text-on-surface-variant font-body-sm">Vue synthétique de votre portefeuille immobilier en temps réel.</p>
+</div>
+<!-- INDICATEURS CLÉS Section -->
+<section>
+<div class="flex items-center gap-2 mb-6">
+<span class="w-1 h-6 bg-secondary-fixed rounded-full"></span>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">INDICATEURS CLÉS</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-grid-gutter">
+<!-- KPI Card 1 -->
+<div class="kpi-card bg-white border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-primary-fixed/30 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div>
+<p class="text-headline-lg font-headline-lg text-primary">0</p>
+<p class="text-on-surface-variant font-body-sm">Propriétaires</p>
+</div>
+</div>
+<!-- KPI Card 2 -->
+<div class="kpi-card bg-white border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-tertiary-fixed/30 flex items-center justify-center text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">vpn_key</span>
+</div>
+<div>
+<p class="text-headline-lg font-headline-lg text-primary">0</p>
+<p class="text-on-surface-variant font-body-sm">Locataires Actifs</p>
+</div>
+</div>
+<!-- KPI Card 3 -->
+<div class="kpi-card bg-white border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-secondary-fixed/30 flex items-center justify-center text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">home</span>
+</div>
+<div>
+<p class="text-headline-lg font-headline-lg text-primary">0</p>
+<p class="text-on-surface-variant font-body-sm">Biens Gérés</p>
+</div>
+</div>
+<!-- KPI Card 4 -->
+<div class="kpi-card bg-white border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-error-container/30 flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">description</span>
+</div>
+<div>
+<p class="text-headline-lg font-headline-lg text-primary">0</p>
+<p class="text-on-surface-variant font-body-sm">Contrats Actifs</p>
+</div>
+</div>
+</div>
+</section>
+<!-- SYNTHÈSE FINANCIÈRE Section -->
+<section>
+<div class="flex items-center gap-2 mb-6">
+<span class="w-1 h-6 bg-tertiary-fixed-dim rounded-full"></span>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">SYNTHÈSE FINANCIÈRE</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-grid-gutter">
+<!-- Fin Card 1 -->
+<div class="kpi-card bg-white/60 backdrop-blur-sm border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm border-l-4 border-l-on-tertiary-container">
+<div class="w-10 h-10 rounded-lg bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div>
+<p class="text-headline-lg-mobile font-headline-lg text-primary">0 FCFA</p>
+<p class="text-on-surface-variant font-body-sm">Total Loyers / Mois</p>
+</div>
+</div>
+<!-- Fin Card 2 -->
+<div class="kpi-card bg-white/60 backdrop-blur-sm border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm border-l-4 border-l-secondary">
+<div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div>
+<p class="text-headline-lg-mobile font-headline-lg text-primary">0 FCFA</p>
+<p class="text-on-surface-variant font-body-sm">Total Cautions</p>
+</div>
+</div>
+<!-- Fin Card 3 -->
+<div class="kpi-card bg-white/60 backdrop-blur-sm border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm border-l-4 border-l-primary-container">
+<div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forward</span>
+</div>
+<div>
+<p class="text-headline-lg-mobile font-headline-lg text-primary">0 FCFA</p>
+<p class="text-on-surface-variant font-body-sm">Total Avances</p>
+</div>
+</div>
+<!-- Fin Card 4 -->
+<div class="kpi-card bg-white/60 backdrop-blur-sm border border-outline-variant rounded-xl p-card-padding flex flex-col gap-4 shadow-sm border-l-4 border-l-error">
+<div class="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<p class="text-headline-lg-mobile font-headline-lg text-primary">0 FCFA</p>
+<p class="text-on-surface-variant font-body-sm">Reste à Recouvrir</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ACCÈS RAPIDES Section -->
+<section>
+<div class="flex items-center gap-2 mb-6">
+<span class="w-1 h-6 bg-primary-container rounded-full"></span>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">ACCÈS RAPIDES</h3>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-element-gap">
+<!-- Quick Access 1 -->
+<button class="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-[#3f51b5] text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#3f51b5]/20 group">
+<span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">person</span>
+<span class="font-body-sm font-bold">Propriétaires</span>
+</button>
+<!-- Quick Access 2 -->
+<button class="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-[#9c27b0] text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#9c27b0]/20 group">
+<span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">home</span>
+<span class="font-body-sm font-bold">Maisons</span>
+</button>
+<!-- Quick Access 3 -->
+<button class="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-[#009688] text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#009688]/20 group">
+<span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">vpn_key</span>
+<span class="font-body-sm font-bold">Locataires</span>
+</button>
+<!-- Quick Access 4 -->
+<button class="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-[#e65100] text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#e65100]/20 group">
+<span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">description</span>
+<span class="font-body-sm font-bold">Contrats</span>
+</button>
+<!-- Quick Access 5 -->
+<button class="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-[#d81b60] text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#d81b60]/20 group">
+<span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">monetization_on</span>
+<span class="font-body-sm font-bold">Paiements</span>
+</button>
+<!-- Quick Access 6 -->
+<button class="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-[#37474f] text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#37474f]/20 group">
+<span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">trending_down</span>
+<span class="font-body-sm font-bold">Dépenses</span>
+</button>
+</div>
+</section>
+<!-- Bottom Content: Visual Interest -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-grid-gutter mt-8">
+<div class="lg:col-span-2 bg-white border border-outline-variant rounded-2xl p-card-padding shadow-sm h-64 overflow-hidden relative group">
+<div class="flex justify-between items-center mb-4">
+<h4 class="font-title-md text-primary">Croissance du Patrimoine</h4>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<!-- Empty State / Placeholder Illustration -->
+<div class="flex flex-col items-center justify-center h-full text-center pb-8">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-outline">bar_chart</span>
+</div>
+<p class="text-sm font-semibold text-on-surface-variant">Aucune donnée disponible</p>
+<p class="text-xs text-outline">Commencez par ajouter des propriétés pour voir les analyses.</p>
+</div>
+</div>
+<div class="bg-primary-container rounded-2xl p-card-padding text-white relative overflow-hidden flex flex-col justify-between group">
+<!-- Glassmorphism Highlight -->
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-secondary-fixed/10 rounded-full blur-3xl group-hover:bg-secondary-fixed/20 transition-all duration-700"></div>
+<div class="relative z-10">
+<span class="inline-block px-3 py-1 bg-secondary-fixed/20 text-secondary-fixed rounded-full text-[10px] font-bold uppercase tracking-wider mb-4 border border-secondary-fixed/30">Premium Update</span>
+<h4 class="font-headline-lg text-[22px] leading-tight mb-2">Passez au niveau supérieur</h4>
+<p class="text-on-primary-container text-sm leading-relaxed opacity-80">Débloquez la gestion automatisée des baux et les rapports fiscaux avancés.</p>
+</div>
+<button class="relative z-10 w-full py-3 bg-secondary-fixed text-on-secondary-fixed rounded-xl font-bold text-sm mt-6 hover:bg-white transition-colors">
+                        Mettre à niveau
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Micro-interaction Logic -->
+<script>
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('click', function(e) {
+                // Subtle ripple-like effect logic can go here if needed
+                console.log('Interaction captured on:', el.textContent.trim());
+            });
+        });
+
+        // Initialize tooltips or simple state management if needed
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('ImmoGest Premium Dashboard Initialized');
+        });
+    </script>
+</body></html>

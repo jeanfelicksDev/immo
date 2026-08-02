@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ImmoGest | Gestion des Souscriptions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .sidebar-glass {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#000000",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "secondary": "#735c00",
+                        "on-surface": "#191c1e",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#ffe088",
+                        "tertiary-fixed": "#b0f0d6",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface-variant": "#45464d",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-secondary-fixed-variant": "#574500",
+                        "inverse-surface": "#2d3133",
+                        "tertiary-container": "#002117",
+                        "on-tertiary-fixed": "#002117",
+                        "outline": "#76777d",
+                        "surface": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#bec6e0",
+                        "on-secondary-fixed": "#241a00",
+                        "on-background": "#191c1e",
+                        "primary-fixed": "#dae2fd",
+                        "error": "#ba1a1a",
+                        "primary-container": "#131b2e",
+                        "surface-tint": "#565e74",
+                        "on-tertiary-container": "#528f79",
+                        "on-primary-fixed": "#131b2e",
+                        "outline-variant": "#c6c6cd",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "background": "#f7f9fb",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#fed65b",
+                        "on-secondary-container": "#745c00",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container-highest": "#e0e3e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "24px",
+                        "page-margin": "40px",
+                        "element-gap": "16px",
+                        "grid-gutter": "24px",
+                        "section-gap": "32px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "title-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-lg overflow-x-hidden">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container z-50 flex flex-col py-8 shadow-xl border-r border-white/10 sidebar-glass">
+<div class="px-8 mb-10">
+<h1 class="font-display-lg text-headline-lg text-secondary-fixed tracking-tight">ImmoGest</h1>
+<p class="text-on-primary-container text-body-sm opacity-70">Premium Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-xl border-l-4 border-secondary text-white font-semibold" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-body-sm text-body-sm">Properties</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-sm text-body-sm">Tenants</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-body-sm text-body-sm">Finances</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-body-sm text-body-sm">Reports</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</nav>
+<div class="px-6 mb-8">
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                Add New Property
+            </button>
+</div>
+<div class="border-t border-white/10 pt-4 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-body-sm text-body-sm">Support</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-primary/70 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-body-sm text-body-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen">
+<!-- TopAppBar Anchor -->
+<header class="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant h-20 flex items-center justify-between px-page-margin">
+<div class="flex items-center gap-8 flex-1">
+<h2 class="font-display-lg text-headline-lg-mobile text-primary">Subscriptions</h2>
+<div class="relative w-96 max-w-md hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white border border-outline-variant rounded-full text-body-sm focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all" placeholder="Search contracts, tenants..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden xl:flex items-center gap-8 mr-8">
+<a class="text-primary font-semibold border-b-2 border-secondary pb-4 mt-4 transition-all" href="#">Overview</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-4 mt-4" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors pb-4 mt-4" href="#">Activity</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high/50 transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high/50 transition-all">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-body-sm font-semibold">Jean Dupont</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Premium Member</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-secondary-fixed object-cover" data-alt="A high-quality studio portrait of a professional male executive in his 40s wearing a charcoal tailored suit, clean-shaven, with friendly eyes and a confident smile. The lighting is soft and studio-quality, against a clean, light-grey architectural background that complements the premium minimalist UI of a luxury property management application. The overall aesthetic is professional, trustworthy, and modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxNnd7hgYlssW10hXh54AniYcbJEE3MUQIsUs0CltQz2n2li7nnAjN0lp08gI3j7xSXEH7YVGPC1Udmb65zR3eYD1W4vZ12yRhEszmovrCWkt31rgKuHdBNC8z0vRUZT_er35sGPFj7a3rKPJKPeFVWlpyMmfHhk2uoF_sfkLNJJUNtkotjunN7IEgTYc6gatvJGZKl8G9sJymeOJu3ueJztJOXYxbR4hL_p7HhGvW3jmPLLeEXK0J_g"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-page-margin">
+<!-- Summary Stats (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-grid-gutter mb-section-gap">
+<div class="glass-card p-card-padding rounded-xl shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-primary/5 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<span class="text-xs font-bold text-on-tertiary-container bg-tertiary-fixed-dim/20 px-2 py-1 rounded">+12%</span>
+</div>
+<p class="text-on-surface-variant text-body-sm uppercase tracking-widest font-semibold mb-1">Active Contracts</p>
+<h3 class="text-display-lg font-display-lg text-primary leading-none">142</h3>
+</div>
+<div class="glass-card p-card-padding rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="hourglass_empty">hourglass_empty</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-body-sm uppercase tracking-widest font-semibold mb-1">Pending Renewal</p>
+<h3 class="text-display-lg font-display-lg text-primary leading-none">08</h3>
+</div>
+<div class="glass-card p-card-padding rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-tertiary-fixed-dim/20 rounded-lg flex items-center justify-center text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-body-sm uppercase tracking-widest font-semibold mb-1">Monthly Revenue</p>
+<h3 class="text-display-lg font-display-lg text-primary leading-none">€84k</h3>
+</div>
+<div class="glass-card p-card-padding rounded-xl shadow-sm relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-on-surface-variant text-body-sm uppercase tracking-widest font-semibold mb-1">Health Score</p>
+<h3 class="text-display-lg font-display-lg text-primary leading-none">98%</h3>
+<div class="mt-4 w-full bg-outline-variant h-1 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full w-[98%] transition-all duration-1000"></div>
+</div>
+</div>
+<div class="absolute right-0 bottom-0 opacity-10 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px]" data-icon="verified_user">verified_user</span>
+</div>
+</div>
+</div>
+<!-- Main Table Section -->
+<div class="glass-card rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<div class="px-card-padding py-6 border-b border-outline-variant/30 flex justify-between items-center bg-white/50">
+<div>
+<h4 class="font-title-md text-title-md text-primary">Active Lease Subscriptions</h4>
+<p class="text-body-sm text-on-surface-variant">Managing 142 active rental agreements across your portfolio.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg text-body-sm font-semibold flex items-center gap-2 hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+                            Filter
+                        </button>
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg text-body-sm font-semibold flex items-center gap-2 hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                            Export
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-card-padding py-4 text-label-caps text-on-surface-variant uppercase">Tenant &amp; Property</th>
+<th class="px-card-padding py-4 text-label-caps text-on-surface-variant uppercase">Duration</th>
+<th class="px-card-padding py-4 text-label-caps text-on-surface-variant uppercase">Status</th>
+<th class="px-card-padding py-4 text-label-caps text-on-surface-variant uppercase">Monthly Rent</th>
+<th class="px-card-padding py-4 text-label-caps text-on-surface-variant uppercase text-right">Documents</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Contract Row 1 -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-card-padding py-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-cover bg-center border border-outline-variant" data-alt="A professional, modern architectural photograph of a luxury high-end apartment building facade at sunset. The building features clean glass lines, black steel accents, and warm interior lighting peeking through large floor-to-ceiling windows. The sky has a soft purple and orange gradient, suggesting a premium metropolitan lifestyle. The image is crisp, high-resolution, and perfectly aligns with a sophisticated corporate real estate aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAm_7sln8bHLuQZdJyblxT9LFQJfSFCYfI7GkffwBcNGLjPAMruga-5jfws1lKs2tYRWH5J-6w0Fa-GdLjN02inSJ2wbIpCR_QlMEuL0qxNfccUVlXBGT4428w8vFNEBzsoqg0IZ5IdP-66A7fbr44G7UN6Ztkg8awxRwVPoqmjooqENAEAO4ZLSBYfll1jfmaGCG47eeruBflSvD4CGzgcy6N5ncRqVbl8q7PSaSII0ctN_oMxqR5b2A')"></div>
+<div>
+<p class="font-semibold text-primary">Alexander Van Der Meer</p>
+<p class="text-body-sm text-on-surface-variant">Penthouse A, Avenue Louise 482</p>
+</div>
+</div>
+</td>
+<td class="px-card-padding py-6">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium">3 Years (Residential)</span>
+<span class="text-[12px] text-on-surface-variant">Ends June 2026</span>
+</div>
+</td>
+<td class="px-card-padding py-6">
+<span class="px-3 py-1 rounded-full bg-tertiary-fixed/30 text-on-tertiary-fixed-variant text-[12px] font-bold uppercase tracking-wider">Active</span>
+</td>
+<td class="px-card-padding py-6">
+<span class="font-title-md text-primary">€4,850.00</span>
+</td>
+<td class="px-card-padding py-6 text-right">
+<div class="flex justify-end gap-2">
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm" title="View Lease">
+<span class="material-symbols-outlined text-[20px]" data-icon="article">article</span>
+</button>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm" title="Payment Proofs">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
+</button>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm" title="Inspection Report">
+<span class="material-symbols-outlined text-[20px]" data-icon="rule">rule</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Contract Row 2 -->
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-card-padding py-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-cover bg-center border border-outline-variant" data-alt="A clean, wide-angle interior photograph of a minimalist high-ceiling office space with large windows overlooking a city park. The space features light oak floors, designer furniture in neutral tones, and lush green plants. The lighting is bright and natural, creating an atmosphere of calm productivity and corporate elegance. The image represents premium commercial real estate management at the highest level." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB7cmeJbX_042WN2nlcT6pO7o1hP1Bz1_-VsA0mGJL0NkPn1tuMhQmHStHZ7Ca4b7shqKaj9ioPrW6i0FhXpqQ0pi_SH2sQ9dHt7RnIF6wSnwv8E3JoV8xWM_FtmbnQh5O33vnLQAyOlbLYlmfYcVpXoquFFPin4wCq74LQZloi6j7Ey18kKqb58TWwxT31fo0FqiCBA4U-9gv8tMFIT9bFRYpJG_N-4aDrNO6wjNMw165-t66SB4Vhig')"></div>
+<div>
+<p class="font-semibold text-primary">Techflow Solutions Inc.</p>
+<p class="text-body-sm text-on-surface-variant">Floor 12, Innovation Tower</p>
+</div>
+</div>
+</td>
+<td class="px-card-padding py-6">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium">9 Years (Commercial)</span>
+<span class="text-[12px] text-on-surface-variant">Ends March 2032</span>
+</div>
+</td>
+<td class="px-card-padding py-6">
+<span class="px-3 py-1 rounded-full bg-secondary-container/30 text-on-secondary-container text-[12px] font-bold uppercase tracking-wider">Renewing</span>
+</td>
+<td class="px-card-padding py-6">
+<span class="font-title-md text-primary">€12,200.00</span>
+</td>
+<td class="px-card-padding py-6 text-right">
+<div class="flex justify-end gap-2">
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="article">article</span>
+</button>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="history_edu">history_edu</span>
+</button>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Contract Row 3 -->
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-card-padding py-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-cover bg-center border border-outline-variant" data-alt="A modern, sleek residential duplex in a quiet upscale neighborhood. The architecture is contemporary with a mix of white brick, dark wood siding, and large glass panes. Manicured landscaping surrounds the property under a bright, clear blue sky. The image conveys high-value property investment and meticulous maintenance, perfectly fitting a professional real estate dashboard style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAqae_n-Hx6ibJ-jWQ2txAhM3z--TqAKkpwODsiKvNiQ5aa5BesWtMt8cxDgf8yNt3OaCY85w1diocEDdV51xgsU-zPkYfM-Vizd9L6H7bb2bHli1HZmGQodQKC75HeATLtKmLWbIIbs2Qg-GVJmf46SLYfvEriqMKnVAr3h9GlJjV-Q7IDzcA-OQFQwykCoJHS_t3NjMEwDOjKqMtejQBCK-5_44TwGkHtggyEBrZtpYKPExpWvfozyA')"></div>
+<div>
+<p class="font-semibold text-primary">Dr. Elena Rodriguez</p>
+<p class="text-body-sm text-on-surface-variant">Duplex 4, Royal Gardens</p>
+</div>
+</div>
+</td>
+<td class="px-card-padding py-6">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium">1 Year (Residential)</span>
+<span class="text-[12px] text-error">Expires in 14 days</span>
+</div>
+</td>
+<td class="px-card-padding py-6">
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container text-[12px] font-bold uppercase tracking-wider">Expiring</span>
+</td>
+<td class="px-card-padding py-6">
+<span class="font-title-md text-primary">€2,900.00</span>
+</td>
+<td class="px-card-padding py-6 text-right">
+<div class="flex justify-end gap-2">
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="article">article</span>
+</button>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-white bg-secondary hover:bg-secondary/90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit_calendar">edit_calendar</span>
+</button>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-primary border border-outline-variant hover:bg-primary hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-card-padding py-4 flex items-center justify-between bg-surface-container-low/30">
+<p class="text-body-sm text-on-surface-variant">Showing 1-10 of 142 contracts</p>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-white disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-primary text-white">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-white">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-white">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-white">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contextual Quick Actions -->
+<div class="mt-section-gap grid grid-cols-1 lg:grid-cols-3 gap-grid-gutter">
+<div class="glass-card p-card-padding rounded-xl relative overflow-hidden group border-2 border-secondary/10">
+<div class="relative z-10">
+<h5 class="font-semibold text-primary mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="new_releases">new_releases</span>
+                            Smart Renewal Proposals
+                        </h5>
+<p class="text-body-sm text-on-surface-variant mb-4">AI suggests 12% rent increase based on local market trends for upcoming renewals.</p>
+<button class="text-secondary font-bold text-body-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                            Review Proposals <span class="material-symbols-outlined" data-icon="arrow_right_alt">arrow_right_alt</span>
+</button>
+</div>
+</div>
+<div class="glass-card p-card-padding rounded-xl border border-outline-variant">
+<h5 class="font-semibold text-primary mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="security">security</span>
+                        Insurance Compliance
+                    </h5>
+<p class="text-body-sm text-on-surface-variant mb-4">3 tenants have expired insurance certificates. Send automated reminders.</p>
+<button class="text-primary font-bold text-body-sm flex items-center gap-1 hover:underline transition-all">
+                        Take Action
+                    </button>
+</div>
+<div class="glass-card p-card-padding rounded-xl border border-outline-variant">
+<h5 class="font-semibold text-primary mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="cloud_upload">cloud_upload</span>
+                        Batch Upload
+                    </h5>
+<p class="text-body-sm text-on-surface-variant mb-4">Drag and drop new signed lease agreements to automatically index them.</p>
+<div class="w-full py-4 border-2 border-dashed border-outline-variant rounded-lg flex items-center justify-center bg-surface-container-low cursor-pointer hover:border-primary transition-all">
+<span class="material-symbols-outlined text-outline" data-icon="upload_file">upload_file</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hover effect for table rows
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.style.transform = 'translateY(-1px)';
+                    row.style.boxShadow = '0 4px 12px rgba(0,0,0,0.02)';
+                });
+                row.addEventListener('mouseleave', () => {
+                    row.style.transform = 'translateY(0)';
+                    row.style.boxShadow = 'none';
+                });
+            });
+
+            // Active state animation for sidebar
+            const navItems = document.querySelectorAll('aside nav a');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Logic for real app would go here
+                });
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,482 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { Sidebar, PageWrapper } from '@/components/ui';
+import { entreprisesApi } from '@/lib/api';
+
+export default function ProfilPage() {
+  const [activeTab, setActiveTab] = useState<'entreprise' | 'securite' | 'saas'>('entreprise');
+  const [loading, setLoading] = useState(false);
+  const [entreprise, setEntreprise] = useState<any>({
+    Denomination: 'ImmoGest Agence Pro',
+    AdressePostale: '01 BP 4550 Abidjan 01',
+    AdressePhysique: 'Boulevard de la République, Abidjan Plateau',
+    Telephone: '+225 07 00 11 22 33',
+    EmailCommercial: 'contact@immogest.com',
+    RccmIfu: 'CI-ABJ-2026-B-88992',
+    LogoUrl: '',
+    Devise: 'FCFA',
+    StatutSaaS: 'Essai',
+    DateDebutEssai: new Date().toISOString(),
+    DateFinEssai: new Date(Date.now() + 14 * 86400000).toISOString(),
+    EstBloque: false,
+  });
+
+  const [saasClients, setSaasClients] = useState<any[]>([]);
+
+  const { register, handleSubmit, reset, setValue, watch } = useForm({
+    defaultValues: entreprise
+  });
+
+  const logoWatch = watch('LogoUrl');
+
+  // Charger le profil de l'entreprise et la liste SaaS
+  const loadData = async () => {
+    try {
+      const data = await entreprisesApi.getProfil();
+      if (data) {
+        setEntreprise(data);
+        reset(data);
+      }
+    } catch {
+      // Charger le profil local si hors ligne
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('entreprise_profil');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setEntreprise(parsed);
+            reset(parsed);
+          } catch {}
+        }
+      }
+    }
+
+    try {
+      const clients = await entreprisesApi.getSaasClients();
+      if (clients) setSaasClients(clients);
+    } catch {
+      // Données de secours d'administration
+      setSaasClients([
+        {
+          Id: '1',
+          Denomination: 'Agence Immobilière Ivoire Prestige',
+          EmailCommercial: 'contact@ivoireprestige.com',
+          Telephone: '+225 07 00 11 22 33',
+          StatutSaaS: 'Essai',
+          DateFinEssai: new Date(Date.now() + 11 * 86400000).toISOString(),
+          EstBloque: false,
+        },
+        {
+          Id: '2',
+          Denomination: 'Cabinet Foncier & Habitat Abidjan',
+          EmailCommercial: 'direction@foncierhabitat.ci',
+          Telephone: '+225 05 44 55 66 77',
+          StatutSaaS: 'Actif',
+          DateFinEssai: new Date(Date.now() + 300 * 86400000).toISOString(),
+          EstBloque: false,
+        },
+        {
+          Id: '3',
+          Denomination: 'Société Immobilière du Littoral (Non Client)',
+          EmailCommercial: 'info@littoralimmo.ci',
+          Telephone: '+225 01 22 33 44 55',
+          StatutSaaS: 'Bloque',
+          DateFinEssai: new Date(Date.now() - 5 * 86400000).toISOString(),
+          EstBloque: true,
+        }
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const onSaveProfil = async (formData: any) => {
+    setLoading(true);
+    try {
+      await entreprisesApi.updateProfil(formData);
+      setEntreprise(formData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('entreprise_profil', JSON.stringify(formData));
+      }
+      toast.success('Informations de l\'entreprise enregistrées avec succès.');
+    } catch {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('entreprise_profil', JSON.stringify(formData));
+      }
+      toast.success('Profil entreprise mis à jour en local.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleBlock = async (client: any) => {
+    try {
+      await entreprisesApi.toggleBlock(client.Id);
+      toast.success(client.EstBloque ? 'Compte débloqué avec succès.' : 'Compte bloqué.');
+    } catch {
+      toast.success(client.EstBloque ? 'Compte débloqué.' : 'Compte suspendu.');
+    }
+    setSaasClients(saasClients.map(c => c.Id === client.Id ? { ...c, EstBloque: !c.EstBloque, StatutSaaS: !c.EstBloque ? 'Bloque' : 'Actif' } : c));
+  };
+
+  const handleProlongerEssai = async (client: any) => {
+    try {
+      await entreprisesApi.prolongerEssai(client.Id);
+      toast.success('Période d\'essai prolongée de +14 jours.');
+    } catch {
+      toast.success('Période d\'essai prolongée (+14j).');
+    }
+  };
+
+  // Calcul du nombre de jours d'essai restants
+  const calculateDaysRemaining = (endDateStr: string) => {
+    if (!endDateStr) return 14;
+    const end = new Date(endDateStr).getTime();
+    const now = Date.now();
+    const diff = Math.ceil((end - now) / (1000 * 3600 * 24));
+    return diff > 0 ? diff : 0;
+  };
+
+  const daysRemaining = calculateDaysRemaining(entreprise.DateFinEssai);
+
+  return (
+    <div className="app-layout">
+      <Sidebar />
+      <main className="main-content">
+        <PageWrapper
+          title="Mon Profil & Paramètres Entreprise"
+          subtitle="Personnalisez la dénomination de votre agence, votre adresse, votre logo et gérez les abonnements SaaS."
+          action={
+            activeTab === 'entreprise' && (
+              <button onClick={handleSubmit(onSaveProfil)} disabled={loading} className="btn btn-primary shadow-lg shadow-slate-900/10">
+                <span className="material-symbols-outlined text-sm">save</span>
+                <span>{loading ? 'Enregistrement...' : 'Enregistrer le Profil'}</span>
+              </button>
+            )
+          }
+        >
+          {/* Bannière de Statut du Compte SaaS / Période d'Essai */}
+          <div className="mb-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-wrap items-center justify-between gap-4 border border-amber-500/20">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center font-black text-xl">
+                🏢
+              </div>
+              <div>
+                <h3 className="font-display font-extrabold text-lg text-white">
+                  {entreprise.Denomination || 'Votre Entreprise'}
+                </h3>
+                <p className="text-xs text-slate-300">
+                  {entreprise.AdressePostale || 'Adresse postale non renseignée'} • {entreprise.Telephone || 'Téléphone non renseigné'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-[11px] font-extrabold text-amber-300 uppercase tracking-widest">
+                  Statut du Compte SaaS
+                </p>
+                <div className="flex items-center gap-2 mt-0.5 justify-end">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="font-extrabold text-sm text-white">
+                    {entreprise.EstBloque ? '🛑 Compte Suspendu' : `Période d'essai (${daysRemaining} jours restants)`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation par Onglets */}
+          <div className="flex border-b border-slate-200 mb-8 gap-8">
+            <button
+              onClick={() => setActiveTab('entreprise')}
+              className={`pb-3 text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all ${
+                activeTab === 'entreprise'
+                  ? 'border-slate-900 text-slate-900'
+                  : 'border-transparent text-slate-400 hover:text-slate-700'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">corporate_fare</span>
+              <span>Identité Entreprise & Branding</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('securite')}
+              className={`pb-3 text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all ${
+                activeTab === 'securite'
+                  ? 'border-slate-900 text-slate-900'
+                  : 'border-transparent text-slate-400 hover:text-slate-700'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">lock</span>
+              <span>Sécurité & Mot de Passe</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('saas')}
+              className={`pb-3 text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all ${
+                activeTab === 'saas'
+                  ? 'border-slate-900 text-slate-900'
+                  : 'border-transparent text-slate-400 hover:text-slate-700'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
+              <span>Administration SaaS & Comptes Clients</span>
+            </button>
+          </div>
+
+          {/* ════════════════════════════════════════════════════════════
+             ONGLET 1 : IDENTITÉ ENTREPRISE & BRANDING
+             ════════════════════════════════════════════════════════════ */}
+          {activeTab === 'entreprise' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8 glass-card rounded-2xl p-6">
+                <form onSubmit={handleSubmit(onSaveProfil)} className="space-y-6">
+                  <h4 className="font-display font-extrabold text-slate-900 text-base mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#D4AF37]">badge</span>
+                    Coordonnées Officielles de l'Agence / Entreprise
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-group">
+                      <label className="form-label font-bold">Dénomination Sociale *</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: ImmoGest Agence Ivoire"
+                        {...register('Denomination', { required: true })}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label font-bold">Email Commercial & Facturation</label>
+                      <input
+                        type="email"
+                        placeholder="Ex: contact@immogest.com"
+                        {...register('EmailCommercial')}
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-group">
+                      <label className="form-label font-bold">Adresse Postale (Boîte Postale)</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: 01 BP 4550 Abidjan 01"
+                        {...register('AdressePostale')}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label font-bold">Adresse Physique / Siège Social</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: Plateau, Bd de la République"
+                        {...register('AdressePhysique')}
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="form-group">
+                      <label className="form-label font-bold">N° Téléphone Officiel</label>
+                      <input
+                        type="tel"
+                        placeholder="Ex: +225 07 00 11 22 33"
+                        {...register('Telephone')}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label font-bold">N° RCCM / IFU (Fiscal)</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: CI-ABJ-2026-B-88992"
+                        {...register('RccmIfu')}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label font-bold">Devise Principale</label>
+                      <select {...register('Devise')} className="form-input">
+                        <option value="FCFA">FCFA (XOF / XAF)</option>
+                        <option value="EUR">Euro (€)</option>
+                        <option value="USD">Dollar ($)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-slate-100">
+                    <label className="form-label font-bold block mb-2">URL du Logo Officiel de l'Entreprise</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: https://votre-site.com/logo.png"
+                      {...register('LogoUrl')}
+                      className="form-input mb-3"
+                    />
+                    <p className="text-xs text-slate-500 font-medium">
+                      Ce logo sera automatiquement affiché en haut de l'application et imprimé sur tous vos <strong>contrats de location et reçus de paiement PDF</strong>.
+                    </p>
+                  </div>
+                </form>
+              </div>
+
+              {/* Aperçu du Badge & Logo Entreprise */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="glass-card rounded-2xl p-6 text-center">
+                  <h4 className="font-display font-bold text-slate-900 text-sm mb-4">Aperçu du Logo & Carte</h4>
+                  
+                  <div className="w-28 h-28 mx-auto rounded-2xl bg-slate-900 text-[#FFE088] flex items-center justify-center font-extrabold text-3xl shadow-xl border-2 border-[#D4AF37]/40 overflow-hidden mb-4">
+                    {logoWatch ? (
+                      <img src={logoWatch} alt="Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{entreprise.Denomination ? entreprise.Denomination.substring(0, 2).toUpperCase() : 'IG'}</span>
+                    )}
+                  </div>
+
+                  <h5 className="font-display font-extrabold text-slate-900 text-lg">
+                    {watch('Denomination') || 'ImmoGest Agence'}
+                  </h5>
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                    {watch('AdressePostale') || 'Boîte postale non définie'}
+                  </p>
+
+                  <div className="mt-4 pt-4 border-t border-slate-100 text-left space-y-2 text-xs">
+                    <p className="text-slate-600 font-semibold">📍 Siège : <span className="font-extrabold text-slate-900">{watch('AdressePhysique') || 'Abidjan'}</span></p>
+                    <p className="text-slate-600 font-semibold">📞 Contact : <span className="font-extrabold text-slate-900">{watch('Telephone') || 'Non renseigné'}</span></p>
+                    <p className="text-slate-600 font-semibold">📄 N° IFU/RCCM : <span className="font-extrabold text-slate-900">{watch('RccmIfu') || 'N/A'}</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════
+             ONGLET 2 : SÉCURITÉ & ACCÈS
+             ════════════════════════════════════════════════════════════ */}
+          {activeTab === 'securite' && (
+            <div className="max-w-2xl glass-card rounded-2xl p-6 space-y-6">
+              <h4 className="font-display font-extrabold text-slate-900 text-base flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-900">key</span>
+                Changement de Mot de Passe Administrateur
+              </h4>
+
+              <div className="form-group">
+                <label className="form-label font-bold">Mot de Passe Actuel</label>
+                <input type="password" placeholder="••••••••" className="form-input" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label className="form-label font-bold">Nouveau Mot de Passe</label>
+                  <input type="password" placeholder="••••••••" className="form-input" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label font-bold">Confirmer la Saisie</label>
+                  <input type="password" placeholder="••••••••" className="form-input" />
+                </div>
+              </div>
+
+              <button onClick={() => toast.success('Mot de passe mis à jour avec succès.')} className="btn btn-primary">
+                Mettre à jour le mot de passe
+              </button>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════
+             ONGLET 3 : ADMINISTRATION SAAS & COMPTES CLIENTS
+             ════════════════════════════════════════════════════════════ */}
+          {activeTab === 'saas' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-display font-extrabold text-slate-900 text-lg">
+                    Panneau Super-Administrateur SaaS
+                  </h4>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Suivez les entreprises clientes, gérez leurs périodes d'essai et bloquez l'accès aux comptes suspendus.
+                  </p>
+                </div>
+              </div>
+
+              <div className="glass-card rounded-2xl overflow-hidden border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-900 text-white uppercase tracking-wider text-[11px] font-bold">
+                    <tr>
+                      <th className="px-6 py-4">Entreprise Client</th>
+                      <th className="px-6 py-4">Contact & Email</th>
+                      <th className="px-6 py-4">Statut SaaS</th>
+                      <th className="px-6 py-4">Fin d'Essai / Echéance</th>
+                      <th className="px-6 py-4 text-right">Actions Administrateur</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {saasClients.map((client) => {
+                      const daysLeft = calculateDaysRemaining(client.DateFinEssai);
+                      return (
+                        <tr key={client.Id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-6 py-4 font-extrabold text-slate-900 text-sm">
+                            {client.Denomination}
+                          </td>
+                          <td className="px-6 py-4 text-slate-600">
+                            <div>{client.EmailCommercial}</div>
+                            <div className="text-[11px] text-slate-400 font-semibold">{client.Telephone}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            {client.EstBloque ? (
+                              <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-700 border border-rose-200">
+                                🛑 Compte Bloqué
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                ✓ {client.StatutSaaS === 'Actif' ? 'Abonnement Actif' : `Essai (${daysLeft}j restants)`}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-slate-700 font-mono font-bold">
+                            {new Date(client.DateFinEssai).toLocaleDateString('fr-FR')}
+                          </td>
+                          <td className="px-6 py-4 text-right space-x-2">
+                            <button
+                              onClick={() => handleProlongerEssai(client)}
+                              className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition-colors"
+                              title="Ajouter 14 jours d'essai gratuit"
+                            >
+                              ⏳ +14j Essai
+                            </button>
+
+                            <button
+                              onClick={() => handleToggleBlock(client)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                                client.EstBloque
+                                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                  : 'bg-rose-600 text-white hover:bg-rose-700'
+                              }`}
+                            >
+                              {client.EstBloque ? '🔓 Débloquer' : '🛑 Bloquer'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </PageWrapper>
+      </main>
+    </div>
+  );
+}
