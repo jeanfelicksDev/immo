@@ -39,6 +39,8 @@ export default function MaisonsPage() {
   const [search, setSearch]               = useState('');
   const [showModal, setShowModal]         = useState(false);
   const [editItem, setEditItem]           = useState<any>(null);
+  const [deleteTarget, setDeleteTarget]   = useState<any>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -159,25 +161,33 @@ export default function MaisonsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (item: any) => {
+    const id = item?.Id || item?.id;
     if (!id) return;
-    if (!confirm('Voulez-vous vraiment supprimer cette maison et ses éléments associés ?')) return;
+    setDeleteTarget(item);
+  };
 
-    setMaisons((prev) => prev.filter((m) => (m.Id || m.id) !== id));
-
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.Id || deleteTarget.id;
+    const label = deleteTarget.Idm || 'ce bien';
+    setDeleteLoading(true);
     try {
       await maisonsApi.delete(id);
-      toast.success('Maison supprimée avec succès.');
+      setMaisons((prev) => prev.filter((m) => (m.Id || m.id) !== id));
+      toast.success(`✅ Le bien "${label}" a été supprimé avec succès.`, { duration: 4000 });
       fetchData();
     } catch (err: any) {
       console.error('Erreur de suppression maison:', err);
-      fetchData();
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.message ||
         'Suppression en base impossible.';
-      toast.error(`Échec de suppression : ${errorMessage}`);
+      toast.error(`Échec de suppression : ${errorMessage}`, { duration: 5000 });
+    } finally {
+      setDeleteLoading(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -341,7 +351,7 @@ export default function MaisonsPage() {
                         <span>Bailleur: <strong className="text-slate-900 font-bold">{item.NomProprietaire || 'Non assigné'}</strong></span>
                         <div className="flex gap-1">
                           <button onClick={() => openEdit(item)} className="p-2 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition-colors">✏️</button>
-                          <button onClick={() => handleDelete(item.Id || item.id)} className="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">🗑️</button>
+                          <button onClick={() => handleDelete(item)} className="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">🗑️</button>
                         </div>
                       </div>
                     </div>
@@ -361,7 +371,7 @@ export default function MaisonsPage() {
                 { key: 'actions', label: 'Actions', render: (r) => (
                   <div className="flex justify-end gap-1.5">
                     <button onClick={() => openEdit(r)} className="btn btn-secondary btn-sm">✏️</button>
-                    <button onClick={() => handleDelete(r.Id || r.id)} className="btn btn-danger btn-sm">🗑️</button>
+                    <button onClick={() => handleDelete(r)} className="btn btn-danger btn-sm">🗑️</button>
                   </div>
                 ) },
               ]}
@@ -510,6 +520,53 @@ export default function MaisonsPage() {
                 </button>
               </div>
             </form>
+          </Modal>
+
+          {/* ─── Modal Confirmation de Suppression ─────────────────── */}
+          <Modal
+            isOpen={!!deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            title="Confirmer la Suppression"
+          >
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-3xl text-rose-600">delete_forever</span>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                Supprimer ce bien ?
+              </h3>
+              <p className="text-sm text-slate-600 mb-1">
+                Vous êtes sur le point de supprimer définitivement le bien :
+              </p>
+              <p className="text-base font-extrabold text-slate-900 bg-slate-50 px-4 py-2 rounded-xl inline-block border border-slate-200 my-2">
+                {deleteTarget?.Idm || 'Bien immobilier'}
+              </p>
+              <p className="text-xs text-rose-600 font-semibold mt-3">
+                ⚠️ Cette action supprimera aussi les contrats, règlements et dépenses associés.
+              </p>
+            </div>
+            <div className="modal-footer -mx-7 -mb-7 mt-4">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleteLoading}
+                className="btn btn-secondary"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={deleteLoading}
+                className="btn bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-600/20"
+              >
+                {deleteLoading ? (
+                  <><span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> Suppression...</>
+                ) : (
+                  <><span className="material-symbols-outlined text-sm">delete</span> Oui, Supprimer</>
+                )}
+              </button>
+            </div>
           </Modal>
         </PageWrapper>
       </main>
