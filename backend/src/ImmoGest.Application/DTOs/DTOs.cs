@@ -26,6 +26,17 @@ public record AuthResponse(
 
 public record RefreshTokenRequest(string RefreshToken);
 
+public record UtilisateurDto(
+    Guid Id,
+    string NomComplet,
+    string Email,
+    RoleUtilisateur Role,
+    bool EstActif,
+    DateTime CreatedAt
+);
+
+public record ToggleUserStatusRequest(bool EstActif);
+
 // ════════════════════════════════════════════════════════════════
 // DASHBOARD DTOs
 // ════════════════════════════════════════════════════════════════

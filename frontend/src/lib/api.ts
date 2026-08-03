@@ -208,6 +208,16 @@ export const entreprisesApi = {
   prolongerEssai:   (id: string) => api.post(`/entreprises/${id}/prolonger-essai`).then((r) => r.data),
 };
 
+// ════════════════════════════════════════════════════════════════
+// API ENDPOINTS — Utilisateurs & Comptes
+// ════════════════════════════════════════════════════════════════
+export const utilisateursApi = {
+  getAll:       () => api.get<any[]>('/utilisateurs').then((r) => r.data),
+  toggleStatus: (id: string, estActif: boolean) =>
+    api.put(`/utilisateurs/${id}/toggle-status`, { EstActif: estActif }).then((r) => r.data),
+  delete:       (id: string) => api.delete(`/utilisateurs/${id}`),
+};
+
 // ─── Utilitaire : téléchargement de PDF ──────────────────────
 export function downloadPdf(data: Blob, filename: string) {
   const url = URL.createObjectURL(data);

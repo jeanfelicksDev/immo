@@ -39,8 +39,9 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'SYSTÈME',
+    title: 'SYSTÈME & ADMINISTRATION',
     items: [
+      { href: '/utilisateurs',  label: 'Gestion des Comptes',   icon: 'manage_accounts' },
       { href: '/profil',        label: 'Mon Profil & Réglages', icon: 'person' },
     ],
   },

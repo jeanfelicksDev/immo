@@ -425,3 +425,70 @@ public class DepensesController : BaseController
         return NoContent();
     }
 }
+
+// ════════════════════════════════════════════════════════════════
+// CONTROLLER : Gestion des Comptes Utilisateurs
+// ════════════════════════════════════════════════════════════════
+[Route("api/utilisateurs")]
+public class UtilisateursController : BaseController
+{
+    private readonly ImmoGest.Infrastructure.Data.AppDbContext _db;
+    public UtilisateursController(ImmoGest.Infrastructure.Data.AppDbContext db) => _db = db;
+
+    /// <summary>Liste tous les comptes utilisateurs avec leurs statuts.</summary>
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ActionResult<List<UtilisateurDto>>> GetAll(CancellationToken ct)
+    {
+        var list = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+            _db.Utilisateurs
+                .OrderByDescending(u => u.CreatedAt)
+                .Select(u => new UtilisateurDto(
+                    u.Id,
+                    u.NomComplet,
+                    u.Email,
+                    u.Role,
+                    u.EstActif,
+                    u.CreatedAt
+                )),
+            ct
+        );
+
+        return Ok(list);
+    }
+
+    /// <summary>Bloquer (désactiver) ou débloquer (activer) un compte utilisateur.</summary>
+    [HttpPut("{id:guid}/toggle-status")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ToggleStatus(Guid id, [FromBody] ToggleUserStatusRequest req, CancellationToken ct)
+    {
+        var user = await _db.Utilisateurs.FindAsync([id], ct);
+        if (user is null) return NotFound(new { error = "Utilisateur introuvable." });
+
+        user.EstActif = req.EstActif;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+
+        return Ok(new UtilisateurDto(
+            user.Id,
+            user.NomComplet,
+            user.Email,
+            user.Role,
+            user.EstActif,
+            user.CreatedAt
+        ));
+    }
+
+    /// <summary>Suppression d'un compte utilisateur.</summary>
+    [HttpDelete("{id:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var user = await _db.Utilisateurs.FindAsync([id], ct);
+        if (user is null) return NotFound();
+
+        _db.Utilisateurs.Remove(user);
+        await _db.SaveChangesAsync(ct);
+        return NoContent();
+    }
+}
