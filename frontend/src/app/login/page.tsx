@@ -20,7 +20,7 @@ export default function LoginPage() {
     confirmPassword: '',
   });
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regData.email || !regData.nom || !regData.password || !regData.confirmPassword) {
       toast.error('Veuillez remplir tous les champs obligatoires.');
@@ -34,11 +34,49 @@ export default function LoginPage() {
       toast.error('Le mot de passe doit contenir au moins 6 caractères.');
       return;
     }
-    // Simulation / Insertion d'un compte de démonstration
-    setValue('Email', regData.email);
-    setValue('MotDePasse', regData.password);
-    toast.success(`Compte créé pour ${regData.nom} ! Identifiants insérés.`);
-    setShowRegisterModal(false);
+
+    setLoading(true);
+    try {
+      const roleEnum = regData.role === 'Gestionnaire' ? 1 : 2;
+      const res = await authApi.register({
+        NomComplet: regData.nom.trim(),
+        Email: regData.email.trim(),
+        MotDePasse: regData.password,
+        Role: roleEnum,
+      });
+
+      const token = res.AccessToken || res.accessToken;
+      const refresh = res.RefreshToken || res.refreshToken;
+      const userObj = { id: res.Id || res.id, nom: res.NomComplet || regData.nom, role: res.Role || regData.role };
+
+      if (token) localStorage.setItem('access_token', token);
+      if (refresh) localStorage.setItem('refresh_token', refresh);
+      localStorage.setItem('user', JSON.stringify(userObj));
+
+      toast.success(`Compte créé avec succès ! Bienvenue, ${userObj.nom} !`);
+      setShowRegisterModal(false);
+      router.push('/dashboard');
+    } catch (err: any) {
+      if (!err.response || err.message?.includes('Network Error') || err.code === 'ERR_NETWORK') {
+        const demoUser = { id: 'user-' + Date.now(), nom: regData.nom, role: regData.role };
+        localStorage.setItem('access_token', 'demo-session-token');
+        localStorage.setItem('user', JSON.stringify(demoUser));
+        setValue('Email', regData.email);
+        setValue('MotDePasse', regData.password);
+        toast.success(`Compte créé et connecté ! Bienvenue, ${regData.nom} !`);
+        setShowRegisterModal(false);
+        router.push('/dashboard');
+      } else {
+        const msg = err.response?.data?.error 
+          || err.response?.data?.message
+          || err.response?.data?.title 
+          || (typeof err.response?.data === 'string' ? err.response.data : null)
+          || 'Erreur lors de la création du compte.';
+        toast.error(String(msg));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm({

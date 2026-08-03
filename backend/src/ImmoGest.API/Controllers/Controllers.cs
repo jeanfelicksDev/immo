@@ -38,9 +38,9 @@ public class AuthController : BaseController
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest req, CancellationToken ct)
         => Ok(await _auth.LoginAsync(req, ct));
 
-    /// <summary>Création d'un nouveau compte utilisateur (Admin uniquement).</summary>
+    /// <summary>Création d'un nouveau compte utilisateur (Public / Inscription).</summary>
     [HttpPost("register")]
-    [Authorize(Policy = "AdminOnly")]
+    [AllowAnonymous]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest req, CancellationToken ct)
         => Ok(await _auth.RegisterAsync(req, ct));
 
