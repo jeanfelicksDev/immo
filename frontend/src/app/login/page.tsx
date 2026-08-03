@@ -86,7 +86,7 @@ export default function LoginPage() {
             </h1>
 
             <p className="text-slate-300 text-sm leading-relaxed max-w-md opacity-90 font-medium">
-              The institutional-grade platform for luxury real estate managers. Access your portfolio, financial analytics, and tenant relations in one seamless interface.
+              La plateforme de référence pour la gestion de votre patrimoine immobilier à Abidjan. Centralisez vos biens, vos finances et vos locataires dans un espace fluide et sécurisé.
             </p>
           </div>
 
