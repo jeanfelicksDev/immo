@@ -10,6 +10,36 @@ export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [regData, setRegData] = useState({
+    nom: '',
+    email: '',
+    phone: '',
+    role: 'Gestionnaire',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const handleRegisterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regData.email || !regData.nom || !regData.password || !regData.confirmPassword) {
+      toast.error('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+    if (regData.password !== regData.confirmPassword) {
+      toast.error('Les mots de passe ne correspondent pas.');
+      return;
+    }
+    if (regData.password.length < 6) {
+      toast.error('Le mot de passe doit contenir au moins 6 caractères.');
+      return;
+    }
+    // Simulation / Insertion d'un compte de démonstration
+    setValue('Email', regData.email);
+    setValue('MotDePasse', regData.password);
+    toast.success(`Compte créé pour ${regData.nom} ! Identifiants insérés.`);
+    setShowRegisterModal(false);
+  };
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     defaultValues: { Email: '', MotDePasse: '' }
@@ -190,10 +220,22 @@ export default function LoginPage() {
                 </>
               )}
             </button>
+
+            {/* Account Creation Link */}
+            <div className="text-center pt-2">
+              <span className="text-xs text-slate-500 font-medium">Vous n'avez pas encore de compte ? </span>
+              <button
+                type="button"
+                onClick={() => setShowRegisterModal(true)}
+                className="text-xs font-bold text-[#8E7200] hover:text-[#574500] hover:underline"
+              >
+                Créer un compte
+              </button>
+            </div>
           </form>
 
           {/* Test Accounts Box (Clickable Shortcuts) */}
-          <div className="mt-8 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
+          <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
             <p className="font-bold text-slate-900 mb-2 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm text-[#D4AF37]">touch_app</span>
               <span>Comptes de test (cliquez pour insérer) :</span>
@@ -228,6 +270,113 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
+
+      {/* Modal Création de Compte */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowRegisterModal(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center font-bold text-slate-950 text-xs">IG</div>
+              <span className="font-display font-bold text-lg text-slate-900">ImmoGest</span>
+            </div>
+
+            <h3 className="font-display text-xl font-bold text-slate-900 mb-1">Créer un compte professionnel</h3>
+            <p className="text-slate-500 text-xs mb-5">
+              Rejoignez la plateforme de référence pour la gestion immobilière à Abidjan.
+            </p>
+
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div>
+                <label className="form-label text-xs">Nom & Prénom(s) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Jean-Marc Kouassi"
+                  value={regData.nom}
+                  onChange={(e) => setRegData({ ...regData, nom: e.target.value })}
+                  className="form-input text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="form-label text-xs">Adresse Email Professionnelle *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="jm.kouassi@entreprise.ci"
+                  value={regData.email}
+                  onChange={(e) => setRegData({ ...regData, email: e.target.value })}
+                  className="form-input text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="form-label text-xs">Numéro de Téléphone *</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="+225 07 00 00 00 00"
+                  value={regData.phone}
+                  onChange={(e) => setRegData({ ...regData, phone: e.target.value })}
+                  className="form-input text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="form-label text-xs">Profil / Rôle *</label>
+                <select
+                  value={regData.role}
+                  onChange={(e) => setRegData({ ...regData, role: e.target.value })}
+                  className="form-input text-xs bg-white"
+                >
+                  <option value="Gestionnaire">Gestionnaire Immobilier / Agence</option>
+                  <option value="Proprietaire">Propriétaire Bailleur</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="form-label text-xs">Mot de passe *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={regData.password}
+                    onChange={(e) => setRegData({ ...regData, password: e.target.value })}
+                    className="form-input text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="form-label text-xs">Confirmer le mot de passe *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={regData.confirmPassword}
+                    onChange={(e) => setRegData({ ...regData, confirmPassword: e.target.value })}
+                    className="form-input text-xs"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="btn-gold w-full py-3.5 rounded-xl font-extrabold text-xs tracking-wider uppercase flex items-center justify-center gap-2 mt-4"
+              >
+                <span>Créer mon compte</span>
+                <span className="material-symbols-outlined text-base">check_circle</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
