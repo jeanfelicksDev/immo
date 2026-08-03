@@ -126,12 +126,12 @@ export default function LoginPage() {
                 <span className="material-symbols-outlined text-xl">verified_user</span>
               </div>
               <div>
-                <p className="font-bold text-xs text-white">End-to-End Encryption</p>
-                <p className="text-xs text-slate-300">Your asset data is protected by bank-level security.</p>
+                <p className="font-bold text-xs text-white">Chiffrement de bout en bout</p>
+                <p className="text-xs text-slate-300">Vos données patrimoniales sont protégées par une sécurité bancaire.</p>
               </div>
             </div>
             <p className="text-[11px] text-slate-400 italic">
-              Trusted by over 500 premium property firms worldwide.
+              Adopté par plus de 500 professionnels et agences immobilières.
             </p>
           </div>
         </div>
@@ -234,40 +234,6 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Test Accounts Box (Clickable Shortcuts) */}
-          <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
-            <p className="font-bold text-slate-900 mb-2 flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm text-[#D4AF37]">touch_app</span>
-              <span>Comptes de test (cliquez pour insérer) :</span>
-            </p>
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => handleTestAccount('admin@immogest.com', 'Admin@2025!')}
-                className="w-full text-left p-2 rounded-xl bg-white border border-slate-200 hover:border-[#D4AF37] hover:bg-amber-50/50 transition-all flex items-center justify-between font-mono text-[11px] group"
-              >
-                <div>
-                  <span className="font-bold text-slate-900">Admin System</span>: <code className="text-amber-800">admin@immogest.com</code>
-                </div>
-                <span className="text-[10px] font-sans font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full group-hover:bg-[#D4AF37] group-hover:text-slate-950 transition-colors">
-                  Insérer
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTestAccount('jeanfelicks@gmail.com', 'admin')}
-                className="w-full text-left p-2 rounded-xl bg-white border border-slate-200 hover:border-[#D4AF37] hover:bg-amber-50/50 transition-all flex items-center justify-between font-mono text-[11px] group"
-              >
-                <div>
-                  <span className="font-bold text-slate-900">Compte Démo</span>: <code className="text-amber-800">jeanfelicks@gmail.com</code>
-                </div>
-                <span className="text-[10px] font-sans font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full group-hover:bg-[#D4AF37] group-hover:text-slate-950 transition-colors">
-                  Insérer
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
       </main>
 
