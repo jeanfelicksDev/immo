@@ -81,8 +81,8 @@ export default function LoginPage() {
             </div>
 
             <h1 className="font-display text-4xl font-extrabold mb-6 leading-tight">
-              Manage with <br />
-              <span className="text-[#FFE088]">Absolute Precision</span>.
+              Assurer un suivi de qualité <br />
+              <span className="text-[#FFE088]">à vos maisons à Babi</span>.
             </h1>
 
             <p className="text-slate-300 text-sm leading-relaxed max-w-md opacity-90 font-medium">
