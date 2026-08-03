@@ -45,7 +45,7 @@ api.interceptors.response.use(
         try {
           const refreshToken = localStorage.getItem('refresh_token');
           if (refreshToken && refreshToken !== 'undefined') {
-            const { data } = await axios.post(`${API_BASE_URL}/api/auth/refresh`, { RefreshToken: refreshToken });
+            const { data } = await axios.post(`${getApiBaseUrl()}/auth/refresh`, { RefreshToken: refreshToken });
             const newAccess  = data.AccessToken || data.accessToken;
             const newRefresh = data.RefreshToken || data.refreshToken;
             if (newAccess) {
