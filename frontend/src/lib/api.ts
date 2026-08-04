@@ -7,8 +7,8 @@ import axios from 'axios';
 const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('onrender')) {
-      return `${envUrl}/api`;
+    if (envUrl && !envUrl.includes('localhost')) {
+      return envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
     }
   }
   return '/api';

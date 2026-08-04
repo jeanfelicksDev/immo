@@ -128,6 +128,44 @@ async function ensureTablesExist() {
               created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
               updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
           );
+
+          -- Migration automatique vers ON DELETE CASCADE pour immogest
+          DO $$
+          BEGIN
+            ALTER TABLE immogest.maisons DROP CONSTRAINT IF EXISTS maisons_proprietaire_id_fkey;
+            ALTER TABLE immogest.maisons ADD CONSTRAINT maisons_proprietaire_id_fkey 
+              FOREIGN KEY (proprietaire_id) REFERENCES immogest.proprietaires(id) ON DELETE CASCADE;
+
+            ALTER TABLE immogest.souscriptions DROP CONSTRAINT IF EXISTS souscriptions_maison_id_fkey;
+            ALTER TABLE immogest.souscriptions ADD CONSTRAINT souscriptions_maison_id_fkey 
+              FOREIGN KEY (maison_id) REFERENCES immogest.maisons(id) ON DELETE CASCADE;
+
+            ALTER TABLE immogest.souscriptions DROP CONSTRAINT IF EXISTS souscriptions_locataire_id_fkey;
+            ALTER TABLE immogest.souscriptions ADD CONSTRAINT souscriptions_locataire_id_fkey 
+              FOREIGN KEY (locataire_id) REFERENCES immogest.locataires(id) ON DELETE CASCADE;
+
+            ALTER TABLE immogest.reglements DROP CONSTRAINT IF EXISTS reglements_souscription_id_fkey;
+            ALTER TABLE immogest.reglements ADD CONSTRAINT reglements_souscription_id_fkey 
+              FOREIGN KEY (souscription_id) REFERENCES immogest.souscriptions(id) ON DELETE CASCADE;
+
+            ALTER TABLE immogest.reglements DROP CONSTRAINT IF EXISTS reglements_maison_id_fkey;
+            ALTER TABLE immogest.reglements ADD CONSTRAINT reglements_maison_id_fkey 
+              FOREIGN KEY (maison_id) REFERENCES immogest.maisons(id) ON DELETE CASCADE;
+
+            ALTER TABLE immogest.reglements DROP CONSTRAINT IF EXISTS reglements_locataire_id_fkey;
+            ALTER TABLE immogest.reglements ADD CONSTRAINT reglements_locataire_id_fkey 
+              FOREIGN KEY (locataire_id) REFERENCES immogest.locataires(id) ON DELETE CASCADE;
+
+            ALTER TABLE immogest.depenses DROP CONSTRAINT IF EXISTS depenses_maison_id_fkey;
+            ALTER TABLE immogest.depenses ADD CONSTRAINT depenses_maison_id_fkey 
+              FOREIGN KEY (maison_id) REFERENCES immogest.maisons(id) ON DELETE CASCADE;
+
+            ALTER TABLE immogest.depenses DROP CONSTRAINT IF EXISTS depenses_locataire_id_fkey;
+            ALTER TABLE immogest.depenses ADD CONSTRAINT depenses_locataire_id_fkey 
+              FOREIGN KEY (locataire_id) REFERENCES immogest.locataires(id) ON DELETE CASCADE;
+          EXCEPTION
+            WHEN OTHERS THEN NULL;
+          END $$;
         `);
         globalForPg.isInitialized = true;
       } catch (e) {
