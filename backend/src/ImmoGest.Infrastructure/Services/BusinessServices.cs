@@ -177,8 +177,40 @@ public class ProprietaireService : IProprietaireService
         var entity = await _db.Proprietaires.FindAsync(new object[] { id }, ct)
             ?? throw new KeyNotFoundException($"Propriétaire {id} introuvable.");
 
-        if (await _db.Maisons.AnyAsync(m => m.ProprietaireId == id, ct))
-            throw new InvalidOperationException("Impossible de supprimer : ce propriétaire possède des biens immobiliers.");
+        // Récupérer toutes les maisons rattachées à ce propriétaire
+        var maisonIds = await _db.Maisons
+            .Where(m => m.ProprietaireId == id)
+            .Select(m => m.Id)
+            .ToListAsync(ct);
+
+        if (maisonIds.Any())
+        {
+            var souscriptionIds = await _db.Souscriptions
+                .Where(s => maisonIds.Contains(s.MaisonId))
+                .Select(s => s.Id)
+                .ToListAsync(ct);
+
+            var depenses = await _db.Depenses
+                .Where(d => d.MaisonId != null && maisonIds.Contains(d.MaisonId.Value))
+                .ToListAsync(ct);
+            if (depenses.Any()) _db.Depenses.RemoveRange(depenses);
+
+            var reglements = await _db.Reglements
+                .Where(r => (r.MaisonId != null && maisonIds.Contains(r.MaisonId.Value))
+                         || (r.SouscriptionId != null && souscriptionIds.Contains(r.SouscriptionId)))
+                .ToListAsync(ct);
+            if (reglements.Any()) _db.Reglements.RemoveRange(reglements);
+
+            var souscriptions = await _db.Souscriptions
+                .Where(s => maisonIds.Contains(s.MaisonId))
+                .ToListAsync(ct);
+            if (souscriptions.Any()) _db.Souscriptions.RemoveRange(souscriptions);
+
+            var maisons = await _db.Maisons
+                .Where(m => m.ProprietaireId == id)
+                .ToListAsync(ct);
+            if (maisons.Any()) _db.Maisons.RemoveRange(maisons);
+        }
 
         _db.Proprietaires.Remove(entity);
         await _db.SaveChangesAsync(ct);
@@ -312,9 +344,6 @@ public class MaisonService : IMaisonService
     {
         var entity = await _db.Maisons.FindAsync(new object[] { id }, ct)
             ?? throw new KeyNotFoundException($"Maison {id} introuvable.");
-
-        if (await _db.Souscriptions.AnyAsync(s => s.MaisonId == id && s.Statut == StatutSouscription.Active, ct))
-            throw new InvalidOperationException("Impossible de supprimer : ce bien possède un contrat de location actif.");
 
         // Nettoyage des dépenses associées au bien
         var depenses = await _db.Depenses.Where(d => d.MaisonId == id).ToListAsync(ct);
@@ -468,8 +497,15 @@ public class LocataireService : ILocataireService
         var entity = await _db.Locataires.FindAsync(new object[] { id }, ct)
             ?? throw new KeyNotFoundException($"Locataire {id} introuvable.");
 
-        if (await _db.Souscriptions.AnyAsync(s => s.LocataireId == id && s.Statut == StatutSouscription.Active, ct))
-            throw new InvalidOperationException("Impossible de supprimer : ce locataire possède un contrat de location actif.");
+        // Libérer les maisons associées aux souscriptions actives de ce locataire
+        var activeMaisons = await _db.Souscriptions
+            .Where(s => s.LocataireId == id && s.Statut == StatutSouscription.Active)
+            .Select(s => s.Maison)
+            .ToListAsync(ct);
+        foreach (var m in activeMaisons)
+        {
+            if (m != null) m.EstDisponible = true;
+        }
 
         // Nettoyage des dépenses associées au locataire
         var depenses = await _db.Depenses.Where(d => d.LocataireId == id).ToListAsync(ct);
