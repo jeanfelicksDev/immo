@@ -41,10 +41,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       WHERE maison_id IN (SELECT id FROM immogest.maisons WHERE proprietaire_id = $1)
     `, [id]);
 
-    // 2. Supprimer les règlements liés aux maisons du propriétaire
+    // 2. Supprimer tous les règlements liés aux maisons OU aux souscriptions du propriétaire
     await query(`
       DELETE FROM immogest.reglements 
       WHERE maison_id IN (SELECT id FROM immogest.maisons WHERE proprietaire_id = $1)
+         OR souscription_id IN (SELECT id FROM immogest.souscriptions WHERE maison_id IN (SELECT id FROM immogest.maisons WHERE proprietaire_id = $1))
     `, [id]);
 
     // 3. Supprimer les souscriptions liées aux maisons du propriétaire
@@ -60,6 +61,9 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const res = await query(`DELETE FROM immogest.proprietaires WHERE id = $1 RETURNING id`, [id]);
 
     if (res.rowCount === 0) {
+      await query(`DELETE FROM public.depenses WHERE maison_id IN (SELECT id FROM public.maisons WHERE proprietaire_id = $1)`, [id]);
+      await query(`DELETE FROM public.reglements WHERE maison_id IN (SELECT id FROM public.maisons WHERE proprietaire_id = $1) OR souscription_id IN (SELECT id FROM public.souscriptions WHERE maison_id IN (SELECT id FROM public.maisons WHERE proprietaire_id = $1))`, [id]);
+      await query(`DELETE FROM public.souscriptions WHERE maison_id IN (SELECT id FROM public.maisons WHERE proprietaire_id = $1)`, [id]);
       await query(`DELETE FROM public.maisons WHERE proprietaire_id = $1`, [id]);
       await query(`DELETE FROM public.proprietaires WHERE id = $1`, [id]);
     }

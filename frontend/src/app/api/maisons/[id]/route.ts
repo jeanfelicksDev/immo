@@ -30,11 +30,22 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
     // Nettoyage en cascade sécurisé
     await query(`DELETE FROM immogest.depenses WHERE maison_id = $1`, [id]);
-    await query(`DELETE FROM immogest.reglements WHERE maison_id = $1`, [id]);
+    await query(`
+      DELETE FROM immogest.reglements 
+      WHERE maison_id = $1 
+         OR souscription_id IN (SELECT id FROM immogest.souscriptions WHERE maison_id = $1)
+    `, [id]);
     await query(`DELETE FROM immogest.souscriptions WHERE maison_id = $1`, [id]);
-    await query(`DELETE FROM immogest.maisons WHERE id = $1`, [id]);
+    const res = await query(`DELETE FROM immogest.maisons WHERE id = $1 RETURNING id`, [id]);
 
-    return NextResponse.json({ success: true });
+    if (res.rowCount === 0) {
+      await query(`DELETE FROM public.depenses WHERE maison_id = $1`, [id]);
+      await query(`DELETE FROM public.reglements WHERE maison_id = $1 OR souscription_id IN (SELECT id FROM public.souscriptions WHERE maison_id = $1)`, [id]);
+      await query(`DELETE FROM public.souscriptions WHERE maison_id = $1`, [id]);
+      await query(`DELETE FROM public.maisons WHERE id = $1`, [id]);
+    }
+
+    return NextResponse.json({ success: true, message: 'Maison supprimée.' });
   } catch (error: any) {
     console.error('Erreur DELETE /api/maisons/[id]:', error);
     return NextResponse.json({ error: error.message || 'Erreur lors de la suppression.' }, { status: 500 });
