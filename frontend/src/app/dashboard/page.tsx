@@ -625,11 +625,11 @@ export default function DashboardPage() {
             <div>
               <p className="text-xs font-bold text-rose-800 uppercase tracking-wider">Total Reste à Recouvrir</p>
               <p className="text-2xl font-display font-bold text-rose-600 mt-0.5">
-                {formatFCFA(creances.reduce((acc, c) => acc + Number(c.ResteAPayer || 0), 0))}
+                {formatFCFA(Math.max(kpis?.ResteARecouvrir || 0, creances.reduce((acc, c) => acc + Number(c.ResteAPayer || 0), 0)))}
               </p>
             </div>
             <span className="text-xs font-semibold px-3 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
-              {creances.length} créance(s) en attente
+              {creances.length > 0 ? `${creances.length} créance(s) en attente` : 'Recherche en cours...'}
             </span>
           </div>
 
