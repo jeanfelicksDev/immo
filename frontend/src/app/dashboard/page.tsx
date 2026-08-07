@@ -298,7 +298,13 @@ export default function DashboardPage() {
                       Débloquez la gestion automatisée des baux, l'édition des quittances certifiées PDF et les rapports fiscaux avancés.
                     </p>
                   </div>
-                  <button className="btn-gold w-full mt-6 py-3 text-xs">
+                  <button
+                    onClick={() => {
+                      setActiveTab('analytics');
+                      toast.success("✨ Bienvenue dans l'espace Premium ! Accédez ici à vos indicateurs avancés et rapports de performance.");
+                    }}
+                    className="btn-gold w-full mt-6 py-3 text-xs"
+                  >
                     METTRE À NIVEAU IMMOGEST
                   </button>
                 </div>
