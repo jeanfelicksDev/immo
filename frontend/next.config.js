@@ -1,5 +1,4 @@
 /** @type {import('next').NextConfig} */
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5055';
 
 const nextConfig = {
   output: 'standalone',   // Requis pour le Dockerfile multi-stage
@@ -10,21 +9,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-
-  // Variables d'environnement exposées au client
-  env: {
-    NEXT_PUBLIC_API_URL: apiUrl,
-  },
-
-  // Redirection des appels API via le proxy Next.js (évite les problèmes CORS en dev)
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${apiUrl}/api/:path*`,
-      },
-    ];
-  },
+  // Note : pas de rewrites — les routes API Next.js (frontend/src/app/api/*)
+  // gèrent directement toutes les requêtes /api/* en se connectant à Neon PostgreSQL.
+  // NEXT_PUBLIC_API_URL est vide ici pour éviter de rediriger vers 127.0.0.1 depuis Vercel.
 };
 
 module.exports = nextConfig;

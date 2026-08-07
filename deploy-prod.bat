@@ -9,7 +9,7 @@ git add .
 
 echo.
 echo [2/3] Commit des modifications de production...
-git commit -m "fix: allow cascade deletion for proprietaires, maisons, and locataires" --allow-empty
+git commit -m "fix: correction enregistrement proprietaire et routes API Next.js" --allow-empty
 
 echo.
 echo [3/3] Push vers GitHub pour declencher Vercel et Render...
