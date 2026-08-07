@@ -15,6 +15,7 @@ async function ensureEntreprisesTable() {
       email_commercial VARCHAR(255),
       rccm_ifu VARCHAR(100),
       logo_url TEXT,
+      signature_url TEXT,
       devise VARCHAR(20) DEFAULT 'FCFA',
       statut_saas VARCHAR(50) DEFAULT 'Essai',
       date_debut_essai TIMESTAMPTZ DEFAULT NOW(),
@@ -25,9 +26,10 @@ async function ensureEntreprisesTable() {
     )
   `);
 
-  // Assurer que les colonnes qui stockent des données volumineuses (ex: images Base64) sont au type TEXT
+  // Assurer que les colonnes qui stockent des données volumineuses (ex: images Base64) existent et sont au type TEXT
   await query(`
     ALTER TABLE immogest.entreprises 
+    ADD COLUMN IF NOT EXISTS signature_url TEXT,
     ALTER COLUMN logo_url TYPE TEXT,
     ALTER COLUMN adresse_postale TYPE TEXT,
     ALTER COLUMN adresse_physique TYPE TEXT,
@@ -44,8 +46,8 @@ export async function GET() {
       SELECT id AS "Id", denomination AS "Denomination",
              adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
              telephone AS "Telephone", email_commercial AS "EmailCommercial",
-             rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", devise AS "Devise",
-             statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
+             rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", signature_url AS "SignatureUrl",
+             devise AS "Devise", statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
              date_fin_essai AS "DateFinEssai", est_bloque AS "EstBloque",
              created_at AS "CreatedAt"
       FROM immogest.entreprises
@@ -60,8 +62,8 @@ export async function GET() {
         RETURNING id AS "Id", denomination AS "Denomination",
                   adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
                   telephone AS "Telephone", email_commercial AS "EmailCommercial",
-                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", devise AS "Devise",
-                  statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
+                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", signature_url AS "SignatureUrl",
+                  devise AS "Devise", statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
                   date_fin_essai AS "DateFinEssai", est_bloque AS "EstBloque"
       `);
       return NextResponse.json(defaultRes.rows[0]);
@@ -97,13 +99,13 @@ export async function POST(req: Request) {
         UPDATE immogest.entreprises
         SET denomination = $1, adresse_postale = $2, adresse_physique = $3,
             telephone = $4, email_commercial = $5, rccm_ifu = $6,
-            logo_url = $7, devise = $8, updated_at = NOW()
-        WHERE id = $9
+            logo_url = $7, signature_url = $8, devise = $9, updated_at = NOW()
+        WHERE id = $10
         RETURNING id AS "Id", denomination AS "Denomination",
                   adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
                   telephone AS "Telephone", email_commercial AS "EmailCommercial",
-                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", devise AS "Devise",
-                  statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
+                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", signature_url AS "SignatureUrl",
+                  devise AS "Devise", statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
                   date_fin_essai AS "DateFinEssai", est_bloque AS "EstBloque"`,
         [
           body.Denomination || body.denomination || 'ImmoGest Agence Pro',
@@ -113,6 +115,7 @@ export async function POST(req: Request) {
           body.EmailCommercial || body.email_commercial || null,
           body.RccmIfu || body.rccm_ifu || null,
           body.LogoUrl || body.logo_url || null,
+          body.SignatureUrl || body.signature_url || null,
           body.Devise || body.devise || 'FCFA',
           id
         ]
@@ -120,13 +123,13 @@ export async function POST(req: Request) {
       return NextResponse.json(rows[0]);
     } else {
       const { rows } = await query(`
-        INSERT INTO immogest.entreprises (denomination, adresse_postale, adresse_physique, telephone, email_commercial, rccm_ifu, logo_url, devise)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO immogest.entreprises (denomination, adresse_postale, adresse_physique, telephone, email_commercial, rccm_ifu, logo_url, signature_url, devise)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING id AS "Id", denomination AS "Denomination",
                   adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
                   telephone AS "Telephone", email_commercial AS "EmailCommercial",
-                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", devise AS "Devise",
-                  statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
+                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", signature_url AS "SignatureUrl",
+                  devise AS "Devise", statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
                   date_fin_essai AS "DateFinEssai", est_bloque AS "EstBloque"`,
         [
           body.Denomination || body.denomination || 'ImmoGest Agence Pro',
@@ -136,6 +139,7 @@ export async function POST(req: Request) {
           body.EmailCommercial || body.email_commercial || null,
           body.RccmIfu || body.rccm_ifu || null,
           body.LogoUrl || body.logo_url || null,
+          body.SignatureUrl || body.signature_url || null,
           body.Devise || body.devise || 'FCFA'
         ]
       );
@@ -146,4 +150,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || 'Erreur serveur lors de la sauvegarde.' }, { status: 500 });
   }
 }
+
 

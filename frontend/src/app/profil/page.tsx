@@ -17,6 +17,7 @@ export default function ProfilPage() {
     EmailCommercial: 'contact@immogest.com',
     RccmIfu: 'CI-ABJ-2026-B-88992',
     LogoUrl: '',
+    SignatureUrl: '',
     Devise: 'FCFA',
     StatutSaaS: 'Essai',
     DateDebutEssai: new Date().toISOString(),
@@ -313,6 +314,50 @@ export default function ProfilPage() {
                       Ce logo sera automatiquement affiché en haut de l'application et imprimé sur tous vos <strong>contrats de location et reçus de paiement PDF</strong>.
                     </p>
                   </div>
+
+                  <div className="pt-6 border-t border-slate-100">
+                    <label className="form-label font-bold block mb-2">URL ou Image de la Signature Officielle / Tampon</label>
+                    <div className="flex gap-2.5 mb-3">
+                      <input
+                        type="text"
+                        placeholder="Ex: https://votre-site.com/signature.png ou chargez l'image"
+                        {...register('SignatureUrl')}
+                        className="form-input flex-1"
+                      />
+                      <label
+                        htmlFor="signature-file-input"
+                        className="px-4 py-2.5 rounded-xl bg-slate-900 text-[#FFE088] font-extrabold text-xs flex items-center gap-2 shrink-0 cursor-pointer hover:bg-slate-800 transition-colors shadow-md border border-[#D4AF37]/30"
+                      >
+                        <span className="material-symbols-outlined text-base">draw</span>
+                        <span>Charger Signature</span>
+                      </label>
+                      <input
+                        id="signature-file-input"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 3 * 1024 * 1024) {
+                              toast.error('L\'image de la signature est trop volumineuse (max 3 Mo).');
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const base64 = event.target?.result as string;
+                              setValue('SignatureUrl', base64);
+                              toast.success('Signature officielle chargée avec succès !');
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Cette signature sera apposée au bas des <strong>contrats de bail, quittances et reçus officiels</strong> générés par l'agence.
+                    </p>
+                  </div>
                 </form>
               </div>
 
@@ -341,6 +386,15 @@ export default function ProfilPage() {
                     <p className="text-slate-600 font-semibold">📞 Contact : <span className="font-extrabold text-slate-900">{watch('Telephone') || 'Non renseigné'}</span></p>
                     <p className="text-slate-600 font-semibold">📄 N° IFU/RCCM : <span className="font-extrabold text-slate-900">{watch('RccmIfu') || 'N/A'}</span></p>
                   </div>
+
+                  {watch('SignatureUrl') && (
+                    <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Signature Officielle / Tampon</p>
+                      <div className="h-16 max-w-[180px] mx-auto flex items-center justify-center border border-dashed border-slate-300 rounded-xl p-1 bg-slate-50">
+                        <img src={watch('SignatureUrl')} alt="Signature" className="max-h-full max-w-full object-contain" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
