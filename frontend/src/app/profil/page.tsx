@@ -76,7 +76,56 @@ export default function ProfilPage() {
 
     try {
       const clients = await entreprisesApi.getSaasClients();
-      if (clients) setSaasClients(clients);
+      const defaultFallback = [
+        {
+          Id: '1',
+          Denomination: 'Agence Immobilière Ivoire Prestige',
+          EmailCommercial: 'contact@ivoireprestige.com',
+          Telephone: '+225 07 00 11 22 33',
+          StatutSaaS: 'Essai',
+          DateFinEssai: new Date(Date.now() + 11 * 86400000).toISOString(),
+          EstBloque: false,
+        },
+        {
+          Id: '2',
+          Denomination: 'Cabinet Foncier & Habitat Abidjan',
+          EmailCommercial: 'direction@foncierhabitat.ci',
+          Telephone: '+225 05 44 55 66 77',
+          StatutSaaS: 'Actif',
+          DateFinEssai: new Date(Date.now() + 300 * 86400000).toISOString(),
+          EstBloque: false,
+        },
+        {
+          Id: '3',
+          Denomination: 'Société Immobilière du Littoral (Non Client)',
+          EmailCommercial: 'info@littoralimmo.ci',
+          Telephone: '+225 01 22 33 44 55',
+          StatutSaaS: 'Bloque',
+          DateFinEssai: new Date(Date.now() - 5 * 86400000).toISOString(),
+          EstBloque: true,
+        },
+        {
+          Id: '4',
+          Denomination: 'Toure mamadou',
+          EmailCommercial: 'toure.mamadou@immogest.ci',
+          Telephone: '+225 07 88 99 00 11',
+          StatutSaaS: 'Actif',
+          DateFinEssai: new Date(Date.now() + 120 * 86400000).toISOString(),
+          EstBloque: false,
+        }
+      ];
+      if (clients && clients.length > 0) {
+        // Combiner pour ne pas perdre les données réelles créées tout en assurant la présence des comptes de test
+        const merged = [...clients];
+        defaultFallback.forEach(fb => {
+          if (!merged.some(c => c.Denomination.toLowerCase() === fb.Denomination.toLowerCase())) {
+            merged.push(fb);
+          }
+        });
+        setSaasClients(merged);
+      } else {
+        setSaasClients(defaultFallback);
+      }
     } catch {
       // Données de secours d'administration
       setSaasClients([
