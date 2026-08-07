@@ -152,7 +152,7 @@ const DEMO_LOCATAIRES_D = [
 
   const handleDelete = async (id: string) => {
     if (!id) return;
-    if (!confirm('Confirmer la suppression de cette dépense ?')) return;
+    if (typeof window !== 'undefined' && !window.confirm('Confirmer la suppression de cette dépense ?')) return;
 
     setDepenses((prev) => prev.filter((d) => (d.Id || d.id) !== id));
 

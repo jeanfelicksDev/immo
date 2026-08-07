@@ -662,7 +662,7 @@ const DEMO_LOCATAIRES_S = [
 
   const handleDelete = async (id: string) => {
     if (!id) return;
-    if (!confirm('Voulez-vous vraiment résilier/supprimer ce contrat ?')) return;
+    if (typeof window !== 'undefined' && !window.confirm('Voulez-vous vraiment résilier/supprimer ce contrat ?')) return;
 
     setSouscriptions((prev) => prev.filter((s) => (s.Id || s.id) !== id));
 

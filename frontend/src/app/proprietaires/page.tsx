@@ -94,7 +94,7 @@ export default function ProprietairesPage() {
 
   const handleDelete = async (id: string) => {
     if (!id) return;
-    if (!confirm('Voulez-vous vraiment supprimer ce propriétaire et tous ses biens rattachés ?')) return;
+    if (typeof window !== 'undefined' && !window.confirm('Voulez-vous vraiment supprimer ce propriétaire et tous ses biens rattachés ?')) return;
     
     // Mise à jour immédiate de l'interface utilisateur (UX instantanée)
     setProprietaires((prev) => prev.filter((p) => (p.Id || p.id) !== id));

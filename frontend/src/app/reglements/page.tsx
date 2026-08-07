@@ -815,7 +815,7 @@ const DEMO_SOUSCRIPTIONS_R = [
 
   const handleDelete = async (id: string) => {
     if (!id) return;
-    if (!confirm('Voulez-vous vraiment supprimer ce règlement ?')) return;
+    if (typeof window !== 'undefined' && !window.confirm('Voulez-vous vraiment supprimer ce règlement ?')) return;
 
     setReglements((prev) => prev.filter((r) => (r.Id || r.id) !== id));
 

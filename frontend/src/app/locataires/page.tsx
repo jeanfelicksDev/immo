@@ -100,7 +100,7 @@ export default function LocatairesPage() {
 
   const handleDelete = async (id: string) => {
     if (!id) return;
-    if (!confirm('Voulez-vous vraiment supprimer ce locataire ?')) return;
+    if (typeof window !== 'undefined' && !window.confirm('Voulez-vous vraiment supprimer ce locataire ?')) return;
 
     setLocataires((prev) => prev.filter((l) => (l.Id || l.id) !== id));
 
