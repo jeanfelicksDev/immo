@@ -222,9 +222,60 @@ export default function UtilisateursPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const role = parsed.role !== undefined ? parsed.role : parsed.Role;
+        const roleStr = String(role || '').trim().toLowerCase();
+        const adminCheck = (
+          role === 0 ||
+          roleStr === 'administrateur' ||
+          roleStr === 'administrateur système' ||
+          roleStr === 'administrateursysteme' ||
+          roleStr === 'admin'
+        );
+        setIsAdmin(adminCheck);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (e) {
+      setIsAdmin(false);
+    }
+  }, []);
+
   const totalCount = users.length;
   const activeCount = users.filter((u) => getEstActif(u)).length;
   const blockedCount = users.filter((u) => !getEstActif(u)).length;
+
+  if (isAdmin === false) {
+    return (
+      <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex">
+        <Sidebar />
+        <main className="flex-1 ml-[310px] p-8 flex items-center justify-center min-h-screen">
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md text-center shadow-2xl">
+            <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto mb-4">
+              <span className="material-symbols-outlined text-3xl">lock</span>
+            </div>
+            <h2 className="text-xl font-display font-extrabold text-white mb-2">Accès Restreint</h2>
+            <p className="text-slate-400 text-sm mb-6">
+              Seul l'<strong>Administrateur Système</strong> a accès à cette page et à la gestion des comptes de la plateforme.
+            </p>
+            <a
+              href="/dashboard"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B38F24] text-slate-950 font-bold text-sm shadow-lg hover:brightness-110 transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              <span>Retour au Tableau de Bord</span>
+            </a>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex">

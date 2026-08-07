@@ -51,10 +51,35 @@ const navSections: NavSection[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const router   = useRouter();
+  const [currentUser, setCurrentUser] = React.useState<any>(null);
+  const [isAdmin, setIsAdmin] = React.useState<boolean>(true); // Défaut permissif pendant le chargement
+
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setCurrentUser(parsed);
+        const role = parsed.role !== undefined ? parsed.role : parsed.Role;
+        const roleStr = String(role || '').trim().toLowerCase();
+        const adminCheck = (
+          role === 0 ||
+          roleStr === 'administrateur' ||
+          roleStr === 'administrateur système' ||
+          roleStr === 'administrateursysteme' ||
+          roleStr === 'admin'
+        );
+        setIsAdmin(adminCheck);
+      }
+    } catch (e) {
+      console.warn('Erreur lecture utilisateur:', e);
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
     router.push('/login');
   };
 
@@ -78,7 +103,7 @@ export function Sidebar() {
             <div className="flex items-center gap-1.5 mt-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <p className="font-sans text-[11.5px] text-slate-400 font-semibold tracking-wide">
-                Gestionnaire Actif
+                {currentUser?.role || (isAdmin ? 'Administrateur' : 'Gestionnaire Actif')}
               </p>
             </div>
           </div>
@@ -88,41 +113,53 @@ export function Sidebar() {
 
       {/* ─── Navigation Structurée par Groupes ────────────────────── */}
       <nav className="flex-1 space-y-6 px-4">
-        {navSections.map((section) => (
-          <div key={section.title} className="space-y-1.5">
-            <div className="px-3 pb-1.5 text-[12.5px] font-black tracking-widest text-slate-400/90 uppercase font-sans">
-              {section.title}
-            </div>
-            {section.items.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-              return (
-                <Link key={item.href} href={item.href}>
-                  <div
-                    className={`relative flex items-center gap-4 px-4 py-3 rounded-xl text-[15px] font-bold transition-all duration-200 cursor-pointer group ${
-                      isActive
-                        ? 'bg-gradient-to-r from-[#D4AF37]/30 via-[#D4AF37]/15 to-transparent text-white font-extrabold border-l-4 border-[#D4AF37] shadow-sm'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <span
-                      className={`material-symbols-outlined text-[23px] transition-transform duration-200 group-hover:scale-110 ${
-                        isActive ? 'text-[#FFE088]' : 'text-slate-400 group-hover:text-slate-200'
+        {navSections.map((section) => {
+          // Filtrer les éléments selon les autorisations
+          const filteredItems = section.items.filter((item) => {
+            if (item.href === '/utilisateurs' && !isAdmin) {
+              return false; // Masquer la Gestion des Comptes pour non-admins
+            }
+            return true;
+          });
+
+          if (filteredItems.length === 0) return null;
+
+          return (
+            <div key={section.title} className="space-y-1.5">
+              <div className="px-3 pb-1.5 text-[12.5px] font-black tracking-widest text-slate-400/90 uppercase font-sans">
+                {section.title}
+              </div>
+              {filteredItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <div
+                      className={`relative flex items-center gap-4 px-4 py-3 rounded-xl text-[15px] font-bold transition-all duration-200 cursor-pointer group ${
+                        isActive
+                          ? 'bg-gradient-to-r from-[#D4AF37]/30 via-[#D4AF37]/15 to-transparent text-white font-extrabold border-l-4 border-[#D4AF37] shadow-sm'
+                          : 'text-slate-300 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      {item.icon}
-                    </span>
-                    <span className="flex-1 tracking-wide">{item.label}</span>
-                    {item.badge && (
-                      <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        {item.badge}
+                      <span
+                        className={`material-symbols-outlined text-[23px] transition-transform duration-200 group-hover:scale-110 ${
+                          isActive ? 'text-[#FFE088]' : 'text-slate-400 group-hover:text-slate-200'
+                        }`}
+                      >
+                        {item.icon}
                       </span>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+                      <span className="flex-1 tracking-wide">{item.label}</span>
+                      {item.badge && (
+                        <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          );
+        })}
       </nav>
 
       {/* ─── Carte Profil Utilisateur & Déconnexion ──────────────────── */}
@@ -130,11 +167,15 @@ export function Sidebar() {
         <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
           <Link href="/profil" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
             <div className="w-9 h-9 rounded-lg bg-slate-800 text-amber-300 font-bold text-xs flex items-center justify-center border border-amber-500/30">
-              AD
+              {currentUser?.nom ? currentUser.nom.substring(0, 2).toUpperCase() : 'AD'}
             </div>
             <div className="truncate">
-              <p className="text-[14px] font-bold text-white truncate">Administrateur</p>
-              <p className="text-[11.5px] text-slate-400 truncate">Profil & Agence</p>
+              <p className="text-[14px] font-bold text-white truncate">
+                {currentUser?.nom || 'Administrateur'}
+              </p>
+              <p className="text-[11.5px] text-slate-400 truncate">
+                {currentUser?.role || 'Profil & Agence'}
+              </p>
             </div>
           </Link>
           <button
