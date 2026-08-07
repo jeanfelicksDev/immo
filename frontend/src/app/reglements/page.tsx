@@ -71,25 +71,42 @@ const DEMO_SOUSCRIPTIONS_R = [
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const formatInputValue = (val: any) => {
+    if (val === undefined || val === null || val === '') return '';
+    const num = Math.round(Number(String(val).replace(/[^\d.]/g, '')));
+    if (isNaN(num) || num === 0) return '';
+    return new Intl.NumberFormat('fr-FR').format(num).replace(/\s/g, ' ');
+  };
+
+  const parseInputValue = (val: any) => {
+    if (val === undefined || val === null || val === '') return 0;
+    const clean = String(val).replace(/[^\d]/g, '');
+    return parseInt(clean, 10) || 0;
+  };
+
   useEffect(() => {
     if (selectedSouscriptionId) {
       const s = souscriptions.find((x) => x.Id === selectedSouscriptionId);
       if (s) {
-        setValue('MontantAPayer', s.MontantLoyer);
-        setValue('MontantPaye', s.MontantLoyer);
+        setValue('MontantAPayer', formatInputValue(s.MontantLoyer));
+        setValue('MontantPaye', formatInputValue(s.MontantLoyer));
       }
     }
   }, [selectedSouscriptionId, souscriptions, setValue]);
 
   const openCreate = () => {
     const defaultS = souscriptions[0];
+    const today = new Date().toISOString().split('T')[0];
+    const moisConcerneDefault = `${today.substring(0, 7)}-01`;
+    const montantDefault = Math.round(defaultS?.MontantLoyer || 80000);
+
     reset({
       Idr: '',
       SouscriptionId: defaultS?.Id || '',
-      DatePaiement: new Date().toISOString().split('T')[0],
-      MoisConcerne: new Date().toISOString().substring(0, 7) + '-01',
-      MontantAPayer: defaultS?.MontantLoyer || 80000,
-      MontantPaye: defaultS?.MontantLoyer || 80000,
+      DatePaiement: today,
+      MoisConcerne: moisConcerneDefault,
+      MontantAPayer: formatInputValue(montantDefault),
+      MontantPaye: formatInputValue(montantDefault),
       Notes: '',
     });
     setEditItem(null);
@@ -114,8 +131,8 @@ const DEMO_SOUSCRIPTIONS_R = [
       SouscriptionId: item.SouscriptionId,
       DatePaiement:   datePaiementVal,
       MoisConcerne:   moisConcerneVal,
-      MontantAPayer:  item.MontantAPayer,
-      MontantPaye:    item.MontantPaye,
+      MontantAPayer:  formatInputValue(item.MontantAPayer),
+      MontantPaye:    formatInputValue(item.MontantPaye),
       Notes:          item.Notes ?? '',
     });
     setShowModal(true);
@@ -124,8 +141,8 @@ const DEMO_SOUSCRIPTIONS_R = [
   const onSubmit = async (data: any) => {
     const payload = {
       ...data,
-      MontantAPayer: Number(data.MontantAPayer),
-      MontantPaye:   Number(data.MontantPaye),
+      MontantAPayer: parseInputValue(data.MontantAPayer),
+      MontantPaye:   parseInputValue(data.MontantPaye),
     };
 
     try {
@@ -133,6 +150,16 @@ const DEMO_SOUSCRIPTIONS_R = [
         await reglementsApi.update(editItem.Id || editItem.id, payload);
         toast.success('Règlement relatif modifié.');
       } else {
+        await reglementsApi.create(payload);
+        toast.success('Règlement enregistré avec succès.');
+      }
+      fetchData();
+      setShowModal(false);
+    } catch (err: any) {
+      const msg = err.response?.data?.error || err.response?.data?.message || (err.response ? 'Erreur lors de la sauvegarde.' : 'Serveur API non disponible.');
+      toast.error(`Échec d'enregistrement en base : ${msg}`);
+    }
+  };
         await reglementsApi.create(payload);
         toast.success('Règlement enregistré avec succès.');
       }
@@ -1039,11 +1066,35 @@ const DEMO_SOUSCRIPTIONS_R = [
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="form-label">Montant Exigible (FCFA) *</label>
-                  <input type="number" step="1000" {...register('MontantAPayer')} className="form-input" />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    {...register('MontantAPayer', {
+                      required: true,
+                      onChange: (e) => {
+                        const formatted = formatInputValue(e.target.value);
+                        setValue('MontantAPayer', formatted);
+                      }
+                    })}
+                    className="form-input font-bold text-slate-900"
+                    placeholder="180 000"
+                  />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Montant Versé (FCFA) *</label>
-                  <input type="number" step="1000" {...register('MontantPaye')} className="form-input" />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    {...register('MontantPaye', {
+                      required: true,
+                      onChange: (e) => {
+                        const formatted = formatInputValue(e.target.value);
+                        setValue('MontantPaye', formatted);
+                      }
+                    })}
+                    className="form-input font-bold text-slate-900"
+                    placeholder="180 000"
+                  />
                 </div>
               </div>
 
