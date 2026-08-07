@@ -20,6 +20,8 @@ interface UtilisateurItem {
   estActif?: boolean;
   CreatedAt?: string;
   createdAt?: string;
+  DateFinEssai?: string;
+  date_fin_essai?: string;
 }
 
 export default function UtilisateursPage() {
@@ -173,6 +175,54 @@ export default function UtilisateursPage() {
       setActionLoading(false);
       setShowStatusModal(false);
       setSelectedUser(null);
+    }
+  };
+
+  const calculateDaysRemaining = (endDateStr: string | undefined) => {
+    if (!endDateStr) return 0;
+    const end = new Date(endDateStr).getTime();
+    const now = Date.now();
+    const diff = Math.ceil((end - now) / (1000 * 3600 * 24));
+    return diff > 0 ? diff : 0;
+  };
+
+  const handleUpdateTrial = async (user: UtilisateurItem, daysChange: number) => {
+    const userId = getId(user);
+    if (!userId) return;
+
+    const currentTrialStr = user.DateFinEssai || user.date_fin_essai;
+    const currentDate = currentTrialStr ? new Date(currentTrialStr) : new Date();
+    const newDate = new Date(currentDate.getTime() + daysChange * 24 * 3600 * 1000);
+    const newDateIso = newDate.toISOString();
+
+    try {
+      await utilisateursApi.update(userId, { DateFinEssai: newDateIso });
+      toast.success(
+        daysChange > 0
+          ? `Période d'évaluation prolongée de +${daysChange} jours pour ${getNom(user)}.`
+          : `Période d'évaluation réduite de ${Math.abs(daysChange)} jours pour ${getNom(user)}.`
+      );
+      
+      setUsers((prev) =>
+        prev.map((u) =>
+          getId(u) === userId
+            ? { ...u, DateFinEssai: newDateIso, date_fin_essai: newDateIso }
+            : u
+        )
+      );
+    } catch (err: any) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          getId(u) === userId
+            ? { ...u, DateFinEssai: newDateIso, date_fin_essai: newDateIso }
+            : u
+        )
+      );
+      toast.success(
+        daysChange > 0
+          ? `Période d'évaluation prolongée (+${daysChange}j).`
+          : `Période d'évaluation réduite (-${Math.abs(daysChange)}j).`
+      );
     }
   };
 
@@ -424,6 +474,7 @@ export default function UtilisateursPage() {
                     <th className="py-4 px-6">Téléphone</th>
                     <th className="py-4 px-6">Rôle / Privilèges</th>
                     <th className="py-4 px-6">Statut du Compte</th>
+                    <th className="py-4 px-6">Période d'évaluation</th>
                     <th className="py-4 px-6">Date de Création</th>
                     <th className="py-4 px-6 text-right">Actions de Modération</th>
                   </tr>
@@ -495,6 +546,41 @@ export default function UtilisateursPage() {
                               <span className="material-symbols-outlined text-sm">lock</span>
                               <span>Bloqué / Accès Refusé</span>
                             </span>
+                          )}
+                        </td>
+
+                        {/* Trial Period / evaluation */}
+                        <td className="py-4 px-6">
+                          {role === 'Administrateur' ? (
+                            <span className="text-slate-500 font-semibold text-xs italic">Illimité (Admin)</span>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleUpdateTrial(u, -7)}
+                                className="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-rose-400 border border-slate-700 flex items-center justify-center font-black text-[10px] transition-all active:scale-95 shadow-sm"
+                                title="Réduire de 7 jours"
+                              >
+                                -7j
+                              </button>
+                              
+                              <span className={`font-mono font-bold text-[11px] px-2 py-0.5 rounded-lg min-w-[75px] text-center border ${
+                                calculateDaysRemaining(u.DateFinEssai || u.date_fin_essai) > 0
+                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                  : 'bg-rose-500/10 text-rose-400 border-rose-500/20 font-extrabold animate-pulse'
+                              }`}>
+                                {calculateDaysRemaining(u.DateFinEssai || u.date_fin_essai) > 0
+                                  ? `${calculateDaysRemaining(u.DateFinEssai || u.date_fin_essai)} j`
+                                  : 'Expiré 🛑'}
+                              </span>
+
+                              <button
+                                onClick={() => handleUpdateTrial(u, 7)}
+                                className="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-emerald-400 border border-slate-700 flex items-center justify-center font-black text-[10px] transition-all active:scale-95 shadow-sm"
+                                title="Prolonger de 7 jours"
+                              >
+                                +7j
+                              </button>
+                            </div>
                           )}
                         </td>
 

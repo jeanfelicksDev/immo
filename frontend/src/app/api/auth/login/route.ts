@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     const { rows } = await query(
-      'SELECT id, nom_complet, email, mot_de_passe, role FROM immogest.utilisateurs WHERE email = $1 AND est_actif = TRUE',
+      'SELECT id, nom_complet, email, mot_de_passe, role, est_actif, date_fin_essai FROM immogest.utilisateurs WHERE email = $1',
       [email]
     );
 
@@ -30,12 +30,25 @@ export async function POST(req: Request) {
           `INSERT INTO immogest.utilisateurs (nom_complet, email, mot_de_passe, role)
            VALUES ('Administrateur Système', $1, $2, 'Administrateur')
            ON CONFLICT (email) DO UPDATE SET mot_de_passe = EXCLUDED.mot_de_passe
-           RETURNING id, nom_complet, email, role`,
+           RETURNING id, nom_complet, email, role, est_actif, date_fin_essai`,
           [email, hash]
         );
         user = newUser.rows[0];
       } else {
         return NextResponse.json({ error: 'Email ou mot de passe incorrect.' }, { status: 401 });
+      }
+    }
+
+    // 1. Vérification si le compte est bloqué
+    if (user.est_actif === false || user.EstActif === false) {
+      return NextResponse.json({ error: "Votre compte a été bloqué par l'administrateur." }, { status: 403 });
+    }
+
+    // 2. Vérification si la période d'essai est expirée
+    if (user.date_fin_essai) {
+      const trialEnd = new Date(user.date_fin_essai).getTime();
+      if (trialEnd < Date.now()) {
+        return NextResponse.json({ error: "la période d'évaluation est arrivée à son terme." }, { status: 403 });
       }
     }
 

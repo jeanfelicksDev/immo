@@ -221,6 +221,8 @@ export const utilisateursApi = {
   getAll:       () => api.get<any[]>('/utilisateurs').then((r) => r.data),
   toggleStatus: (id: string, estActif: boolean) =>
     api.put(`/utilisateurs/${id}/toggle-status`, { EstActif: estActif }).then((r) => r.data),
+  update:       (id: string, data: any) =>
+    api.put(`/utilisateurs/${id}`, data).then((r) => r.data),
   delete:       (id: string) => api.delete(`/utilisateurs/${id}`),
 };
 

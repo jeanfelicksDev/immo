@@ -44,3 +44,32 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return NextResponse.json({ error: error.message || 'Erreur lors de la suppression.' }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const body = await req.json();
+
+    if (body.DateFinEssai !== undefined) {
+      const { rows } = await query(
+        `UPDATE immogest.utilisateurs
+         SET date_fin_essai = $1, updated_at = NOW()
+         WHERE id = $2
+         RETURNING id AS "Id", nom_complet AS "NomComplet", email AS "Email", role AS "Role", est_actif AS "EstActif", date_fin_essai AS "DateFinEssai"`,
+        [body.DateFinEssai, id]
+      );
+
+      if (rows.length === 0) {
+        return NextResponse.json({ error: 'Utilisateur introuvable.' }, { status: 404 });
+      }
+
+      return NextResponse.json(rows[0]);
+    }
+
+    return NextResponse.json({ error: 'Aucune donnée valide fournie.' }, { status: 400 });
+  } catch (error: any) {
+    console.error('Erreur PUT /api/utilisateurs/[id]:', error);
+    return NextResponse.json({ error: error.message || 'Erreur serveur.' }, { status: 500 });
+  }
+}
+
