@@ -86,7 +86,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     drawText('• Destination : Exclusivité d\'habitation principale à l\'exclusion de tout usage commercial ou professionnel.', { x: 70, margin: 12 });
 
     // Article 2
-    drawText('ARTICLE 2 : DURÉE ET PRISE D'EFFET', { size: 10, bold: true, margin: 6 });
+    drawText('ARTICLE 2 : DURÉE ET PRISE D\'EFFET', { size: 10, bold: true, margin: 6 });
     const dateDebut = data.date_souscription ? new Date(data.date_souscription).toLocaleDateString('fr-FR') : '—';
     const dateFin = data.date_fin ? new Date(data.date_fin).toLocaleDateString('fr-FR') : 'Indéterminée';
     drawText(`Le présent contrat est conclu pour une durée de ${data.nb_mois_contrat || 12} mois, à compter du ${dateDebut} pour se terminer`, { x: 50 });
