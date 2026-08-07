@@ -196,6 +196,12 @@ export default function MaisonsPage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
+  const now = new Date();
+  const addedThisMonth = maisons.filter((m) => {
+    const d = m.CreatedAt ? new Date(m.CreatedAt) : null;
+    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
   return (
     <div className="app-layout">
       <Sidebar />
@@ -216,7 +222,9 @@ export default function MaisonsPage() {
               <div>
                 <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Total des Biens</p>
                 <h3 className="text-3xl font-display font-extrabold text-slate-900 mt-1">{maisons.length}</h3>
-                <span className="text-xs font-bold text-emerald-600 mt-1 inline-block">+2 ce mois-ci</span>
+                <span className={`text-xs font-bold mt-1 inline-block ${addedThisMonth > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  {addedThisMonth > 0 ? `+${addedThisMonth}` : '0'} ce mois-ci
+                </span>
               </div>
               <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/10">
                 <span className="material-symbols-outlined text-2xl">home_work</span>
