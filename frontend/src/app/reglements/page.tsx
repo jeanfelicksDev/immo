@@ -523,6 +523,8 @@ const DEMO_SOUSCRIPTIONS_R = [
   };
 
   const handlePrintGroupes = () => {
+    const dateNow = new Date().toLocaleDateString('fr-FR');
+    const timeNow = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const moisNom = new Date(anneeGroupee, moisGroupe - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
     const lignes = reglements.filter((r: any) => {
       const d = new Date(r.MoisConcerne || r.DatePaiement);
@@ -540,43 +542,264 @@ const DEMO_SOUSCRIPTIONS_R = [
     lignes.forEach((r: any, i: number) => {
       totalPayer += Number(r.MontantAPayer || 0);
       totalPaye += Number(r.MontantPaye || 0);
+      
+      const isPaye = r.Statut === 'Paye' || r.Statut === 'Regle' || r.Statut === 'Reglé';
+      const badgeStyle = isPaye 
+        ? 'background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;'
+        : 'background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a;';
+      const statutText = isPaye ? 'Réglé' : (r.Statut || '—');
+
       rows += `<tr>
-        <td>${i + 1}</td>
-        <td>${r.Idr || '—'}</td>
-        <td>${r.NomLocataire || '—'}</td>
+        <td style="text-align: center;">${i + 1}</td>
+        <td style="font-weight: 600; color: #0f172a;">${r.Idr || '—'}</td>
+        <td style="font-weight: 500;">${r.NomLocataire || '—'}</td>
         <td>${r.IdmMaison || '—'}</td>
-        <td>${Number(r.MontantAPayer || 0).toLocaleString('fr-FR')} FCFA</td>
-        <td>${Number(r.MontantPaye || 0).toLocaleString('fr-FR')} FCFA</td>
-        <td>${r.Statut || '—'}</td>
+        <td style="text-align: right;">${Number(r.MontantAPayer || 0).toLocaleString('fr-FR')} FCFA</td>
+        <td style="text-align: right; font-weight: 600; color: #166534;">${Number(r.MontantPaye || 0).toLocaleString('fr-FR')} FCFA</td>
+        <td style="text-align: center;">
+          <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; ${badgeStyle}">
+            ${statutText}
+          </span>
+        </td>
       </tr>`;
     });
 
     const htmlContent = `
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/>
-<title>Relevé Groupé — ${moisNom}</title>
-<style>
-  body { font-family: Arial, sans-serif; color: #111; margin: 0; padding: 30px; font-size: 12px; }
-  h1 { font-size: 18px; text-align: center; text-transform: uppercase; }
-  p.sub { text-align: center; color: #555; margin-bottom: 20px; }
-  table { width: 100%; border-collapse: collapse; }
-  th { background: #1a3a5c; color: white; padding: 8px; text-align: left; }
-  td { border: 1px solid #ddd; padding: 7px; }
-  tr:nth-child(even) { background: #f5f7fa; }
-  .total { margin-top: 20px; border: 2px solid #1a3a5c; padding: 12px; border-radius: 6px; background: #f0f4f8; }
-</style>
-</head><body>
-  <h1>Relevé des Règlements</h1>
-  <p class="sub">Période : ${moisNom}</p>
-  <table>
-    <thead><tr><th>#</th><th>N° Reçu</th><th>Locataire</th><th>Bien</th><th>Loyer</th><th>Payé</th><th>Statut</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <div class="total">
-    <strong>Total attendu :</strong> ${totalPayer.toLocaleString('fr-FR')} FCFA &nbsp;|&nbsp;
-    <strong>Total encaissé :</strong> ${totalPaye.toLocaleString('fr-FR')} FCFA &nbsp;|&nbsp;
-    <strong>Reste :</strong> ${(totalPayer - totalPaye).toLocaleString('fr-FR')} FCFA
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Relevé Groupé — ${moisNom}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Lora:ital,wght@0,400..600;1,400..600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      color: #1e293b;
+      margin: 0;
+      padding: 15mm 20mm;
+      font-size: 10.5px;
+      line-height: 1.5;
+      background-color: #fff;
+      box-sizing: border-box;
+    }
+    
+    .custom-print-header {
+      position: fixed;
+      top: 10mm;
+      left: 20mm;
+      right: 20mm;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 7.5px;
+      font-weight: 500;
+      color: #94a3b8;
+      border-bottom: 0.5px solid #e2e8f0;
+      padding-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 9999;
+    }
+    .print-layout-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .print-header-spacer {
+      height: 12mm;
+    }
+
+    /* Header & Title */
+    .statement-header {
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+    .agency-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .agency-subtitle {
+      font-size: 7.5px;
+      font-style: italic;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    .decor-line {
+      width: 60px;
+      height: 1px;
+      background-color: #d97706;
+      margin: 8px auto;
+    }
+    .statement-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 10px 0;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+    .statement-badge {
+      display: inline-block;
+      background-color: #0f172a;
+      border: 1px solid #d97706;
+      color: #fef08a;
+      font-size: 8.5px;
+      font-weight: 600;
+      padding: 4px 12px;
+      margin-top: 5px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Table styling */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      border: 1px solid #e2e8f0;
+    }
+    .data-table th {
+      background-color: #0f172a;
+      color: #fff;
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 10px 8px;
+      text-transform: uppercase;
+      border-bottom: 2px solid #d97706;
+      text-align: left;
+    }
+    .data-table td {
+      border-bottom: 1px solid #cbd5e1;
+      padding: 8px;
+      font-size: 10px;
+      color: #334155;
+    }
+    .data-table tr:nth-child(even) {
+      background-color: #fafaf9;
+    }
+    
+    /* Totals Box */
+    .totals-box {
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid #d97706;
+      background-color: #fcfbf9;
+      padding: 12px 16px;
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+    }
+    .totals-item span {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    
+    .document-footer {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 8px;
+      color: #94a3b8;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 8px;
+      letter-spacing: 0.5px;
+    }
+    
+    @media print {
+      body {
+        font-size: 10px;
+        color: #000;
+      }
+      .data-table {
+        border: 1px solid #cbd5e1;
+      }
+      .data-table th {
+        background-color: #000 !important;
+        color: #fff !important;
+        border-bottom: 1px solid #000;
+      }
+      .totals-box {
+        background-color: transparent !important;
+        border: 1px solid #cbd5e1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- En-tête Montserrat personnalisé récurrent sur chaque page -->
+  <div class="custom-print-header">
+    <span>Le ${dateNow} à ${timeNow}</span>
+    <span>Relevé Groupé — ${moisNom}</span>
   </div>
-</body></html>`;
+
+  <table class="print-layout-table">
+    <thead>
+      <tr>
+        <td>
+          <div class="print-header-spacer"></div>
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+
+          <div class="statement-header">
+            <div class="agency-title">ImmoGest platform</div>
+            <div class="agency-subtitle">Gestion Immobilière de Confiance</div>
+            <div class="decor-line"></div>
+            <h1 class="statement-title">RELEVÉ DES RÈGLEMENTS</h1>
+            <div class="statement-badge">Période : ${moisNom}</div>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 5%; text-align: center;">#</th>
+                <th style="width: 15%;">N° Reçu</th>
+                <th style="width: 25%;">Locataire</th>
+                <th style="width: 25%;">Bien</th>
+                <th style="width: 15%; text-align: right;">Loyer</th>
+                <th style="width: 15%; text-align: right;">Payé</th>
+                <th style="width: 10%; text-align: center;">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+
+          <div class="totals-box">
+            <div class="totals-item"><span>Total attendu :</span> ${totalPayer.toLocaleString('fr-FR')} FCFA</div>
+            <div class="totals-item" style="color: #166534;"><span>Total encaissé :</span> ${totalPaye.toLocaleString('fr-FR')} FCFA</div>
+            <div class="totals-item" style="color: ${(totalPayer - totalPaye) > 0 ? '#b91c1c' : '#1e293b'}"><span>Reste à percevoir :</span> ${(totalPayer - totalPaye).toLocaleString('fr-FR')} FCFA</div>
+          </div>
+
+          <div class="document-footer">
+            Relevé officiel des encaissements généré par la plateforme ImmoGest. Document confidentiel à usage administratif.
+          </div>
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>`;
 
     const printWindow = window.open('', '_blank', 'width=1100,height=700');
     if (!printWindow) {
