@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     // Vérifier si l'email existe déjà
     const existing = await query(
-      'SELECT id FROM immogest.utilisateurs WHERE LOWER(email) = LOWER($1)',
+      'SELECT id FROM immogest.utilisateurs WHERE email = $1',
       [email]
     );
     if (existing.rows.length > 0) {

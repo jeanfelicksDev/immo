@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     const { rows } = await query(
-      'SELECT id, nom_complet, email, mot_de_passe, role FROM immogest.utilisateurs WHERE LOWER(email) = LOWER($1) AND est_actif = TRUE',
+      'SELECT id, nom_complet, email, mot_de_passe, role FROM immogest.utilisateurs WHERE email = $1 AND est_actif = TRUE',
       [email]
     );
 

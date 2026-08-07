@@ -23,6 +23,13 @@ async function ensureTablesExist() {
     initPromise = (async () => {
       const client = await pool.connect();
       try {
+        // Fast-path : vérification ultra-rapide si les tables existent déjà dans la DB
+        const check = await client.query("SELECT 1 FROM information_schema.tables WHERE table_schema = 'immogest' AND table_name = 'utilisateurs' LIMIT 1;");
+        if (check.rows && check.rows.length > 0) {
+          globalForPg.isInitialized = true;
+          return;
+        }
+
         await client.query(`
           CREATE SCHEMA IF NOT EXISTS immogest;
           SET search_path TO immogest, public;
@@ -180,19 +187,15 @@ async function ensureTablesExist() {
 
 export async function query(text: string, params?: any[]) {
   await ensureTablesExist();
-  const client = await pool.connect();
   try {
-    await client.query('SET search_path TO immogest, public;');
-    const res = await client.query(text, params);
+    const res = await pool.query(text, params);
     return res;
   } catch (err: any) {
     if (err.code === '42P01' && text.includes('immogest.')) {
       const fallbackText = text.replace(/immogest\./g, 'public.');
-      const res = await client.query(fallbackText, params);
+      const res = await pool.query(fallbackText, params);
       return res;
     }
     throw err;
-  } finally {
-    client.release();
   }
 }
