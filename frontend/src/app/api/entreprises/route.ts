@@ -1,37 +1,8 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
-// Assurer que la table entreprises existe
-async function ensureEntrepriseTable() {
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS immogest.entreprises (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        denomination VARCHAR(300) NOT NULL DEFAULT 'ImmoGest Agence',
-        adresse_postale TEXT,
-        adresse_physique TEXT,
-        telephone VARCHAR(50),
-        email_commercial VARCHAR(255),
-        rccm_ifu VARCHAR(100),
-        logo_url TEXT,
-        devise VARCHAR(10) NOT NULL DEFAULT 'FCFA',
-        statut_saas VARCHAR(50) NOT NULL DEFAULT 'Essai',
-        date_debut_essai TIMESTAMPTZ DEFAULT NOW(),
-        date_fin_essai TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '14 days'),
-        est_bloque BOOLEAN NOT NULL DEFAULT FALSE,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
-  } catch (e) {
-    console.warn('[Entreprise table init]:', e);
-  }
-}
-
 export async function GET() {
   try {
-    await ensureEntrepriseTable();
-
     const { rows } = await query(`
       SELECT id AS "Id", denomination AS "Denomination",
              adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
@@ -73,7 +44,6 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    await ensureEntrepriseTable();
     const body = await req.json();
 
     // Upsert — met à jour ou crée le profil

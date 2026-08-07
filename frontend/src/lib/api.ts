@@ -7,10 +7,12 @@ import axios from 'axios';
 const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl && !envUrl.includes('localhost')) {
+    // Utilise l'URL externe seulement si c'est une vraie URL backend (ni localhost ni 127.0.0.1)
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
       return envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
     }
   }
+  // Sinon → Routes API Next.js locales (connectées directement à Neon)
   return '/api';
 };
 

