@@ -7,7 +7,7 @@ import { Sidebar, PageWrapper } from '@/components/ui';
 import { entreprisesApi } from '@/lib/api';
 
 export default function ProfilPage() {
-  const [activeTab, setActiveTab] = useState<'entreprise' | 'securite' | 'saas'>('entreprise');
+  const [activeTab, setActiveTab] = useState<'entreprise' | 'securite'>('entreprise');
   const [loading, setLoading] = useState(false);
   const [entreprise, setEntreprise] = useState<any>({
     Denomination: 'ImmoGest Agence Pro',
@@ -24,7 +24,6 @@ export default function ProfilPage() {
     EstBloque: false,
   });
 
-  const [saasClients, setSaasClients] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const { register, handleSubmit, reset, setValue, watch } = useForm({
@@ -52,7 +51,7 @@ export default function ProfilPage() {
     } catch (e) {}
   }, []);
 
-  // Charger le profil de l'entreprise et la liste SaaS
+  // Charger le profil de l'entreprise
   const loadData = async () => {
     try {
       const data = await entreprisesApi.getProfil();
@@ -72,100 +71,6 @@ export default function ProfilPage() {
           } catch {}
         }
       }
-    }
-
-    try {
-      const clients = await entreprisesApi.getSaasClients();
-      const defaultFallback = [
-        {
-          Id: '1',
-          Denomination: 'Agence Immobilière Ivoire Prestige',
-          EmailCommercial: 'contact@ivoireprestige.com',
-          Telephone: '+225 07 00 11 22 33',
-          StatutSaaS: 'Essai',
-          DateFinEssai: new Date(Date.now() + 11 * 86400000).toISOString(),
-          EstBloque: false,
-        },
-        {
-          Id: '2',
-          Denomination: 'Cabinet Foncier & Habitat Abidjan',
-          EmailCommercial: 'direction@foncierhabitat.ci',
-          Telephone: '+225 05 44 55 66 77',
-          StatutSaaS: 'Actif',
-          DateFinEssai: new Date(Date.now() + 300 * 86400000).toISOString(),
-          EstBloque: false,
-        },
-        {
-          Id: '3',
-          Denomination: 'Société Immobilière du Littoral (Non Client)',
-          EmailCommercial: 'info@littoralimmo.ci',
-          Telephone: '+225 01 22 33 44 55',
-          StatutSaaS: 'Bloque',
-          DateFinEssai: new Date(Date.now() - 5 * 86400000).toISOString(),
-          EstBloque: true,
-        },
-        {
-          Id: '4',
-          Denomination: 'Toure mamadou',
-          EmailCommercial: 'toure.mamadou@immogest.ci',
-          Telephone: '+225 07 88 99 00 11',
-          StatutSaaS: 'Actif',
-          DateFinEssai: new Date(Date.now() + 120 * 86400000).toISOString(),
-          EstBloque: false,
-        }
-      ];
-      if (clients && clients.length > 0) {
-        // Combiner pour ne pas perdre les données réelles créées tout en assurant la présence des comptes de test
-        const merged = [...clients];
-        defaultFallback.forEach(fb => {
-          if (!merged.some(c => c.Denomination.toLowerCase() === fb.Denomination.toLowerCase())) {
-            merged.push(fb);
-          }
-        });
-        setSaasClients(merged);
-      } else {
-        setSaasClients(defaultFallback);
-      }
-    } catch {
-      // Données de secours d'administration
-      setSaasClients([
-        {
-          Id: '1',
-          Denomination: 'Agence Immobilière Ivoire Prestige',
-          EmailCommercial: 'contact@ivoireprestige.com',
-          Telephone: '+225 07 00 11 22 33',
-          StatutSaaS: 'Essai',
-          DateFinEssai: new Date(Date.now() + 11 * 86400000).toISOString(),
-          EstBloque: false,
-        },
-        {
-          Id: '2',
-          Denomination: 'Cabinet Foncier & Habitat Abidjan',
-          EmailCommercial: 'direction@foncierhabitat.ci',
-          Telephone: '+225 05 44 55 66 77',
-          StatutSaaS: 'Actif',
-          DateFinEssai: new Date(Date.now() + 300 * 86400000).toISOString(),
-          EstBloque: false,
-        },
-        {
-          Id: '3',
-          Denomination: 'Société Immobilière du Littoral (Non Client)',
-          EmailCommercial: 'info@littoralimmo.ci',
-          Telephone: '+225 01 22 33 44 55',
-          StatutSaaS: 'Bloque',
-          DateFinEssai: new Date(Date.now() - 5 * 86400000).toISOString(),
-          EstBloque: true,
-        },
-        {
-          Id: '4',
-          Denomination: 'Toure mamadou',
-          EmailCommercial: 'toure.mamadou@immogest.ci',
-          Telephone: '+225 07 88 99 00 11',
-          StatutSaaS: 'Actif',
-          DateFinEssai: new Date(Date.now() + 120 * 86400000).toISOString(),
-          EstBloque: false,
-        }
-      ]);
     }
   };
 
@@ -189,25 +94,6 @@ export default function ProfilPage() {
       toast.success('Profil entreprise mis à jour en local.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleToggleBlock = async (client: any) => {
-    try {
-      await entreprisesApi.toggleBlock(client.Id);
-      toast.success(client.EstBloque ? 'Compte débloqué avec succès.' : 'Compte bloqué.');
-    } catch {
-      toast.success(client.EstBloque ? 'Compte débloqué.' : 'Compte suspendu.');
-    }
-    setSaasClients(saasClients.map(c => c.Id === client.Id ? { ...c, EstBloque: !c.EstBloque, StatutSaaS: !c.EstBloque ? 'Bloque' : 'Actif' } : c));
-  };
-
-  const handleProlongerEssai = async (client: any) => {
-    try {
-      await entreprisesApi.prolongerEssai(client.Id);
-      toast.success('Période d\'essai prolongée de +14 jours.');
-    } catch {
-      toast.success('Période d\'essai prolongée (+14j).');
     }
   };
 
@@ -294,20 +180,6 @@ export default function ProfilPage() {
               <span className="material-symbols-outlined text-lg">lock</span>
               <span>Sécurité & Mot de Passe</span>
             </button>
-
-            {isAdmin && (
-              <button
-                onClick={() => setActiveTab('saas')}
-                className={`pb-3 text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all ${
-                  activeTab === 'saas'
-                    ? 'border-slate-900 text-slate-900'
-                    : 'border-transparent text-slate-400 hover:text-slate-700'
-                }`}
-              >
-                <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
-                <span>Administration SaaS & Comptes Clients</span>
-              </button>
-            )}
           </div>
 
           {/* ════════════════════════════════════════════════════════════
@@ -502,88 +374,6 @@ export default function ProfilPage() {
               <button onClick={() => toast.success('Mot de passe mis à jour avec succès.')} className="btn btn-primary">
                 Mettre à jour le mot de passe
               </button>
-            </div>
-          )}
-
-          {/* ════════════════════════════════════════════════════════════
-             ONGLET 3 : ADMINISTRATION SAAS & COMPTES CLIENTS
-             ════════════════════════════════════════════════════════════ */}
-          {activeTab === 'saas' && isAdmin && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-display font-extrabold text-slate-900 text-lg">
-                    Panneau Super-Administrateur SaaS
-                  </h4>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Suivez les entreprises clientes, gérez leurs périodes d'essai et bloquez l'accès aux comptes suspendus.
-                  </p>
-                </div>
-              </div>
-
-              <div className="glass-card rounded-2xl overflow-hidden border border-slate-200">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-900 text-white uppercase tracking-wider text-[11px] font-bold">
-                    <tr>
-                      <th className="px-6 py-4">Entreprise Client</th>
-                      <th className="px-6 py-4">Contact & Email</th>
-                      <th className="px-6 py-4">Statut SaaS</th>
-                      <th className="px-6 py-4">Fin d'Essai / Echéance</th>
-                      <th className="px-6 py-4 text-right">Actions Administrateur</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
-                    {saasClients.map((client) => {
-                      const daysLeft = calculateDaysRemaining(client.DateFinEssai);
-                      return (
-                        <tr key={client.Id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="px-6 py-4 font-extrabold text-slate-900 text-sm">
-                            {client.Denomination}
-                          </td>
-                          <td className="px-6 py-4 text-slate-600">
-                            <div>{client.EmailCommercial}</div>
-                            <div className="text-[11px] text-slate-400 font-semibold">{client.Telephone}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            {client.EstBloque ? (
-                              <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-700 border border-rose-200">
-                                🛑 Compte Bloqué
-                              </span>
-                            ) : (
-                              <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                                ✓ {client.StatutSaaS === 'Actif' ? 'Abonnement Actif' : `Essai (${daysLeft}j restants)`}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-slate-700 font-mono font-bold">
-                            {new Date(client.DateFinEssai).toLocaleDateString('fr-FR')}
-                          </td>
-                          <td className="px-6 py-4 text-right space-x-2">
-                            <button
-                              onClick={() => handleProlongerEssai(client)}
-                              className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition-colors"
-                              title="Ajouter 14 jours d'essai gratuit"
-                            >
-                              ⏳ +14j Essai
-                            </button>
-
-                            <button
-                              onClick={() => handleToggleBlock(client)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                                client.EstBloque
-                                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                  : 'bg-rose-600 text-white hover:bg-rose-700'
-                              }`}
-                            >
-                              {client.EstBloque ? '🔓 Débloquer' : '🛑 Bloquer'}
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
             </div>
           )}
         </PageWrapper>
