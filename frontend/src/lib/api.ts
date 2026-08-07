@@ -94,8 +94,10 @@ export interface PagedResult<T> {
 // API ENDPOINTS — Dashboard
 // ════════════════════════════════════════════════════════════════
 export const dashboardApi = {
-  getKpis: (params?: Record<string, unknown>) => api.get('/dashboard/kpis', { params }).then((r) => r.data),
+  getKpis:  (params?: Record<string, unknown>) => api.get('/dashboard/kpis',  { params }).then((r) => r.data),
+  getChart: (year?: number)                    => api.get('/dashboard/chart', { params: { year: year ?? new Date().getFullYear() } }).then((r) => r.data),
 };
+
 
 // ════════════════════════════════════════════════════════════════
 // API ENDPOINTS — Auth
