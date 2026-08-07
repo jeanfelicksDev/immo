@@ -643,35 +643,43 @@ export default function DashboardPage() {
                 <div
                   key={c.Id || `sous_${c.SouscriptionId}_${idx}`}
                   onClick={() => handleSelectCreanceForPayment(c)}
-                  className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#D4AF37] hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                  className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 hover:border-[#D4AF37] hover:bg-amber-50/20 hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center text-lg font-bold border border-amber-500/20 group-hover:scale-105 transition-transform">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-slate-900 text-amber-300 flex items-center justify-center text-lg font-bold border border-amber-400/30 group-hover:scale-105 transition-transform shrink-0">
                       👤
                     </div>
                     <div>
                       <p className="font-bold text-sm text-slate-900 group-hover:text-amber-600 transition-colors">
                         {c.NomLocataire || 'Locataire'}
                       </p>
-                      <p className="text-xs text-slate-500 font-medium mt-0.5">
-                        Bien: {c.IdmMaison || 'N/A'} ({c.VilleMaison || 'Abidjan'}) • Contact: {c.ContactLocataire || '—'}
+                      <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                        Maison: {c.IdmMaison || 'N/A'} ({c.VilleMaison || 'Abidjan'}) • Contact: {c.ContactLocataire || '—'}
                       </p>
-                      <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
-                        Période: {new Date(c.MoisConcerne).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                          Mois: {new Date(c.MoisConcerne).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }).toUpperCase()}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 self-end md:self-center">
                     <div className="text-right">
-                      <p className="text-xs text-slate-400 font-semibold">Loyer Dû: {formatFCFA(c.MontantAPayer || 0)}</p>
-                      <p className="text-xs text-emerald-600 font-semibold">Déjà Versé: {formatFCFA(c.MontantPaye || 0)}</p>
-                      <p className="text-sm font-bold text-rose-600 mt-0.5">Reliquat Dû: {formatFCFA(c.ResteAPayer || 0)}</p>
+                      <p className="text-xs text-slate-500 font-semibold">
+                        Montant de la location : <span className="font-bold text-slate-800">{formatFCFA(c.MontantAPayer || 0)}</span>
+                      </p>
+                      <p className="text-xs text-emerald-600 font-semibold">
+                        Déjà versé : <span className="font-bold">{formatFCFA(c.MontantPaye || 0)}</span>
+                      </p>
+                      <p className="text-sm font-bold text-rose-600 mt-1">
+                        Reste à payer : <span className="text-base font-extrabold">{formatFCFA(c.ResteAPayer || 0)}</span>
+                      </p>
                     </div>
 
-                    <button className="btn-gold text-xs py-2 px-3 shrink-0 flex items-center gap-1 group-hover:scale-105 transition-transform">
+                    <button className="btn-gold text-xs py-2.5 px-3.5 shrink-0 flex items-center gap-1.5 shadow-xs group-hover:scale-105 transition-transform">
                       <span>Régler</span>
-                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                      <span className="material-symbols-outlined text-sm">payments</span>
                     </button>
                   </div>
                 </div>

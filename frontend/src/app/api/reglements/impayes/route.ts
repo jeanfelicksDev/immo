@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // 1. Récupérer les règlements existants non soldés (Partiel, En attente, En retard)
+    // 1. Règlements enregistrés ayant un reliquat dû (montant_a_payer > montant_paye OU statut non soldé)
     const sqlReglements = `
       SELECT r.id AS "Id", r.idr AS "Idr", r.souscription_id AS "SouscriptionId",
              s.ids AS "IdsSouscription", r.maison_id AS "MaisonId", m.idm AS "IdmMaison", m.ville AS "VilleMaison",
@@ -25,7 +25,7 @@ export async function GET() {
 
     const { rows: rowsReg } = await query(sqlReglements);
 
-    // 2. Récupérer les souscriptions actives pour lesquelles aucun règlement solde n'a été créé pour le mois en cours
+    // 2. Souscriptions actives pour lesquelles aucun règlement soldé ou partiel n'a été rattaché ce mois-ci
     const sqlSouscriptions = `
       SELECT 
         NULL AS "Id",
@@ -44,22 +44,29 @@ export async function GET() {
         0 AS "MontantPaye",
         s.montant_loyer AS "ResteAPayer",
         'En attente' AS "Statut",
-        'Loyer du mois en cours à encaisser' AS "Notes"
+        'Loyer du mois en cours à percevoir' AS "Notes"
       FROM immogest.souscriptions s
       JOIN immogest.maisons m ON s.maison_id = m.id
       JOIN immogest.locataires l ON s.locataire_id = l.id
-      WHERE LOWER(COALESCE(s.statut, '')) IN ('active', 'actif', 'en_cours', 'en cours', '')
+      WHERE (s.statut IS NULL OR LOWER(s.statut) NOT IN ('résiliée', 'resiliee', 'expirée', 'expiree', 'inactif', 'annulée'))
         AND NOT EXISTS (
           SELECT 1 FROM immogest.reglements r
           WHERE r.souscription_id = s.id
             AND DATE_TRUNC('month', r.mois_concerne) = DATE_TRUNC('month', CURRENT_DATE)
+            AND LOWER(COALESCE(r.statut, '')) IN ('regle', 'paye', 'payé')
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM immogest.reglements r
+          WHERE r.souscription_id = s.id
+            AND LOWER(COALESCE(r.statut, '')) NOT IN ('regle', 'paye', 'payé')
+            AND (r.montant_a_payer - r.montant_paye) > 0
         )
       ORDER BY s.created_at DESC
     `;
 
     const { rows: rowsSous } = await query(sqlSouscriptions);
 
-    // Combiner les deux listes de créances
+    // Combiner les créances enregistrées et les loyers du mois en cours à percevoir
     const creances = [...rowsReg, ...rowsSous];
 
     return NextResponse.json({
