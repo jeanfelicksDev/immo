@@ -155,6 +155,7 @@ const DEMO_LOCATAIRES_S = [
     const locataire = locataires.find((l) => l.Id === item.LocataireId || l.Id === item.locataire_id) || {};
 
     const dateNow = new Date().toLocaleDateString('fr-FR');
+    const timeNow = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const dateDebut = item.DateSouscription ? new Date(item.DateSouscription).toLocaleDateString('fr-FR') : '—';
     const dateFin = item.DateFin ? new Date(item.DateFin).toLocaleDateString('fr-FR') : 'Indéterminée';
     const nomProprietaire = item.NomProprietaire || "Agence Immobilière / Propriétaire";
@@ -189,16 +190,41 @@ const DEMO_LOCATAIRES_S = [
   <style>
     @page {
       size: A4;
-      margin: 15mm 20mm;
+      margin: 0;
     }
     body {
       font-family: 'Montserrat', sans-serif;
       color: #1e293b;
       margin: 0;
-      padding: 0;
+      padding: 15mm 20mm;
       font-size: 10.5px;
       line-height: 1.5;
       background-color: #fff;
+      box-sizing: border-box;
+    }
+    .custom-print-header {
+      position: fixed;
+      top: 10mm;
+      left: 20mm;
+      right: 20mm;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 7.5px;
+      font-weight: 500;
+      color: #94a3b8;
+      border-bottom: 0.5px solid #e2e8f0;
+      padding-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 9999;
+    }
+    .print-layout-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .print-header-spacer {
+      height: 12mm;
     }
     
     /* Header & Title */
@@ -452,8 +478,26 @@ const DEMO_LOCATAIRES_S = [
 </head>
 <body>
 
-  <div class="contract-header">
-    <div class="republique-title">République de Côte d'Ivoire</div>
+  <!-- En-tête Montserrat personnalisé récurrent sur chaque page -->
+  <div class="custom-print-header">
+    <span>Le ${dateNow} à ${timeNow}</span>
+    <span>Contrat de Bail Officiel — ${item.Ids || 'N/A'}</span>
+  </div>
+
+  <table class="print-layout-table">
+    <thead>
+      <tr>
+        <td>
+          <div class="print-header-spacer"></div>
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+
+          <div class="contract-header">
+            <div class="republique-title">République de Côte d'Ivoire</div>
     <div class="republique-devise">Union · Discipline · Travail</div>
     <div class="decor-line"></div>
     <h1 class="contract-title">CONTRAT DE BAIL À USAGE D'HABITATION</h1>
@@ -593,6 +637,11 @@ const DEMO_LOCATAIRES_S = [
   <div class="document-footer">
     Contrat de bail à usage d'habitation conforme à la Loi n° 2019-576 (Côte d'Ivoire). ID Contrat : ${item.Ids || 'N/A'} — Document officiel généré par la plateforme ImmoGest.
   </div>
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
 </body>
 </html>`;
