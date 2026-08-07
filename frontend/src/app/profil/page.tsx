@@ -81,17 +81,18 @@ export default function ProfilPage() {
   const onSaveProfil = async (formData: any) => {
     setLoading(true);
     try {
-      await entreprisesApi.updateProfil(formData);
-      setEntreprise(formData);
+      const updated = await entreprisesApi.updateProfil(formData);
+      const merged = { ...entreprise, ...formData, ...(updated || {}) };
+      setEntreprise(merged);
+      reset(merged);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('entreprise_profil', JSON.stringify(formData));
+        localStorage.setItem('entreprise_profil', JSON.stringify(merged));
       }
-      toast.success('Informations de l\'entreprise enregistrées avec succès.');
-    } catch {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('entreprise_profil', JSON.stringify(formData));
-      }
-      toast.success('Profil entreprise mis à jour en local.');
+      toast.success('Informations de l\'entreprise enregistrées avec succès !');
+    } catch (err: any) {
+      console.error('Erreur sauvegarde profil backend:', err);
+      const errMsg = err.response?.data?.error || err.message || 'Erreur lors de l\'enregistrement en base de données.';
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }

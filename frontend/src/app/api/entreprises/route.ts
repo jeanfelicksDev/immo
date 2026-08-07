@@ -1,8 +1,45 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
+async function ensureEntreprisesTable() {
+  await query(`CREATE SCHEMA IF NOT EXISTS immogest`);
+  await query(`
+    CREATE TABLE IF NOT EXISTS immogest.entreprises (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      denomination TEXT NOT NULL,
+      adresse_postale TEXT,
+      adresse_physique TEXT,
+      telephone VARCHAR(50),
+      email_commercial VARCHAR(255),
+      rccm_ifu VARCHAR(100),
+      logo_url TEXT,
+      devise VARCHAR(20) DEFAULT 'FCFA',
+      statut_saas VARCHAR(50) DEFAULT 'Essai',
+      date_debut_essai TIMESTAMPTZ DEFAULT NOW(),
+      date_fin_essai TIMESTAMPTZ DEFAULT NOW() + INTERVAL '14 days',
+      est_bloque BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // Assurer que les colonnes qui stockent des données volumineuses (ex: images Base64) sont au type TEXT
+  await query(`
+    ALTER TABLE immogest.entreprises 
+    ALTER COLUMN logo_url TYPE TEXT,
+    ALTER COLUMN adresse_postale TYPE TEXT,
+    ALTER COLUMN adresse_physique TYPE TEXT,
+    ALTER COLUMN denomination TYPE TEXT,
+    ALTER COLUMN rccm_ifu TYPE TEXT
+  `);
+}
+
 export async function GET() {
   try {
+    await ensureEntreprisesTable();
+
     const { rows } = await query(`
       SELECT id AS "Id", denomination AS "Denomination",
              adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
@@ -35,6 +72,11 @@ export async function GET() {
     console.error('Erreur GET /api/entreprises:', error);
     return NextResponse.json({
       Denomination: 'ImmoGest Agence Pro',
+      AdressePostale: '01 BP 4550 Abidjan 01',
+      AdressePhysique: 'Boulevard de la République, Abidjan Plateau',
+      Telephone: '+225 07 00 11 22 33',
+      EmailCommercial: 'contact@immogest.com',
+      RccmIfu: 'CI-ABJ-2026-B-88992',
       Devise: 'FCFA',
       StatutSaaS: 'Essai',
       EstBloque: false,
@@ -44,9 +86,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    await ensureEntreprisesTable();
     const body = await req.json();
 
-    // Upsert — met à jour ou crée le profil
     const existing = await query(`SELECT id FROM immogest.entreprises ORDER BY created_at ASC LIMIT 1`);
 
     if (existing.rows.length > 0) {
@@ -57,16 +99,21 @@ export async function POST(req: Request) {
             telephone = $4, email_commercial = $5, rccm_ifu = $6,
             logo_url = $7, devise = $8, updated_at = NOW()
         WHERE id = $9
-        RETURNING id AS "Id", denomination AS "Denomination", devise AS "Devise"`,
+        RETURNING id AS "Id", denomination AS "Denomination",
+                  adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
+                  telephone AS "Telephone", email_commercial AS "EmailCommercial",
+                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", devise AS "Devise",
+                  statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
+                  date_fin_essai AS "DateFinEssai", est_bloque AS "EstBloque"`,
         [
-          body.Denomination || 'ImmoGest',
-          body.AdressePostale || null,
-          body.AdressePhysique || null,
-          body.Telephone || null,
-          body.EmailCommercial || null,
-          body.RccmIfu || null,
-          body.LogoUrl || null,
-          body.Devise || 'FCFA',
+          body.Denomination || body.denomination || 'ImmoGest Agence Pro',
+          body.AdressePostale || body.adresse_postale || null,
+          body.AdressePhysique || body.adresse_physique || null,
+          body.Telephone || body.telephone || null,
+          body.EmailCommercial || body.email_commercial || null,
+          body.RccmIfu || body.rccm_ifu || null,
+          body.LogoUrl || body.logo_url || null,
+          body.Devise || body.devise || 'FCFA',
           id
         ]
       );
@@ -75,22 +122,28 @@ export async function POST(req: Request) {
       const { rows } = await query(`
         INSERT INTO immogest.entreprises (denomination, adresse_postale, adresse_physique, telephone, email_commercial, rccm_ifu, logo_url, devise)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING id AS "Id", denomination AS "Denomination", devise AS "Devise"`,
+        RETURNING id AS "Id", denomination AS "Denomination",
+                  adresse_postale AS "AdressePostale", adresse_physique AS "AdressePhysique",
+                  telephone AS "Telephone", email_commercial AS "EmailCommercial",
+                  rccm_ifu AS "RccmIfu", logo_url AS "LogoUrl", devise AS "Devise",
+                  statut_saas AS "StatutSaaS", date_debut_essai AS "DateDebutEssai",
+                  date_fin_essai AS "DateFinEssai", est_bloque AS "EstBloque"`,
         [
-          body.Denomination || 'ImmoGest',
-          body.AdressePostale || null,
-          body.AdressePhysique || null,
-          body.Telephone || null,
-          body.EmailCommercial || null,
-          body.RccmIfu || null,
-          body.LogoUrl || null,
-          body.Devise || 'FCFA'
+          body.Denomination || body.denomination || 'ImmoGest Agence Pro',
+          body.AdressePostale || body.adresse_postale || null,
+          body.AdressePhysique || body.adresse_physique || null,
+          body.Telephone || body.telephone || null,
+          body.EmailCommercial || body.email_commercial || null,
+          body.RccmIfu || body.rccm_ifu || null,
+          body.LogoUrl || body.logo_url || null,
+          body.Devise || body.devise || 'FCFA'
         ]
       );
       return NextResponse.json(rows[0], { status: 201 });
     }
   } catch (error: any) {
     console.error('Erreur POST /api/entreprises:', error);
-    return NextResponse.json({ error: error.message || 'Erreur serveur.' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Erreur serveur lors de la sauvegarde.' }, { status: 500 });
   }
 }
+
