@@ -66,6 +66,10 @@ export default function RapportsPage() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      
+      // Ouvrir directement dans un nouvel onglet pour aperçu
+      window.open(url, '_blank');
+      
       URL.revokeObjectURL(url);
       toast.success(`✅ Export CSV prêt : ${titre}`);
     } catch (err: any) {
