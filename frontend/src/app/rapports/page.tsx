@@ -63,7 +63,9 @@ export default function RapportsPage() {
       const a    = document.createElement('a');
       a.href     = url;
       a.download = `ImmoGest_${titre.replace(/[^a-zA-Z0-9]/g, '_')}_${reportYear}.csv`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success(`✅ Export CSV prêt : ${titre}`);
     } catch (err: any) {
