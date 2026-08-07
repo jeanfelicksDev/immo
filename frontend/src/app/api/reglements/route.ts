@@ -64,11 +64,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Contrat de souscription introuvable ou invalide.' }, { status: 400 });
     }
 
+    const datePaiement = body.DatePaiement ? new Date(body.DatePaiement).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    const moisConcerne = body.MoisConcerne ? new Date(body.MoisConcerne).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
     const { rows } = await query(
       `INSERT INTO immogest.reglements (idr, souscription_id, maison_id, locataire_id, date_paiement, mois_concerne, montant_a_payer, montant_paye, statut, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING id AS "Id", idr AS "Idr", montant_paye AS "MontantPaye", statut AS "Statut"`,
-      [idr, body.SouscriptionId, maisonId, locataireId, body.DatePaiement || new Date().toISOString().split('T')[0], body.MoisConcerne || new Date().toISOString().split('T')[0], body.MontantAPayer || 0, body.MontantPaye || 0, body.Statut || 'Regle', body.Notes || null]
+       RETURNING id AS "Id", idr AS "Idr", date_paiement AS "DatePaiement", mois_concerne AS "MoisConcerne", montant_paye AS "MontantPaye", statut AS "Statut"`,
+      [idr, body.SouscriptionId, maisonId, locataireId, datePaiement, moisConcerne, body.MontantAPayer || 0, body.MontantPaye || 0, body.Statut || 'Regle', body.Notes || null]
     );
 
     return NextResponse.json(rows[0], { status: 201 });

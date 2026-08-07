@@ -98,11 +98,22 @@ const DEMO_SOUSCRIPTIONS_R = [
 
   const openEdit = (item: any) => {
     setEditItem(item);
+    const datePaiementVal = item.DatePaiement 
+      ? new Date(item.DatePaiement).toISOString().split('T')[0] 
+      : new Date().toISOString().split('T')[0];
+    
+    let moisConcerneVal = new Date().toISOString().split('T')[0].substring(0, 7) + '-01';
+    if (item.MoisConcerne) {
+      try {
+        moisConcerneVal = new Date(item.MoisConcerne).toISOString().split('T')[0].substring(0, 7) + '-01';
+      } catch {}
+    }
+
     reset({
       Idr:            item.Idr,
       SouscriptionId: item.SouscriptionId,
-      DatePaiement:   item.DatePaiement,
-      MoisConcerne:   item.MoisConcerne,
+      DatePaiement:   datePaiementVal,
+      MoisConcerne:   moisConcerneVal,
       MontantAPayer:  item.MontantAPayer,
       MontantPaye:    item.MontantPaye,
       Notes:          item.Notes ?? '',
@@ -997,7 +1008,31 @@ const DEMO_SOUSCRIPTIONS_R = [
                 </div>
                 <div className="form-group">
                   <label className="form-label">Mois Concerné (Loyer de) *</label>
-                  <input type="date" {...register('MoisConcerne', { required: true })} className="form-input" />
+                  <select {...register('MoisConcerne', { required: true })} className="form-select font-semibold">
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const y = new Date().getFullYear();
+                      const val = `${y}-${String(i + 1).padStart(2, '0')}-01`;
+                      const label = new Date(y, i, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                      const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                      return (
+                        <option key={val} value={val}>
+                          {formattedLabel}
+                        </option>
+                      );
+                    })}
+                    {/* Option pour l'année précédente et l'année suivante si nécessaire */}
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const y = new Date().getFullYear() + 1;
+                      const val = `${y}-${String(i + 1).padStart(2, '0')}-01`;
+                      const label = new Date(y, i, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                      const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                      return (
+                        <option key={val} value={val}>
+                          {formattedLabel}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </div>
               </div>
 

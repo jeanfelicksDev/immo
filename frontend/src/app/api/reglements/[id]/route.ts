@@ -25,13 +25,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       return NextResponse.json({ error: 'Contrat de souscription introuvable ou invalide.' }, { status: 400 });
     }
 
+    const datePaiement = body.DatePaiement ? new Date(body.DatePaiement).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    const moisConcerne = body.MoisConcerne ? new Date(body.MoisConcerne).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
     const { rows } = await query(
       `UPDATE immogest.reglements
        SET souscription_id = $1, maison_id = $2, locataire_id = $3, date_paiement = $4,
            mois_concerne = $5, montant_a_payer = $6, montant_paye = $7, statut = $8, notes = $9, updated_at = NOW()
        WHERE id = $10
-       RETURNING id AS "Id", idr AS "Idr", montant_paye AS "MontantPaye", statut AS "Statut"`,
-      [body.SouscriptionId, maisonId, locataireId, body.DatePaiement, body.MoisConcerne, body.MontantAPayer, body.MontantPaye, body.Statut || 'Regle', body.Notes || null, id]
+       RETURNING id AS "Id", idr AS "Idr", date_paiement AS "DatePaiement", mois_concerne AS "MoisConcerne", montant_paye AS "MontantPaye", statut AS "Statut"`,
+      [body.SouscriptionId, maisonId, locataireId, datePaiement, moisConcerne, body.MontantAPayer, body.MontantPaye, body.Statut || 'Regle', body.Notes || null, id]
     );
 
     if (rows.length === 0) return NextResponse.json({ error: 'Règlement introuvable.' }, { status: 404 });
