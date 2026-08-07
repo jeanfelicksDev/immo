@@ -9,16 +9,25 @@ const formatFCFA = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' FCFA';
 
 export default function DashboardPage() {
-  const [kpis, setKpis]         = useState<any>(null);
-  const [loading, setLoading]   = useState(true);
+  const [kpis, setKpis]           = useState<any>(null);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [loading, setLoading]     = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'activity'>('overview');
 
   useEffect(() => {
-    dashboardApi.getKpis()
-      .then((res) => setKpis(res.Kpis || res.kpis || res))
-      .catch(() => {})
+    Promise.all([
+      dashboardApi.getKpis(),
+      dashboardApi.getChart(),
+    ])
+      .then(([kpiRes, chartRes]) => {
+        setKpis(kpiRes?.Kpis || kpiRes?.kpis || kpiRes);
+        setChartData(chartRes?.data || chartRes?.Data || []);
+      })
+      .catch((err) => console.error('Erreur chargement dashboard:', err))
       .finally(() => setLoading(false));
   }, []);
+
+  const maxRevenu = Math.max(1, ...chartData.map((d) => Number(d.revenus || 0)));
 
   return (
     <div className="flex min-h-screen font-sans text-slate-900 bg-slate-100/60">
@@ -275,15 +284,25 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="h-44 flex items-end gap-3 pt-6 border-t border-slate-100">
-                    {['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'].map((m, i) => (
-                      <div key={m} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                        <div
-                          className="w-full bg-gradient-to-t from-slate-900 to-slate-700 rounded-t-lg transition-all hover:brightness-125"
-                          style={{ height: `${35 + ((i * 7) % 55)}%` }}
-                        ></div>
-                        <span className="text-[10px] font-bold text-slate-400">{m}</span>
-                      </div>
-                    ))}
+                    {(chartData.length > 0
+                      ? chartData
+                      : ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'].map((m) => ({ label: m, revenus: 0 }))
+                    ).map((d) => {
+                      const val = Number(d.revenus || 0);
+                      const heightPercent = val > 0 ? Math.min(100, Math.max(12, Math.round((val / maxRevenu) * 100))) : 8;
+                      return (
+                        <div key={d.label} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative">
+                          <div className="absolute -top-7 opacity-0 group-hover:opacity-100 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded transition-opacity whitespace-nowrap z-10">
+                            {formatFCFA(val)}
+                          </div>
+                          <div
+                            className="w-full bg-gradient-to-t from-slate-900 to-amber-500 rounded-t-lg transition-all group-hover:brightness-125 shadow-xs"
+                            style={{ height: `${heightPercent}%` }}
+                          ></div>
+                          <span className="text-[10px] font-bold text-slate-400">{d.label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -333,24 +352,24 @@ export default function DashboardPage() {
               {/* KPIs Bento Analytics */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="glass-card rounded-2xl p-6 border-l-4 border-l-emerald-500">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Taux de Recouvrement</p>
-                  <p className="text-3xl font-display font-bold text-slate-900 mt-1">94.8%</p>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Taux d'Occupation</p>
+                  <p className="text-3xl font-display font-bold text-slate-900 mt-1">{kpis?.TauxOccupation ?? 0}%</p>
                   <p className="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">
                     <span className="material-symbols-outlined text-sm">trending_up</span>
-                    <span>+2.4% vs mois dernier</span>
+                    <span>Biens loués / Total parc</span>
                   </p>
                 </div>
 
                 <div className="glass-card rounded-2xl p-6 border-l-4 border-l-[#D4AF37]">
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Rendement Brut Moyen</p>
-                  <p className="text-3xl font-display font-bold text-slate-900 mt-1">8.4%</p>
-                  <p className="text-xs text-slate-500 font-semibold mt-2">Calculé sur 100% du parc géré</p>
+                  <p className="text-3xl font-display font-bold text-slate-900 mt-1">{kpis?.RendementBrut ?? 0}%</p>
+                  <p className="text-xs text-slate-500 font-semibold mt-2">Calculé sur l'ensemble du parc</p>
                 </div>
 
                 <div className="glass-card rounded-2xl p-6 border-l-4 border-l-blue-500">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Loyers Encaisssés (Cumul)</p>
-                  <p className="text-2xl font-display font-bold text-slate-900 mt-1">{formatFCFA(kpis?.TotalLoyersMensuels ? kpis.TotalLoyersMensuels * 6 : 4800000)}</p>
-                  <p className="text-xs text-blue-600 font-semibold mt-2">Semestre en cours</p>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Loyers Encaissés (Mensuel)</p>
+                  <p className="text-2xl font-display font-bold text-slate-900 mt-1">{formatFCFA(kpis?.TotalLoyersMensuels ?? 0)}</p>
+                  <p className="text-xs text-blue-600 font-semibold mt-2">Revenus réels de la base</p>
                 </div>
 
                 <div className="glass-card rounded-2xl p-6 border-l-4 border-l-purple-500">
