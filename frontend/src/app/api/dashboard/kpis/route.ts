@@ -64,10 +64,12 @@ export async function GET() {
     const loyer          = parseFloat(sous.rows[0]?.loyer   || 0);
     const caution        = parseFloat(sous.rows[0]?.caution || 0);
     const avance         = parseFloat(sous.rows[0]?.avance  || 0);
-    const impaye         = parseFloat(reg.rows[0]?.impaye   || 0);
+    const impayeReg      = parseFloat(reg.rows[0]?.impaye   || 0);
     const encaissesMois  = parseFloat(encaisses.rows[0]?.total || 0);
 
-    const revenuMensuel = encaissesMois > 0 ? encaissesMois : loyer;
+    // Reste à recouvrir réels : maximum entre les impayés enregistrés et la différence (loyers mensuels prévus - encaissés ce mois)
+    const resteDuMois    = Math.max(0, loyer - encaissesMois);
+    const resteTotal     = Math.max(impayeReg, resteDuMois);
 
     // Taux d'occupation (en %)
     const tauxOccupation = totalMaisons > 0
@@ -93,9 +95,10 @@ export async function GET() {
       TotalAvance:               avance,
       TotalAvances:              avance,
       TotalLoyerMensuel:         loyer,
-      TotalLoyersMensuels:       revenuMensuel,
-      TotalResteRecouvrir:       impaye,
-      ResteARecouvrir:           impaye,
+      TotalLoyersMensuels:       loyer,
+      TotalEncaissesMois:        encaissesMois,
+      TotalResteRecouvrir:       resteTotal,
+      ResteARecouvrir:           resteTotal,
       TauxOccupation:            tauxOccupation,
       RendementBrut:             rendementBrut,
     });
