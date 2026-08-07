@@ -488,13 +488,6 @@ ${ lignes.length === 0
                     ? <><span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> Chargement...</>
                     : <>📥 Télécharger PDF</>}
                 </button>
-                <button
-                  onClick={handleCSV}
-                  disabled={reportLoading}
-                  className="btn btn-secondary disabled:opacity-60"
-                >
-                  📊 CSV
-                </button>
               </div>
             </div>
 
