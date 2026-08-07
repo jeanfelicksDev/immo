@@ -6,13 +6,15 @@ import { Sidebar, PageWrapper } from '@/components/ui';
 import { dashboardApi, depensesApi, reglementsApi } from '@/lib/api';
 
 export default function RapportsPage() {
-  const [period, setPeriod] = useState<'month' | 'quarter' | 'year'>('month');
+  const [period, setPeriod]       = useState<'month' | 'quarter' | 'year'>('month');
   const [reportType, setReportType] = useState('financial');
   const [kpis, setKpis]           = useState<any>(null);
   const [chartData, setChartData] = useState<{ label: string; revenus: number; depenses: number }[]>([]);
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
+  const [reportYear]              = useState(new Date().getFullYear());
   const [loading, setLoading]     = useState(true);
-  const [chartLoading, setChartLoading] = useState(true);
+  const [chartLoading, setChartLoading]   = useState(true);
+  const [reportLoading, setReportLoading] = useState(false);
 
   useEffect(() => {
     dashboardApi.getKpis()
@@ -36,8 +38,126 @@ export default function RapportsPage() {
   const formatFCFA = (n: number) =>
     new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
-  const handleGenerateReport = () => {
-    toast.success(`Rapport ${reportType.toUpperCase()} généré avec succès en format PDF.`);
+  // ── Noms lisibles des types de rapport ────────────────────────────────
+  const REPORT_LABELS: Record<string, string> = {
+    financial: 'Bilan Financier & Encaissements',
+    expenses:  'Rapport des Dépenses & Factures',
+    yield:     'Rendement par Propriétaire / Bien',
+    audit:     'Audit des Contrats & Baux',
+  };
+
+  // ── Génération CSV ────────────────────────────────────────────────────
+  const handleCSV = async () => {
+    setReportLoading(true);
+    try {
+      const data = await dashboardApi.getReport(reportType, reportYear);
+      const { colonnes, lignes, titre } = data;
+      const sep = ';';
+      const rows = [
+        colonnes.join(sep),
+        ...lignes.map((row: string[]) => row.map((c: string) => `"${String(c).replace(/"/g, '""')}"`).join(sep)),
+      ].join('\r\n');
+      // BOM UTF-8 pour Excel
+      const blob = new Blob(['\uFEFF' + rows], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `ImmoGest_${titre.replace(/[^a-zA-Z0-9]/g, '_')}_${reportYear}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`✅ Export CSV prêt : ${titre}`);
+    } catch (err: any) {
+      toast.error('Erreur lors de l\'export CSV.');
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  // ── Génération PDF (via fenêtre d\'impression) ─────────────────────────
+  const handlePDF = async () => {
+    setReportLoading(true);
+    try {
+      const data = await dashboardApi.getReport(reportType, reportYear);
+      const { colonnes, lignes, titre, totaux } = data;
+      const dateNow = new Date().toLocaleDateString('fr-FR');
+      const timeNow = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+      const tableHead = colonnes.map((c: string) => `<th>${c}</th>`).join('');
+      const tableRows = lignes.map((row: string[], i: number) =>
+        `<tr class="${i % 2 === 0 ? 'even' : 'odd'}">${row.map((c: string) => `<td>${c}</td>`).join('')}</tr>`
+      ).join('');
+
+      let totauxHtml = '';
+      if (totaux) {
+        const t = totaux as any;
+        const items: string[] = [];
+        if (t.nbLignes  !== undefined) items.push(`<span><strong>Lignes :</strong> ${t.nbLignes}</span>`);
+        if (t.totalPaye !== undefined) items.push(`<span><strong>Total encaissé :</strong> ${new Intl.NumberFormat('fr-FR').format(t.totalPaye)} FCFA</span>`);
+        if (t.totalDu   !== undefined) items.push(`<span><strong>Total dû :</strong> ${new Intl.NumberFormat('fr-FR').format(t.totalDu)} FCFA</span>`);
+        if (t.total     !== undefined) items.push(`<span><strong>Total dépenses :</strong> ${new Intl.NumberFormat('fr-FR').format(t.total)} FCFA</span>`);
+        if (t.actifs    !== undefined) items.push(`<span><strong>Contrats actifs :</strong> ${t.actifs}</span>`);
+        if (t.expires   !== undefined) items.push(`<span><strong>Expirés :</strong> ${t.expires}</span>`);
+        if (t.loyerMensuelActif !== undefined) items.push(`<span><strong>Loyers mensuels actifs :</strong> ${new Intl.NumberFormat('fr-FR').format(t.loyerMensuelActif)} FCFA</span>`);
+        if (items.length) totauxHtml = `<div class="totaux">${items.join('')}</div>`;
+      }
+
+      const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/>
+<title>${titre} — ${reportYear}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Cinzel:wght@700&display=swap');
+  @page { size: A4 landscape; margin: 12mm 10mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Montserrat', Arial, sans-serif; color: #0f172a; font-size: 10px; margin:0; padding:0; background:#fff; }
+  .header { display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:10px; border-bottom:3px solid #0f172a; margin-bottom:14px; }
+  .header-left .brand { font-family:'Cinzel', serif; font-size:20px; font-weight:700; color:#0f172a; letter-spacing:2px; }
+  .header-left .subtitle { font-size:9px; color:#64748b; margin-top:2px; }
+  .header-right { text-align:right; }
+  .header-right .rapport-title { font-size:13px; font-weight:700; color:#0f172a; }
+  .header-right .rapport-meta { font-size:9px; color:#64748b; margin-top:2px; }
+  h2 { font-size:11px; font-weight:700; color:#0f172a; margin:0 0 10px; text-transform:uppercase; letter-spacing:1px; }
+  table { width:100%; border-collapse:collapse; font-size:9px; }
+  thead tr { background:#0f172a; color:#fff; }
+  thead th { padding:6px 8px; font-weight:700; text-align:left; font-size:8.5px; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+  tbody tr.even { background:#f8fafc; }
+  tbody tr.odd  { background:#fff; }
+  tbody td { padding:5px 8px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  .totaux { margin-top:14px; padding:10px 14px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; display:flex; gap:24px; flex-wrap:wrap; }
+  .totaux span { font-size:10px; color:#0f172a; }
+  .totaux strong { font-weight:700; }
+  .footer { position:fixed; bottom:0; left:0; right:0; text-align:center; font-size:8px; color:#94a3b8; padding:6px; border-top:1px solid #e2e8f0; }
+  .badge-paye { background:#dcfce7; color:#166534; padding:2px 6px; border-radius:999px; font-weight:700; }
+  .badge-retard { background:#fef2f2; color:#991b1b; padding:2px 6px; border-radius:999px; font-weight:700; }
+  .badge-attente { background:#fefce8; color:#92400e; padding:2px 6px; border-radius:999px; font-weight:700; }
+  .empty { text-align:center; padding:40px; color:#94a3b8; font-size:12px; }
+</style></head><body>
+<div class="header">
+  <div class="header-left">
+    <div class="brand">IMMOGEST</div>
+    <div class="subtitle">Gestion Immobilière Professionnelle &bull; Abidjan, Côte d\'Ivoire</div>
+  </div>
+  <div class="header-right">
+    <div class="rapport-title">${titre}</div>
+    <div class="rapport-meta">Exercice ${reportYear} &bull; Généré le ${dateNow} à ${timeNow}</div>
+  </div>
+</div>
+${ lignes.length === 0
+  ? '<div class="empty">⚠️ Aucune donnée disponible pour cette période.</div>'
+  : `<table><thead><tr>${tableHead}</tr></thead><tbody>${tableRows}</tbody></table>${totauxHtml}`
+}
+<div class="footer">ImmoGest — Document généré le ${dateNow} à ${timeNow} &bull; Confidentiel</div>
+</body></html>`;
+
+      const win = window.open('', '_blank', 'width=1200,height=850');
+      if (!win) { toast.error('Veuillez autoriser les popups pour ce site.'); return; }
+      win.document.write(html);
+      win.document.close();
+      win.addEventListener('load', () => { win.focus(); win.print(); });
+      toast.success(`✅ Rapport PDF généré : ${titre}`);
+    } catch (err: any) {
+      toast.error('Erreur lors de la génération du PDF.');
+    } finally {
+      setReportLoading(false);
+    }
   };
 
   return (
@@ -353,10 +473,20 @@ export default function RapportsPage() {
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex gap-2">
-                <button onClick={handleGenerateReport} className="btn btn-primary flex-1">
-                  📥 Télécharger PDF
+                <button
+                  onClick={handlePDF}
+                  disabled={reportLoading}
+                  className="btn btn-primary flex-1 disabled:opacity-60"
+                >
+                  {reportLoading
+                    ? <><span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> Chargement...</>
+                    : <>📥 Télécharger PDF</>}
                 </button>
-                <button onClick={() => toast.success('Export Excel CSV prêt.')} className="btn btn-secondary">
+                <button
+                  onClick={handleCSV}
+                  disabled={reportLoading}
+                  className="btn btn-secondary disabled:opacity-60"
+                >
                   📊 CSV
                 </button>
               </div>
