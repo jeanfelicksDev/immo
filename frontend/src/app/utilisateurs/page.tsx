@@ -12,6 +12,8 @@ interface UtilisateurItem {
   nomComplet?: string;
   Email?: string;
   email?: string;
+  Telephone?: string;
+  telephone?: string;
   Role?: any;
   role?: any;
   EstActif?: boolean;
@@ -36,6 +38,7 @@ export default function UtilisateursPage() {
   const [newUserData, setNewUserData] = useState({
     nom: '',
     email: '',
+    telephone: '',
     role: 'Gestionnaire',
     password: '',
   });
@@ -53,6 +56,7 @@ export default function UtilisateursPage() {
             id: 'admin-1',
             nomComplet: 'Administrateur Système',
             email: 'admin@immogest.com',
+            telephone: '+225 07 00 00 00 00',
             role: 'Administrateur',
             estActif: true,
             createdAt: '2025-01-10T10:00:00Z',
@@ -61,6 +65,7 @@ export default function UtilisateursPage() {
             id: 'demo-1',
             nomComplet: 'Jean Felicks (Démo)',
             email: 'jeanfelicks@gmail.com',
+            telephone: '+225 05 12 34 56 78',
             role: 'Gestionnaire',
             estActif: true,
             createdAt: '2025-02-01T14:30:00Z',
@@ -69,6 +74,7 @@ export default function UtilisateursPage() {
             id: 'user-2',
             nomComplet: 'Kouassi Marc',
             email: 'marc.kouassi@immo.ci',
+            telephone: '+225 01 98 76 54 32',
             role: 'Agent',
             estActif: false,
             createdAt: '2025-02-15T09:12:00Z',
@@ -83,6 +89,7 @@ export default function UtilisateursPage() {
           id: 'admin-1',
           nomComplet: 'Administrateur Système',
           email: 'admin@immogest.com',
+          telephone: '+225 07 00 00 00 00',
           role: 'Administrateur',
           estActif: true,
           createdAt: '2025-01-10T10:00:00Z',
@@ -91,6 +98,7 @@ export default function UtilisateursPage() {
           id: 'demo-1',
           nomComplet: 'Jean Felicks (Démo)',
           email: 'jeanfelicks@gmail.com',
+          telephone: '+225 05 12 34 56 78',
           role: 'Gestionnaire',
           estActif: true,
           createdAt: '2025-02-01T14:30:00Z',
@@ -99,6 +107,7 @@ export default function UtilisateursPage() {
           id: 'user-2',
           nomComplet: 'Kouassi Marc',
           email: 'marc.kouassi@immo.ci',
+          telephone: '+225 01 98 76 54 32',
           role: 'Agent',
           estActif: false,
           createdAt: '2025-02-15T09:12:00Z',
@@ -117,6 +126,7 @@ export default function UtilisateursPage() {
   const getId = (u: UtilisateurItem) => u.Id || u.id || '';
   const getNom = (u: UtilisateurItem) => u.NomComplet || u.nomComplet || 'Utilisateur';
   const getEmail = (u: UtilisateurItem) => u.Email || u.email || '';
+  const getTelephone = (u: UtilisateurItem) => u.Telephone || u.telephone || '—';
   const getRole = (u: UtilisateurItem) => {
     const r = u.Role !== undefined ? u.Role : u.role;
     if (r === 0 || r === 'Administrateur' || r === 'Admin') return 'Administrateur';
@@ -186,7 +196,7 @@ export default function UtilisateursPage() {
 
       toast.success(`Compte créé avec succès pour ${newUserData.nom} !`);
       setShowCreateModal(false);
-      setNewUserData({ nom: '', email: '', role: 'Gestionnaire', password: '' });
+      setNewUserData({ nom: '', email: '', telephone: '', role: 'Gestionnaire', password: '' });
       fetchUsers();
     } catch (err: any) {
       // Demo fallback creation
@@ -194,6 +204,7 @@ export default function UtilisateursPage() {
         id: 'usr-' + Date.now(),
         nomComplet: newUserData.nom,
         email: newUserData.email,
+        telephone: newUserData.telephone,
         role: newUserData.role,
         estActif: true,
         createdAt: new Date().toISOString(),
@@ -201,7 +212,7 @@ export default function UtilisateursPage() {
       setUsers((prev) => [newUserObj, ...prev]);
       toast.success(`Compte de ${newUserData.nom} créé avec succès !`);
       setShowCreateModal(false);
-      setNewUserData({ nom: '', email: '', role: 'Gestionnaire', password: '' });
+      setNewUserData({ nom: '', email: '', telephone: '', role: 'Gestionnaire', password: '' });
     } finally {
       setActionLoading(false);
     }
@@ -410,6 +421,7 @@ export default function UtilisateursPage() {
                 <thead className="bg-slate-900/90 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
                   <tr>
                     <th className="py-4 px-6">Utilisateur</th>
+                    <th className="py-4 px-6">Téléphone</th>
                     <th className="py-4 px-6">Rôle / Privilèges</th>
                     <th className="py-4 px-6">Statut du Compte</th>
                     <th className="py-4 px-6">Date de Création</th>
@@ -421,6 +433,7 @@ export default function UtilisateursPage() {
                     const active = getEstActif(u);
                     const nom = getNom(u);
                     const email = getEmail(u);
+                    const telephone = getTelephone(u);
                     const role = getRole(u);
                     const initials = nom
                       .split(' ')
@@ -441,6 +454,14 @@ export default function UtilisateursPage() {
                               <p className="font-bold text-white text-sm">{nom}</p>
                               <p className="text-slate-400 text-xs font-mono">{email}</p>
                             </div>
+                          </div>
+                        </td>
+
+                        {/* Telephone */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-1.5 text-slate-300 font-mono text-xs">
+                            <span className="material-symbols-outlined text-slate-500 text-sm">call</span>
+                            {telephone}
                           </div>
                         </td>
 
@@ -623,6 +644,17 @@ export default function UtilisateursPage() {
                     placeholder="ex: Désiré Yao"
                     value={newUserData.nom}
                     onChange={(e) => setNewUserData({ ...newUserData, nom: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">Numéro de Téléphone</label>
+                  <input
+                    type="tel"
+                    placeholder="ex: +225 07 12 34 56 78"
+                    value={newUserData.telephone}
+                    onChange={(e) => setNewUserData({ ...newUserData, telephone: e.target.value })}
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>

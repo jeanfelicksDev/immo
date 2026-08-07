@@ -157,86 +157,218 @@ const DEMO_LOCATAIRES_S = [
     const dateNow = new Date().toLocaleDateString('fr-FR');
     const dateDebut = item.DateSouscription ? new Date(item.DateSouscription).toLocaleDateString('fr-FR') : '—';
     const dateFin = item.DateFin ? new Date(item.DateFin).toLocaleDateString('fr-FR') : 'Indéterminée';
+    const nomProprietaire = item.NomProprietaire || "Agence Immobilière / Propriétaire";
+    const contactProprietaire = item.ContactProprietaire || "—";
+    const adresseProprietaire = item.AdresseProprietaire || "—";
+    const emailProprietaire = item.EmailProprietaire || "—";
+
+    const nomLocataire = item.NomLocataire || locataire.NomPrenoms || "—";
+    const contactLocataire = item.ContactLocataire || locataire.Contact || "—";
+    const pieceLocataire = item.PieceIdentiteLocataire || locataire.PieceIdentite || "—";
+    const professionLocataire = item.ProfessionLocataire || locataire.Profession || "—";
+    const adresseLocataire = item.AdresseLocataire || locataire.Adresse || "—";
+
+    const villeMaison = item.VilleMaison || maison.Ville || "—";
+    const typeMaison = item.TypeConstructionMaison || maison.TypeConstruction || "—";
+    const piecesMaison = item.NbPiecesMaison || maison.NbPieces || "—";
+    const descMaison = item.DescriptionMaison || maison.Description || "Non spécifiée";
+    const codeMaison = item.IdmMaison || maison.Idm || "N/A";
+
+    const cautionMois = Math.round(Number(item.MontantCaution || 0) / Number(item.MontantLoyer || 1));
+    const avanceMois = Math.round(Number(item.MontantAvance || 0) / Number(item.MontantLoyer || 1));
 
     const htmlContent = `
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Contrat de Bail — ${item.Ids || item.ids || 'N/A'}</title>
+  <title>Contrat de Bail Conforme Loi 2019-576 — ${item.Ids || 'N/A'}</title>
   <style>
-    body { font-family: Arial, sans-serif; color: #111; margin: 0; padding: 40px; font-size: 13px; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .header h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
-    .header p { color: #555; font-size: 12px; }
-    .ref-box { border: 1px solid #ddd; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; background: #f9f9f9; }
-    .ref-box span { font-weight: bold; }
-    .section { margin-bottom: 24px; }
-    .section h2 { font-size: 14px; text-transform: uppercase; color: #1a3a5c; border-bottom: 2px solid #1a3a5c; padding-bottom: 6px; margin-bottom: 12px; }
-    .section table { width: 100%; border-collapse: collapse; }
-    .section table td { padding: 6px 8px; vertical-align: top; }
-    .section table td:first-child { font-weight: bold; width: 45%; color: #333; }
-    .fin { margin-top: 60px; }
-    .sig-row { display: flex; justify-content: space-between; margin-top: 40px; }
-    .sig-box { text-align: center; width: 40%; }
-    .sig-box .sig-line { border-top: 1px solid #333; margin-top: 50px; padding-top: 8px; font-size: 11px; color: #555; }
-    @media print { body { padding: 20px; } }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #222; margin: 0; padding: 25px; font-size: 11px; line-height: 1.4; }
+    .page-header { text-align: center; margin-bottom: 20px; border-bottom: 3px double #1a3a5c; padding-bottom: 10px; }
+    .page-header h1 { font-size: 16px; font-weight: bold; color: #1a3a5c; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
+    .page-header p { font-size: 10px; color: #555; margin: 2px 0; font-weight: 500; }
+    .law-badge { display: inline-block; background-color: #f0f4f8; border: 1px solid #1a3a5c; color: #1a3a5c; font-size: 9px; font-weight: bold; padding: 3px 8px; margin-top: 5px; border-radius: 3px; }
+    .soussignes { font-weight: bold; text-align: center; text-transform: uppercase; margin: 15px 0 10px 0; font-size: 11px; color: #1a3a5c; letter-spacing: 0.5px; }
+    
+    .parties-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .partie-box { border: 1px solid #ccc; border-radius: 4px; padding: 10px; background-color: #fafafa; }
+    .partie-box h2 { font-size: 10px; font-weight: bold; color: #1a3a5c; margin: 0 0 8px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px; text-transform: uppercase; }
+    .partie-row { display: flex; margin-bottom: 4px; }
+    .partie-label { font-weight: bold; width: 120px; color: #555; }
+    .partie-value { flex: 1; }
+
+    .transition-text { text-align: center; font-weight: bold; margin: 15px 0; font-size: 10px; color: #333; text-transform: uppercase; }
+    
+    .article { margin-bottom: 12px; border-left: 2.5px solid #1a3a5c; padding-left: 8px; }
+    .article h3 { font-size: 10.5px; font-weight: bold; color: #1a3a5c; margin: 0 0 4px 0; text-transform: uppercase; }
+    .article p { margin: 0 0 4px 0; text-align: justify; }
+    .article ul { margin: 2px 0; padding-left: 15px; }
+    .article li { margin-bottom: 2px; }
+
+    .law-note { background-color: #fff9e6; border: 1px solid #ffe0b2; color: #b78103; padding: 6px; border-radius: 4px; font-size: 9px; margin-bottom: 10px; line-height: 1.3; }
+
+    .signatures-section { margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px; }
+    .signatures-intro { font-size: 10px; font-style: italic; margin-bottom: 15px; }
+    .signatures-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    .signature-box { border: 1px solid #eee; border-radius: 4px; padding: 10px; min-height: 90px; text-align: center; position: relative; }
+    .signature-box h4 { font-size: 10px; font-weight: bold; color: #1a3a5c; margin: 0 0 5px 0; text-transform: uppercase; }
+    .signature-box p.instructions { font-size: 8px; color: #888; font-style: italic; margin-bottom: 30px; }
+    .signature-placeholder { border-top: 1px dashed #ccc; width: 80%; margin: 40px auto 0 auto; padding-top: 5px; font-size: 8px; color: #999; }
+
+    .footer { text-align: center; margin-top: 30px; font-size: 8px; color: #777; border-top: 1px solid #eee; padding-top: 5px; }
+
+    @media print {
+      body { padding: 15px; font-size: 10.5px; }
+      .no-print { display: none; }
+      .page-break { page-break-before: always; }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Contrat de Bail à Usage d'Habitation</h1>
-    <p>Généré le ${dateNow}</p>
+
+  <div class="page-header">
+    <h1>CONTRAT DE BAIL À USAGE D'HABITATION</h1>
+    <p>République de Côte d'Ivoire — Union · Discipline · Travail</p>
+    <div class="law-badge">Régie par la Loi n° 2019-576 du 26 juin 2019</div>
   </div>
 
-  <div class="ref-box">
-    <span>Référence du Contrat :</span> ${item.Ids || item.ids || 'N/A'} &nbsp;&nbsp;|&nbsp;&nbsp;
-    <span>Statut :</span> ${item.Statut || item.statut || 'Actif'}
+  <div class="soussignes">Entre les soussignés :</div>
+
+  <div class="parties-grid">
+    <div class="partie-box">
+      <h2>1. LE BAILLEUR (PROPRIÉTAIRE)</h2>
+      <div class="partie-row"><div class="partie-label">Nom / Raison Sociale :</div><div class="partie-value">${nomProprietaire}</div></div>
+      <div class="partie-row"><div class="partie-label">Date & Lieu Nais. :</div><div class="partie-value">________________________</div></div>
+      <div class="partie-row"><div class="partie-label">Nationalité :</div><div class="partie-value">Ivoirienne</div></div>
+      <div class="partie-row"><div class="partie-label">Pièce d'Identité :</div><div class="partie-value">________________________</div></div>
+      <div class="partie-row"><div class="partie-label">Adresse :</div><div class="partie-value">${adresseProprietaire}</div></div>
+      <div class="partie-row"><div class="partie-label">Téléphone :</div><div class="partie-value">${contactProprietaire}</div></div>
+      <div class="partie-row"><div class="partie-label">Email :</div><div class="partie-value">${emailProprietaire}</div></div>
+      <div class="partie-row"><div class="partie-label">Représenté par :</div><div class="partie-value">Agence Immobilière</div></div>
+    </div>
+
+    <div class="partie-box">
+      <h2>2. LE LOCATAIRE (PRENEUR)</h2>
+      <div class="partie-row"><div class="partie-label">Nom & Prénoms :</div><div class="partie-value">${nomLocataire}</div></div>
+      <div class="partie-row"><div class="partie-label">Date & Lieu Nais. :</div><div class="partie-value">________________________</div></div>
+      <div class="partie-row"><div class="partie-label">Nationalité :</div><div class="partie-value">________________________</div></div>
+      <div class="partie-row"><div class="partie-label">Pièce d'Identité :</div><div class="partie-value">${pieceLocataire}</div></div>
+      <div class="partie-row"><div class="partie-label">Profession / Emp. :</div><div class="partie-value">${professionLocataire}</div></div>
+      <div class="partie-row"><div class="partie-label">Adresse Domicile :</div><div class="partie-value">${adresseLocataire}</div></div>
+      <div class="partie-row"><div class="partie-label">Téléphone :</div><div class="partie-value">${contactLocataire}</div></div>
+      <div class="partie-row"><div class="partie-label">Email :</div><div class="partie-value">________________________</div></div>
+    </div>
   </div>
 
-  <div class="section">
-    <h2>Informations des Parties</h2>
-    <table>
-      <tr><td>Bailleur / Agence :</td><td>Agence Immobilière</td></tr>
-      <tr><td>Locataire :</td><td>${locataire.NomPrenoms || item.NomLocataire || '—'}</td></tr>
-      <tr><td>Contact Locataire :</td><td>${locataire.Contact || item.ContactLocataire || '—'}</td></tr>
-      <tr><td>Pièce d'Identité :</td><td>${locataire.PieceIdentite || '—'}</td></tr>
-      <tr><td>Profession :</td><td>${locataire.Profession || '—'}</td></tr>
-      <tr><td>Adresse du Locataire :</td><td>${locataire.Adresse || '—'}</td></tr>
-    </table>
+  <div class="transition-text">Il a été convenu et arrêté ce qui suit :</div>
+
+  <div class="article">
+    <h3>Article 1 : Objet du contrat et désignation des lieux</h3>
+    <p>Le Bailleur donne à bail à usage exclusif d'habitation au Locataire, qui accepte, l'immeuble/logement désigné ci-après :</p>
+    <ul>
+      <li><strong>Situation géographique :</strong> Ville de <u>${villeMaison}</u>, Commune de <u>_________________</u>, Quartier <u>_________________</u>, Code Bien <u>${codeMaison}</u>.</li>
+      <li><strong>Description du logement :</strong> Un bien de type <u>${typeMaison}</u> comprenant <u>${piecesMaison}</u> pièce(s) principale(s). Description : <i>${descMaison}</i>.</li>
+      <li><strong>Compteurs :</strong> Électricité CIE N° <u>___________________</u> | Eau SODECI N° <u>___________________</u>.</li>
+      <li><strong>Destination :</strong> Exclusivité d'habitation principale à l'exclusion de tout usage commercial ou professionnel.</li>
+    </ul>
   </div>
 
-  <div class="section">
-    <h2>Objet du Contrat — Bien Immobilier</h2>
-    <table>
-      <tr><td>Code Maison :</td><td>${maison.Idm || item.IdmMaison || '—'}</td></tr>
-      <tr><td>Type de Bien :</td><td>${maison.TypeConstruction || item.TypeConstructionMaison || '—'}</td></tr>
-      <tr><td>Localisation :</td><td>${maison.Ville || item.VilleMaison || '—'} ${maison.Quartier ? '— ' + maison.Quartier : ''}</td></tr>
-      <tr><td>Adresse Complète :</td><td>${maison.AdresseComplete || maison.Quartier || '—'}</td></tr>
-    </table>
+  <div class="article">
+    <h3>Article 2 : Durée et prise d'effet</h3>
+    <p>Le présent contrat est conclu pour une durée de <u>${item.NbMoisContrat || 12}</u> mois, à compter du <strong>${dateDebut}</strong> pour se terminer le <strong>${dateFin}</strong>. Il se renouvellera ensuite par tacite reconduction pour une durée égale, sauf congé délivré dans les conditions prévues au présent contrat.</p>
   </div>
 
-  <div class="section">
-    <h2>Conditions du Contrat</h2>
-    <table>
-      <tr><td>Date de Début :</td><td>${dateDebut}</td></tr>
-      <tr><td>Date de Fin :</td><td>${dateFin}</td></tr>
-      <tr><td>Durée :</td><td>${item.NbMoisContrat || item.nb_mois_contrat || '—'} mois</td></tr>
-      <tr><td>Loyer Mensuel :</td><td><strong>${Number(item.MontantLoyer || item.montant_loyer || 0).toLocaleString('fr-FR')} FCFA</strong></td></tr>
-      <tr><td>Caution / Garantie :</td><td>${Number(item.MontantCaution || item.montant_caution || 0).toLocaleString('fr-FR')} FCFA</td></tr>
-      <tr><td>Avance sur Loyer :</td><td>${Number(item.MontantAvance || item.montant_avance || 0).toLocaleString('fr-FR')} FCFA</td></tr>
-      ${item.Conditions || item.conditions ? `<tr><td>Clauses Particulières :</td><td>${item.Conditions || item.conditions}</td></tr>` : ''}
-    </table>
+  <div class="article">
+    <h3>Article 3 : Loyer et charges locatives</h3>
+    <p>Le loyer mensuel principal est fixé à la somme de <strong>${Number(item.MontantLoyer || 0).toLocaleString('fr-FR')} FCFA</strong>. Les charges communes mensuelles (nettoyage, ordures) sont fixées à <strong>0 FCFA</strong>. Le montant total mensuel est payable d'avance au plus tard le <strong>5</strong> de chaque mois contre délivrance systématique d'une quittance de loyer signée par le Bailleur.</p>
+    <div class="law-note">
+      <strong>Révision du loyer (Article 32 de la loi) :</strong> Le loyer ne peut faire l'objet d'aucune révision avant un délai minimal de trois (3) ans, sauf travaux d'amélioration significatifs réalisés par le bailleur.
+    </div>
   </div>
 
-  <div class="fin">
-    <p>Lu et approuvé par les deux parties.</p>
-    <div class="sig-row">
-      <div class="sig-box">
-        <div class="sig-line">Signature du Locataire<br/>${locataire.NomPrenoms || item.NomLocataire || ''}</div>
+  <div class="page-break"></div>
+
+  <div class="article">
+    <h3>Article 4 : Dépôt de garantie et avances de loyer</h3>
+    <p>À la signature du présent contrat, le Locataire verse au Bailleur les sommes suivantes conformément aux plafonds fixés par la Loi n° 2019-576 :</p>
+    <ul>
+      <li><strong>Dépôt de garantie (Caution) :</strong> <strong>${Number(item.MontantCaution || 0).toLocaleString('fr-FR')} FCFA</strong> (soit <u>${cautionMois || 2}</u> mois de loyer - max 2 mois autorisés).</li>
+      <li><strong>Avance de loyer :</strong> <strong>${Number(item.MontantAvance || 0).toLocaleString('fr-FR')} FCFA</strong> (soit <u>${avanceMois || 1}</u> mois de loyer - max 2 mois autorisés).</li>
+    </ul>
+    <p>Le dépôt de garantie sera restitué au Locataire dans un délai maximal d'un (1) mois à compter de la remise des clés et de l'état des lieux de sortie, déduction faite des créances locatives ou frais de remise en état imputables au Locataire.</p>
+  </div>
+
+  <div class="article">
+    <h3>Article 5 : État des lieux</h3>
+    <p>Un état des lieux contradictoire est dressé à la remise des clés (entrée) et lors de la restitution des locaux (sortie). Cet acte est signé par les deux parties et annexé obligatoirement au présent contrat.</p>
+  </div>
+
+  <div class="article">
+    <h3>Article 6 : Obligations du bailleur</h3>
+    <p>Le Bailleur s'oblige à :</p>
+    <ul>
+      <li>Délivrer le logement en bon état d'usage, d'étanchéité, de sécurité et de salubrité.</li>
+      <li>Assurer au Locataire la jouissance paisible des locaux pendant toute la durée du bail.</li>
+      <li>Prendre en charge les gros travaux et réparations majeures (structure, toiture, assainissement lourd, étanchéité).</li>
+      <li>Délivrer gratuitement et sans frais une quittance écrite pour chaque paiement reçu.</li>
+    </ul>
+  </div>
+
+  <div class="article">
+    <h3>Article 7 : Obligations du locataire</h3>
+    <p>Le Locataire s'oblige à :</p>
+    <ul>
+      <li>Payer le loyer et les charges aux échéances convenues.</li>
+      <li>User paisiblement du logement selon sa destination exclusive d'habitation.</li>
+      <li>Assurer l'entretien courant du logement et effectuer les menues réparations locatives.</li>
+      <li>Ne pas transformer les lieux sans l'accord écrit préalable du Bailleur.</li>
+      <li><strong>Cession & Sous-location :</strong> Ne pas céder le bail ni sous-louer tout ou partie du logement sans l'accord écrit du Bailleur.</li>
+    </ul>
+  </div>
+
+  <div class="article">
+    <h3>Article 8 : Congé, résiliation et préavis</h3>
+    <ul>
+      <li><strong>Préavis ordinaire :</strong> Chaque partie peut résilier le contrat en notifiant à l'autre un préavis écrit de <strong>trois (3) mois</strong> par lettre recommandée ou acte de Commissaire de Justice (Huissier).</li>
+      <li><strong>Inexécution :</strong> En cas de non-paiement du loyer ou d'inexécution d'une obligation, le Bailleur délivre un commandement de payer par huissier. À défaut de régularisation dans un délai d'un (1) mois, le Bailleur pourra saisir la juridiction compétente. Toute expulsion forcée hors décision de justice est strictement interdite.</li>
+    </ul>
+  </div>
+
+  <div class="article">
+    <h3>Article 9 : Enregistrement fiscal</h3>
+    <p>Le présent contrat sera enregistré par le Bailleur ou son mandataire auprès des services compétents de la Direction Générale des Impôts (DGI) de Côte d'Ivoire dans le délai légal d'un (1) mois à compter de sa signature.</p>
+  </div>
+
+  <div class="article">
+    <h3>Article 10 : Élection de domicile et litiges</h3>
+    <p>Pour l'exécution des présentes, le Bailleur élit domicile à son adresse sus-indiquée et le Locataire dans les lieux loués. En cas de différend, les parties s'engagent à privilégier un règlement amiable. À défaut, le litige sera soumis au Tribunal de Première Instance compétent du lieu de situation de l'immeuble.</p>
+  </div>
+
+  <div class="signatures-section">
+    <div class="signatures-intro">
+      Fait à <u>${villeMaison}</u>, le <u>${dateNow}</u>, en 3 exemplaires originaux (un pour chaque partie et un pour l'enregistrement fiscal).
+    </div>
+    <div class="signatures-grid">
+      <div class="signature-box">
+        <h4>LE BAILLEUR</h4>
+        <p class="instructions">("Lu et approuvé" écrit à la main + Signature)</p>
+        <div class="signature-placeholder">Emplacement signature Bailleur</div>
       </div>
-      <div class="sig-box">
-        <div class="sig-line">Signature &amp; Cachet du Bailleur</div>
+      <div class="signature-box">
+        <h4>LE LOCATEUR (LOCATAIRE)</h4>
+        <p class="instructions">("Lu et approuvé" écrit à la main + Signature)</p>
+        <div class="signature-placeholder">Emplacement signature Locataire</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Modèle de contrat de bail à usage d'habitation conforme à la Loi n° 2019-576 du 26 juin 2019 (République de Côte d'Ivoire). Réf. contrat : ${item.Ids || 'N/A'}.
+  </div>
+
+</body>
+</html>`;>
       </div>
     </div>
   </div>

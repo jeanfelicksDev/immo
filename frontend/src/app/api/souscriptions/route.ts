@@ -11,7 +11,10 @@ export async function GET(req: Request) {
     const sql = `
       SELECT s.id AS "Id", s.ids AS "Ids", s.maison_id AS "MaisonId",
              m.idm AS "IdmMaison", m.ville AS "VilleMaison", m.type_construction AS "TypeConstructionMaison",
+             m.nb_pieces AS "NbPiecesMaison", m.description AS "DescriptionMaison",
              s.locataire_id AS "LocataireId", l.nom_prenoms AS "NomLocataire", l.contact AS "ContactLocataire",
+             l.piece_identite AS "PieceIdentiteLocataire", l.profession AS "ProfessionLocataire", l.adresse AS "AdresseLocataire",
+             p.nom_prenoms AS "NomProprietaire", p.contact AS "ContactProprietaire", p.email AS "EmailProprietaire", p.adresse AS "AdresseProprietaire",
              s.date_souscription AS "DateSouscription", s.date_fin AS "DateFin",
              s.montant_loyer AS "MontantLoyer", s.montant_caution AS "MontantCaution",
              s.montant_avance AS "MontantAvance", s.nb_mois_contrat AS "NbMoisContrat",
@@ -20,6 +23,7 @@ export async function GET(req: Request) {
       FROM immogest.souscriptions s
       JOIN immogest.maisons m ON s.maison_id = m.id
       JOIN immogest.locataires l ON s.locataire_id = l.id
+      JOIN immogest.proprietaires p ON m.proprietaire_id = p.id
       ORDER BY s.created_at DESC LIMIT $1 OFFSET $2
     `;
 
