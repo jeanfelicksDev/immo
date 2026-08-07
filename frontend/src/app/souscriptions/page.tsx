@@ -230,6 +230,26 @@ const DEMO_LOCATAIRES_S = [
     },
   ];
 
+  const activeCount = souscriptions.filter(s => s.Statut === 'Active' || s.statut === 'Active').length;
+  const suspendedCount = souscriptions.filter(s => s.Statut === 'Suspendue' || s.statut === 'Suspendue').length;
+  const totalCurrent = activeCount + suspendedCount;
+  const healthScore = totalCurrent > 0 ? Math.round((activeCount / totalCurrent) * 1000) / 10 : 100;
+
+  let healthLabel = 'Aucun contrat';
+  let healthColor = 'text-slate-400';
+  if (totalCurrent > 0) {
+    if (healthScore >= 90) {
+      healthLabel = 'Portefeuille sain';
+      healthColor = 'text-blue-600';
+    } else if (healthScore >= 70) {
+      healthLabel = 'Portefeuille moyen';
+      healthColor = 'text-amber-600';
+    } else {
+      healthLabel = 'Portefeuille critique';
+      healthColor = 'text-rose-600';
+    }
+  }
+
   return (
     <div className="app-layout">
       <Sidebar />
@@ -286,8 +306,12 @@ const DEMO_LOCATAIRES_S = [
             <div className="glass-card rounded-xl p-6 flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Score de Santé</p>
-                <h3 className="text-3xl font-display font-bold text-slate-900 mt-1">98.4%</h3>
-                <span className="text-xs font-semibold text-blue-600 mt-1 inline-block">Portefeuille sain</span>
+                <h3 className="text-3xl font-display font-bold text-slate-900 mt-1">
+                  {healthScore}%
+                </h3>
+                <span className={`text-xs font-semibold mt-1 inline-block ${healthColor}`}>
+                  {healthLabel}
+                </span>
               </div>
               <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
                 <span className="material-symbols-outlined text-2xl">verified_user</span>
