@@ -514,8 +514,6 @@ const DEMO_LOCATAIRES_S = [
     </div>
   </div>
 
-  <div class="page-break"></div>
-
   <div class="article">
     <h3 class="article-title">Article 4 : Dépôt de garantie et avances sur loyer</h3>
     <p>À titre de garantie de l'exécution de ses obligations, le Locataire verse à la signature les sommes suivantes plafonnées par la loi :</p>
@@ -525,6 +523,8 @@ const DEMO_LOCATAIRES_S = [
     </ul>
     <p>Le dépôt de garantie sera restitué au Locataire dans un délai maximum d'un (1) mois à compter de la restitution des clés, après déduction faite des réparations locatives justifiées et éventuels impayés.</p>
   </div>
+
+  <div class="page-break"></div>
 
   <div class="article">
     <h3 class="article-title">Article 5 : État des lieux d'entrée et de sortie</h3>
