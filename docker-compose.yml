@@ -1,6 +1,7 @@
 services:
   # ─────────────────────────────────────────────
-  # PostgreSQL — Base de données principale
+  # PostgreSQL — Base de données locale (dev uniquement)
+  # En production : Neon Cloud PostgreSQL est utilisé
   # ─────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
@@ -45,52 +46,6 @@ services:
     networks:
       - immogest_network
 
-  # ─────────────────────────────────────────────
-  # Backend — API .NET 8
-  # ─────────────────────────────────────────────
-  api:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: immogest_api
-    restart: unless-stopped
-    environment:
-      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
-      ASPNETCORE_URLS: http://+:80
-      ConnectionStrings__DefaultConnection: "Host=${POSTGRES_HOST:-ep-divine-dust-a2cycplf-pooler.eu-central-1.aws.neon.tech};Port=${POSTGRES_PORT:-5432};Database=${POSTGRES_DB:-neondb};Username=${POSTGRES_USER:-neondb_owner};Password=${POSTGRES_PASSWORD:-npg_ap5ozqnMg7NJ};Ssl Mode=Require;Trust Server Certificate=true;"
-      JWT__Secret: ${JWT_SECRET:-ImmoGestSuperSecretKey2025!@#ChangeThisInProduction}
-      JWT__Issuer: ${JWT_ISSUER:-ImmoGest}
-      JWT__Audience: ${JWT_AUDIENCE:-ImmoGestClients}
-      JWT__ExpirationHours: ${JWT_EXPIRATION_HOURS:-24}
-      AllowedOrigins: ${FRONTEND_URL:-http://localhost:3000}
-    ports:
-      - "${API_PORT:-5055}:80"
-    networks:
-      - immogest_network
-    volumes:
-      - api_uploads:/app/uploads
-
-  # ─────────────────────────────────────────────
-  # Frontend — Next.js 14
-  # ─────────────────────────────────────────────
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5055}
-    container_name: immogest_frontend
-    restart: unless-stopped
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5055}
-      NODE_ENV: ${NODE_ENV:-production}
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    depends_on:
-      - api
-    networks:
-      - immogest_network
-
 # ─────────────────────────────────────────────
 # Volumes persistants
 # ─────────────────────────────────────────────
@@ -98,8 +53,6 @@ volumes:
   postgres_data:
     driver: local
   pgadmin_data:
-    driver: local
-  api_uploads:
     driver: local
 
 # ─────────────────────────────────────────────
