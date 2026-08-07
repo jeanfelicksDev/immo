@@ -160,16 +160,6 @@ const DEMO_SOUSCRIPTIONS_R = [
       toast.error(`Échec d'enregistrement en base : ${msg}`);
     }
   };
-        await reglementsApi.create(payload);
-        toast.success('Règlement enregistré avec succès.');
-      }
-      fetchData();
-      setShowModal(false);
-    } catch (err: any) {
-      const msg = err.response?.data?.error || err.response?.data?.message || (err.response ? 'Erreur lors de la sauvegarde.' : 'Serveur API non disponible.');
-      toast.error(`Échec d'enregistrement en base : ${msg}`);
-    }
-  };
 
   const handlePrintRecu = (item: any) => {
     const dateNow = new Date().toLocaleDateString('fr-FR');
