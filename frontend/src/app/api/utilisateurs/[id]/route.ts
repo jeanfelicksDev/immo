@@ -30,15 +30,15 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     }
 
     const res = await query(
-      `DELETE FROM immogest.utilisateurs WHERE id = $1 RETURNING id`,
+      `DELETE FROM immogest.utilisateurs WHERE id::text = $1 OR email = $1 RETURNING id`,
       [id]
     );
 
     if (res.rowCount === 0) {
-      return NextResponse.json({ error: 'Utilisateur introuvable.' }, { status: 404 });
+      return NextResponse.json({ error: 'Utilisateur introuvable en base de données.' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, message: 'Utilisateur supprimé.' });
+    return NextResponse.json({ success: true, message: 'Utilisateur supprimé avec succès.' });
   } catch (error: any) {
     console.error('Erreur DELETE /api/utilisateurs/[id]:', error);
     return NextResponse.json({ error: error.message || 'Erreur lors de la suppression.' }, { status: 500 });

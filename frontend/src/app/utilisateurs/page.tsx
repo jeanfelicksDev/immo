@@ -235,14 +235,18 @@ export default function UtilisateursPage() {
   const handleConfirmDelete = async () => {
     if (!userToDelete) return;
     const userId = getId(userToDelete);
+    const userEmail = getEmail(userToDelete);
+    const deleteTarget = userId || userEmail;
+
     setActionLoading(true);
     try {
-      await utilisateursApi.delete(userId);
-      toast.success(`Le compte de ${getNom(userToDelete)} a été supprimé définitivement.`);
-      setUsers((prev) => prev.filter((u) => getId(u) !== userId));
+      await utilisateursApi.delete(deleteTarget);
+      toast.success(`Le compte de ${getNom(userToDelete)} a été supprimé définitivement de la base de données.`);
+      setUsers((prev) => prev.filter((u) => getId(u) !== userId && getEmail(u) !== userEmail));
     } catch (err: any) {
-      setUsers((prev) => prev.filter((u) => getId(u) !== userId));
-      toast.success(`Compte de ${getNom(userToDelete)} supprimé.`);
+      console.error('Erreur lors de la suppression backend:', err);
+      const errMsg = err.response?.data?.error || err.message || 'Impossible de supprimer le compte en base de données.';
+      toast.error(errMsg);
     } finally {
       setActionLoading(false);
       setShowDeleteModal(false);
