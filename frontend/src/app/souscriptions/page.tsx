@@ -368,11 +368,6 @@ const DEMO_LOCATAIRES_S = [
   </div>
 
 </body>
-</html>`;>
-      </div>
-    </div>
-  </div>
-</body>
 </html>`;
 
     const printWindow = window.open('', '_blank', 'width=900,height=700');
