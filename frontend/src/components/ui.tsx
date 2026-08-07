@@ -221,14 +221,15 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  maxWidth?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, footer, maxWidth }: ModalProps) {
   if (!isOpen) return null;
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-panel">
+      <div className={`modal-panel ${maxWidth || ''}`}>
         <div className="modal-header">
           <div className="flex items-center gap-3">
             <span className="w-1.5 h-6 bg-gradient-to-b from-[#FFE088] to-[#D4AF37] rounded-full shadow-sm"></span>
