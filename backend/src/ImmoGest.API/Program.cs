@@ -31,7 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         dataSource,
         npgsql => npgsql
             .MigrationsAssembly("ImmoGest.Infrastructure")
-            .EnableRetryOnFailure(maxRetryCount: 3, TimeSpan.FromSeconds(5), null)
+            .EnableRetryOnFailure(maxRetryCount: 2, TimeSpan.FromSeconds(2), null)
     )
 );
 

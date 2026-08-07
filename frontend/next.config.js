@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5055';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5055';
 
 const nextConfig = {
   output: 'standalone',   // Requis pour le Dockerfile multi-stage

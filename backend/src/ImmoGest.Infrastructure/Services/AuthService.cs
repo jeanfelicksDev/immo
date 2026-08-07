@@ -37,9 +37,9 @@ public class AuthService : IAuthService
             { "jeanfelicks@gmail.com", ("Jean Felicks (Admin)",   "admin") }
         };
 
-        // Recherche par email insensible à la casse
+        // Recherche par email (utilise l'index unique de la table utilisateurs)
         var user = await _db.Utilisateurs
-            .FirstOrDefaultAsync(u => u.Email.ToLower() == emailNorm, ct);
+            .FirstOrDefaultAsync(u => u.Email == emailNorm, ct);
 
         // Si le compte admin prédéfini n'existe pas en base, on le crée
         if (user is null && adminAccounts.TryGetValue(emailNorm, out var adminData))
@@ -48,7 +48,7 @@ public class AuthService : IAuthService
             {
                 NomComplet = adminData.Nom,
                 Email      = emailNorm,
-                MotDePasse = BCrypt.Net.BCrypt.HashPassword(adminData.Password, workFactor: 12),
+                MotDePasse = BCrypt.Net.BCrypt.HashPassword(adminData.Password, workFactor: 10),
                 Role       = RoleUtilisateur.Administrateur,
                 EstActif   = true
             };
@@ -73,7 +73,7 @@ public class AuthService : IAuthService
         // Auto-réparation si le mot de passe correspond au mot de passe connu des admins
         if (!isPasswordValid && adminAccounts.TryGetValue(emailNorm, out var knownData) && request.MotDePasse == knownData.Password)
         {
-            user.MotDePasse = BCrypt.Net.BCrypt.HashPassword(request.MotDePasse, workFactor: 12);
+            user.MotDePasse = BCrypt.Net.BCrypt.HashPassword(request.MotDePasse, workFactor: 10);
             user.EstActif   = true;
             user.Role       = RoleUtilisateur.Administrateur;
             await _db.SaveChangesAsync(ct);
@@ -93,14 +93,14 @@ public class AuthService : IAuthService
     {
         var emailNorm = request.Email.ToLower().Trim();
 
-        if (await _db.Utilisateurs.AnyAsync(u => u.Email.ToLower() == emailNorm, ct))
+        if (await _db.Utilisateurs.AnyAsync(u => u.Email == emailNorm, ct))
             throw new InvalidOperationException($"Un compte existe déjà avec l'adresse {request.Email}.");
 
         var user = new Utilisateur
         {
             NomComplet = request.NomComplet.Trim(),
             Email      = emailNorm,
-            MotDePasse = BCrypt.Net.BCrypt.HashPassword(request.MotDePasse, workFactor: 12),
+            MotDePasse = BCrypt.Net.BCrypt.HashPassword(request.MotDePasse, workFactor: 10),
             Role       = request.Role
         };
 
@@ -125,7 +125,7 @@ public class AuthService : IAuthService
     public async Task RevokeTokenAsync(string email, CancellationToken ct = default)
     {
         var emailNorm = email.Trim().ToLower();
-        var user = await _db.Utilisateurs.FirstOrDefaultAsync(u => u.Email.ToLower() == emailNorm, ct);
+        var user = await _db.Utilisateurs.FirstOrDefaultAsync(u => u.Email == emailNorm, ct);
         if (user is null) return;
 
         user.RefreshToken = null;
