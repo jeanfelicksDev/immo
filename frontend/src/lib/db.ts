@@ -1,44 +1,48 @@
-import { neon, neonConfig } from '@neondatabase/serverless';
+import { Pool } from 'pg';
 
 // ════════════════════════════════════════════════════════════════
-// Driver Neon Serverless — ImmoGest
-// Utilise HTTP au lieu de TCP/SSL → jusqu'à 10x plus rapide sur Vercel
+// Pool PostgreSQL — ImmoGest (Neon Cloud via pg)
 // ════════════════════════════════════════════════════════════════
-
-// Cache la connexion HTTP entre les invocations Lambda sur le même container
-neonConfig.fetchConnectionCache = true;
 
 const connectionString = process.env.DATABASE_URL ||
   'postgresql://neondb_owner:npg_ap5ozqnMg7NJ@ep-divine-dust-a2cycplf-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require';
 
-// Instance SQL singleton (réutilisée entre invocations sur le même container)
-const globalForNeon = globalThis as unknown as { _neonSql?: ReturnType<typeof neon> };
+// Singleton pool : réutilisé entre les invocations sur le même container
+const globalForPg = globalThis as unknown as { _immoPool?: Pool };
 
-function getSql() {
-  if (!globalForNeon._neonSql) {
-    globalForNeon._neonSql = neon(connectionString);
+function getPool(): Pool {
+  if (!globalForPg._immoPool) {
+    globalForPg._immoPool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+      max: 5,                       // Limite pour ne pas saturer Neon Free
+      idleTimeoutMillis: 10000,     // Libère rapidement les connexions inactives
+      connectionTimeoutMillis: 8000,
+    });
+    globalForPg._immoPool.on('error', (err) => {
+      console.error('[Pool Error]:', err.message);
+    });
   }
-  return globalForNeon._neonSql;
+  return globalForPg._immoPool;
 }
 
 // ════════════════════════════════════════════════════════════════
-// Fonction query — Compatible avec l'API pg (rows + rowCount)
+// Fonction query — Sans vérification DDL lente à chaque appel
 // ════════════════════════════════════════════════════════════════
 
 export async function query(text: string, params?: any[]) {
-  const sql = getSql();
+  const pool = getPool();
   try {
-    const result = await sql(text, params || [], { fullResults: true });
-    return result as any;
+    return await pool.query(text, params);
   } catch (err: any) {
     // Fallback si table introuvable dans immogest → essaie dans public
     if (err.code === '42P01' && text.includes('immogest.')) {
       const fallback = text.replace(/immogest\./g, 'public.');
-      return sql(fallback, params || [], { fullResults: true }) as any;
+      return pool.query(fallback, params);
     }
     throw err;
   }
 }
 
-// Export de compatibilité (pour les routes qui importent `pool`)
-export const pool = { query } as any;
+// Export du pool pour compatibilité
+export const pool = getPool();
