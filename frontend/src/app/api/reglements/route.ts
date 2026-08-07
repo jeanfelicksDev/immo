@@ -8,6 +8,15 @@ export async function GET(req: Request) {
     const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
     const offset = (page - 1) * pageSize;
 
+    // Déduplication automatique : Fusionner et conserver 1 seul reçu unique par contrat et par mois concerné
+    await query(`
+      DELETE FROM immogest.reglements r1
+      USING immogest.reglements r2
+      WHERE r1.souscription_id = r2.souscription_id
+        AND DATE_TRUNC('month', r1.mois_concerne) = DATE_TRUNC('month', r2.mois_concerne)
+        AND r1.id < r2.id;
+    `);
+
     const sql = `
       SELECT r.id AS "Id", r.idr AS "Idr", r.souscription_id AS "SouscriptionId",
              s.ids AS "IdsSouscription", r.maison_id AS "MaisonId", m.idm AS "IdmMaison",
@@ -48,7 +57,7 @@ export async function POST(req: Request) {
     let maisonId = body.MaisonId;
     let locataireId = body.LocataireId;
 
-    // Resoudre maison_id et locataire_id a partir de la souscription si non fournies
+    // Résoudre maison_id et locataire_id à partir de la souscription si non fournies
     if ((!maisonId || !locataireId) && body.SouscriptionId) {
       const sRes = await query(
         `SELECT maison_id, locataire_id FROM immogest.souscriptions WHERE id = $1`,
@@ -66,6 +75,34 @@ export async function POST(req: Request) {
 
     const datePaiement = body.DatePaiement ? new Date(body.DatePaiement).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
     const moisConcerne = body.MoisConcerne ? new Date(body.MoisConcerne).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+    // Vérification : si une quittance existe déjà pour ce contrat et ce mois concerné, la METTRE À JOUR au lieu d'en créer un doublon
+    const existing = await query(
+      `SELECT id, idr, montant_paye, montant_a_payer, notes FROM immogest.reglements
+       WHERE souscription_id = $1 AND DATE_TRUNC('month', mois_concerne) = DATE_TRUNC('month', $2::date)
+       ORDER BY created_at DESC LIMIT 1`,
+      [body.SouscriptionId, moisConcerne]
+    );
+
+    if (existing.rows.length > 0) {
+      const existingId = existing.rows[0].id;
+      const mAPayer = Math.max(Number(body.MontantAPayer || 0), Number(existing.rows[0].montant_a_payer || 0));
+      const mPaye = Math.max(Number(body.MontantPaye || 0), Number(existing.rows[0].montant_paye || 0));
+      const estSolde = mPaye >= mAPayer;
+
+      const newNotes = body.Notes || '';
+      const oldNotes = existing.rows[0].notes || '';
+      const combinedNotes = newNotes ? (oldNotes && !oldNotes.includes(newNotes) ? `${newNotes} | ${oldNotes}` : oldNotes) : oldNotes;
+
+      const updateRes = await query(
+        `UPDATE immogest.reglements
+         SET date_paiement = $1, montant_a_payer = $2, montant_paye = $3, statut = $4, notes = $5, updated_at = NOW()
+         WHERE id = $6
+         RETURNING id AS "Id", idr AS "Idr", date_paiement AS "DatePaiement", mois_concerne AS "MoisConcerne", montant_paye AS "MontantPaye", statut AS "Statut"`,
+        [datePaiement, mAPayer, mPaye, estSolde ? 'Regle' : (body.Statut || 'Partiel'), combinedNotes, existingId]
+      );
+      return NextResponse.json(updateRes.rows[0], { status: 200 });
+    }
 
     const { rows } = await query(
       `INSERT INTO immogest.reglements (idr, souscription_id, maison_id, locataire_id, date_paiement, mois_concerne, montant_a_payer, montant_paye, statut, notes)
