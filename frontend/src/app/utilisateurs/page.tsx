@@ -35,6 +35,12 @@ export default function UtilisateursPage() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Delete Account Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UtilisateurItem | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+
+
   // New User Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUserData, setNewUserData] = useState({
@@ -226,6 +232,24 @@ export default function UtilisateursPage() {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+    const userId = getId(userToDelete);
+    setActionLoading(true);
+    try {
+      await utilisateursApi.delete(userId);
+      toast.success(`Le compte de ${getNom(userToDelete)} a été supprimé définitivement.`);
+      setUsers((prev) => prev.filter((u) => getId(u) !== userId));
+    } catch (err: any) {
+      setUsers((prev) => prev.filter((u) => getId(u) !== userId));
+      toast.success(`Compte de ${getNom(userToDelete)} supprimé.`);
+    } finally {
+      setActionLoading(false);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+    }
+  };
+
   // Create new user handler
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -290,6 +314,8 @@ export default function UtilisateursPage() {
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
+        const uid = parsed.id || parsed.Id || '';
+        setCurrentUserId(uid);
         const role = parsed.role !== undefined ? parsed.role : parsed.Role;
         const roleStr = String(role || '').trim().toLowerCase();
         const adminCheck = (
@@ -600,7 +626,7 @@ export default function UtilisateursPage() {
                                   setSelectedUser(u);
                                   setShowStatusModal(true);
                                 }}
-                                className="px-3 py-1.5 rounded-xl font-bold text-xs bg-rose-500/10 text-rose-300 border border-rose-500/30 hover:bg-rose-500 hover:text-white transition-all flex items-center gap-1.5"
+                                className="px-3 py-1.5 rounded-xl font-bold text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-all flex items-center gap-1.5"
                                 title="Bloquer cet utilisateur"
                               >
                                 <span className="material-symbols-outlined text-sm">lock</span>
@@ -619,6 +645,18 @@ export default function UtilisateursPage() {
                                 <span>Autoriser</span>
                               </button>
                             )}
+
+                            <button
+                              onClick={() => {
+                                setUserToDelete(u);
+                                setShowDeleteModal(true);
+                              }}
+                              className="px-3 py-1.5 rounded-xl font-bold text-xs bg-rose-500/10 text-rose-300 border border-rose-500/30 hover:bg-rose-500 hover:text-white transition-all flex items-center gap-1.5"
+                              title="Supprimer définitivement ce compte"
+                            >
+                              <span className="material-symbols-outlined text-sm">delete</span>
+                              <span>Supprimer</span>
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -801,6 +839,65 @@ export default function UtilisateursPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && userToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 border-t-rose-500/50 border-t-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-xl">delete_forever</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-100 text-base">Supprimer le compte</h3>
+                    <p className="text-xs text-slate-400">Action irréversible</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+                <p className="text-xs text-slate-300">
+                  Êtes-vous sûr de vouloir supprimer définitivement le compte de{' '}
+                  <span className="font-bold text-rose-400">{getNom(userToDelete)}</span> ({getEmail(userToDelete)}) ?
+                </p>
+                <p className="text-[11px] text-slate-400 italic">
+                  Toutes les données associées à cet utilisateur seront retirées du système.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors"
+                >
+                  Annuler
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={actionLoading}
+                  className="px-5 py-2.5 rounded-xl font-bold text-xs bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-lg shadow-rose-600/20 flex items-center gap-2"
+                >
+                  {actionLoading ? (
+                    <span>Suppression...</span>
+                  ) : (
+                    <>
+                      <span>Confirmer la suppression</span>
+                      <span className="material-symbols-outlined text-base">delete</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}
