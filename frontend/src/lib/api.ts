@@ -31,6 +31,14 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
+    // Normalisation de l'erreur pour éviter le problème [object Object] dans les toasts
+    if (err.response?.data) {
+      const data = err.response.data;
+      if (data.error && typeof data.error === 'object') {
+        data.error = data.error.message || data.error.error || JSON.stringify(data.error);
+      }
+    }
+
     const original = err.config;
 
     // Redirection propre vers /login si 401 (non authentifié / token expiré)
