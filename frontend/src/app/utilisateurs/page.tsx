@@ -841,6 +841,8 @@ export default function UtilisateursPage() {
               </form>
             </div>
           </div>
+        )}
+
         {/* Delete Confirmation Modal */}
         {showDeleteModal && userToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
