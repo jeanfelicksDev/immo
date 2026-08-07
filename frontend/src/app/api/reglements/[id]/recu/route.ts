@@ -58,9 +58,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       return new NextResponse('ID invalide', { status: 400 });
     }
 
-    // 1. Récupérer le règlement
+    // 1. Récupérer le règlement actuel avec les associations
     const sql = `
-      SELECT r.id, r.idr, r.date_paiement, r.mois_concerne, r.montant_a_payer, r.montant_paye, r.statut, r.notes,
+      SELECT r.id, r.idr, r.souscription_id, r.date_paiement, r.mois_concerne, r.montant_a_payer, r.montant_paye, r.statut, r.notes,
              s.ids AS code_souscription, m.idm AS code_maison, m.ville, m.type_construction,
              l.nom_prenoms, l.contact
       FROM immogest.reglements r
@@ -76,6 +76,53 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 
     const data = rows[0];
+
+    // 1b. Récupérer l'historique de tous les règlements pour ce contrat et ce mois (règlement échelonné)
+    const { rows: historyRows } = await query(`
+      SELECT r.id, r.idr, r.date_paiement, r.montant_paye, r.montant_a_payer, r.statut, r.notes
+      FROM immogest.reglements r
+      WHERE r.souscription_id = $1 
+        AND DATE_TRUNC('month', r.mois_concerne) = DATE_TRUNC('month', $2::date)
+      ORDER BY r.date_paiement ASC, r.created_at ASC
+    `, [data.souscription_id, data.mois_concerne]);
+
+    // Reconstitution des tranches versées (échéancier)
+    let tranches: Array<{ num: string; date: string; mode: string; montant: number }> = [];
+
+    if (historyRows.length > 1) {
+      tranches = historyRows.map((h: any, idx: number) => ({
+        num: `Tranche ${idx + 1}`,
+        date: new Date(h.date_paiement).toLocaleDateString('fr-FR'),
+        mode: h.notes || (h.statut === 'Regle' ? 'Solde final' : 'Acompte'),
+        montant: Number(h.montant_paye || 0),
+      }));
+    } else {
+      const totalPaye = Number(data.montant_paye || 0);
+      const notesStr = data.notes || '';
+      
+      if (notesStr.includes('|')) {
+        const parts = notesStr.split('|');
+        let currentSum = 0;
+        parts.forEach((p, idx) => {
+          const match = p.match(/(\d[\d\s]*)\s*(FCFA|F)?/i);
+          const amt = match ? Number(match[1].replace(/\s/g, '')) : (idx === parts.length - 1 ? Math.max(0, totalPaye - currentSum) : Math.round(totalPaye / parts.length));
+          currentSum += amt;
+          tranches.push({
+            num: `Tranche ${idx + 1}`,
+            date: new Date(data.date_paiement).toLocaleDateString('fr-FR'),
+            mode: p.trim(),
+            montant: amt > 0 ? amt : totalPaye,
+          });
+        });
+      } else {
+        tranches.push({
+          num: 'Tranche Unique',
+          date: new Date(data.date_paiement).toLocaleDateString('fr-FR'),
+          mode: data.notes || (data.statut === 'Regle' ? 'Paiement Solde' : 'Acompte'),
+          montant: totalPaye,
+        });
+      }
+    }
 
     // 2. Récupérer les informations de l'entreprise (Logo & Signature)
     const { rows: entrepRows } = await query(`
@@ -185,9 +232,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     // ─── INFORMATIONS GÉNÉRALES ────────────────────────────────
     drawText(`Réf. Quittance : ${data.idr || id}`, { bold: true, size: 10 });
-    drawText(`Date d'émission / paiement : ${new Date(data.date_paiement).toLocaleDateString('fr-FR')}`, { size: 9.5 });
+    drawText(`Date d'émission : ${new Date(data.date_paiement).toLocaleDateString('fr-FR')}`, { size: 9.5 });
     drawText(`Mois concerné : ${new Date(data.mois_concerne).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }).toUpperCase()}`, { size: 9.5, bold: true });
-    drawText(`Statut du règlement : ${data.statut === 'Regle' ? 'RÉGLÉ / PAYÉ (SOLDE)' : data.statut}`, { size: 9.5 });
+    drawText(`Statut du règlement : ${data.statut === 'Regle' ? 'RÉGLÉ / SOLDÉ' : 'PARTIEL / ÉCHELONNÉ'}`, { size: 9.5 });
     y -= 15;
 
     // ─── LOCATAIRE & BIEN IMMOBILIER ────────────────────────────
@@ -213,22 +260,121 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     y -= 105;
 
-    // ─── DÉTAILS DU PAIEMENT ────────────────────────────────────
-    drawText('DÉTAILS DES MONTANTS RÈGLÉS :', { size: 11, bold: true, color: cPrimary, margin: 10 });
-    drawText(`Loyer mensuel prévu : ${Number(data.montant_a_payer || 0).toLocaleString('fr-FR')} ${entreprise.devise || 'FCFA'}`, { size: 10 });
-    drawText(`Montant effectivement encaissé : ${Number(data.montant_paye || 0).toLocaleString('fr-FR')} ${entreprise.devise || 'FCFA'}`, { size: 10, bold: true, color: rgb(16 / 255, 185 / 255, 129 / 255) });
+    // ─── DÉTAILS DU PAIEMENT & TABLEAU ÉCHELONNÉ ────────────────
+    drawText('DÉTAILS DU PAIEMENT ÉCHELONNÉ (TRANCHES & RELIQUATS) :', { size: 10, bold: true, color: cPrimary, margin: 10 });
+    
+    // Entête du tableau des tranches
+    const tableTopY = y;
+    page.drawRectangle({
+      x: 50,
+      y: tableTopY - 20,
+      width: 495,
+      height: 20,
+      color: rgb(241 / 255, 245 / 255, 249 / 255),
+      borderColor: rgb(226 / 255, 232 / 255, 240 / 255),
+      borderWidth: 1,
+    });
 
-    const reste = Number(data.montant_a_payer || 0) - Number(data.montant_paye || 0);
-    if (reste > 0) {
-      drawText(`Solde / Reste à payer : ${reste.toLocaleString('fr-FR')} ${entreprise.devise || 'FCFA'}`, { size: 10, bold: true, color: rgb(225 / 255, 29 / 255, 72 / 255) });
+    page.drawText('N° Tranche', { x: 60, y: tableTopY - 14, size: 8.5, font: fontBold, color: cPrimary });
+    page.drawText('Date Règlement', { x: 140, y: tableTopY - 14, size: 8.5, font: fontBold, color: cPrimary });
+    page.drawText('Mode & Observations', { x: 230, y: tableTopY - 14, size: 8.5, font: fontBold, color: cPrimary });
+    page.drawText('Montant Versé', { x: 440, y: tableTopY - 14, size: 8.5, font: fontBold, color: cPrimary });
+
+    y = tableTopY - 20;
+
+    let cumulPaye = 0;
+    tranches.forEach((t) => {
+      const rowY = y;
+      page.drawRectangle({
+        x: 50,
+        y: rowY - 20,
+        width: 495,
+        height: 20,
+        color: rgb(255 / 255, 255 / 255, 255 / 255),
+        borderColor: rgb(226 / 255, 232 / 255, 240 / 255),
+        borderWidth: 0.5,
+      });
+
+      page.drawText(t.num, { x: 60, y: rowY - 14, size: 8.5, font: fontBold, color: cText });
+      page.drawText(t.date, { x: 140, y: rowY - 14, size: 8.5, font, color: cText });
+      
+      const truncMode = t.mode.length > 38 ? t.mode.substring(0, 35) + '...' : t.mode;
+      page.drawText(truncMode, { x: 230, y: rowY - 14, size: 8, font: fontOblique, color: cText });
+
+      const mntStr = `${t.montant.toLocaleString('fr-FR')} ${entreprise.devise || 'FCFA'}`;
+      page.drawText(mntStr, { x: 440, y: rowY - 14, size: 8.5, font: fontBold, color: cPrimary });
+
+      cumulPaye += t.montant;
+      y -= 20;
+    });
+
+    // Total du tableau échelonné
+    const totalRowY = y;
+    page.drawRectangle({
+      x: 50,
+      y: totalRowY - 22,
+      width: 495,
+      height: 22,
+      color: rgb(248 / 255, 250 / 255, 252 / 255),
+      borderColor: rgb(203 / 255, 213 / 255, 225 / 255),
+      borderWidth: 1,
+    });
+
+    page.drawText('TOTAL CUMULÉ ENCAISSÉ SUR LE MOIS :', { x: 210, y: totalRowY - 15, size: 8.5, font: fontBold, color: cPrimary });
+    page.drawText(`${cumulPaye.toLocaleString('fr-FR')} ${entreprise.devise || 'FCFA'}`, { x: 440, y: totalRowY - 15, size: 9, font: fontBold, color: rgb(16 / 255, 185 / 255, 129 / 255) });
+
+    y = totalRowY - 35;
+
+    // ─── SYNTHÈSE ET RESTE À PAYER ────────────────────────────────
+    const montantExigible = Number(data.montant_a_payer || 0);
+    const resteAPayer = Math.max(0, montantExigible - cumulPaye);
+
+    const bannerY = y;
+    if (resteAPayer === 0 || data.statut === 'Regle') {
+      page.drawRectangle({
+        x: 50,
+        y: bannerY - 35,
+        width: 495,
+        height: 35,
+        color: rgb(236 / 255, 253 / 255, 245 / 255), // Emerald 50
+        borderColor: rgb(16 / 255, 185 / 255, 129 / 255),
+        borderWidth: 1,
+      });
+      page.drawText(`PAIEMENT INTEGRALEMENT SOLDÉ — ${cumulPaye.toLocaleString('fr-FR')} FCFA ENCAISSÉS SUR ${montantExigible.toLocaleString('fr-FR')} FCFA.`, {
+        x: 65,
+        y: bannerY - 22,
+        size: 9,
+        font: fontBold,
+        color: rgb(6 / 255, 95 / 255, 70 / 255),
+      });
+      page.drawText('SOLDE VALIDÉ', { x: 470, y: bannerY - 22, size: 8, font: fontBold, color: rgb(16 / 255, 185 / 255, 129 / 255) });
+    } else {
+      page.drawRectangle({
+        x: 50,
+        y: bannerY - 35,
+        width: 495,
+        height: 35,
+        color: rgb(255 / 255, 251 / 255, 235 / 255), // Amber 50
+        borderColor: rgb(217 / 255, 119 / 255, 6 / 255),
+        borderWidth: 1,
+      });
+      page.drawText(`PAIEMENT PARTIEL / ÉCHELONNÉ — ENCAISSÉ : ${cumulPaye.toLocaleString('fr-FR')} FCFA / ${montantExigible.toLocaleString('fr-FR')} FCFA.`, {
+        x: 65,
+        y: bannerY - 18,
+        size: 8.5,
+        font: fontBold,
+        color: rgb(146 / 255, 64 / 255, 14 / 255),
+      });
+      page.drawText(`RESTE À PAYER (RELIQUAT DÛ) : ${resteAPayer.toLocaleString('fr-FR')} FCFA`, {
+        x: 65,
+        y: bannerY - 29,
+        size: 8.5,
+        font: fontBold,
+        color: rgb(225 / 255, 29 / 255, 72 / 255),
+      });
     }
 
-    if (data.notes) {
-      y -= 5;
-      drawText(`Observations / Notes : ${data.notes}`, { size: 9, italic: true });
-    }
-
-    y -= 35;
+    y = bannerY - 55;
 
     // ─── CACHET ET SIGNATURE DE L'AGENCE ─────────────────────────
     const sigX = 340;
@@ -274,9 +420,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 
     // Bas de page légal
-    page.drawText(`Quittance générée par le système ImmoGest SaaS — ${entreprise.denomination || 'Agence Pro'}`, {
-      x: 130,
-      y: 30,
+    page.drawText(`Quittance générée par la plateforme ImmoGest SaaS. Document valant reçu sous réserve d'encaissement définitif.`, {
+      x: 80,
+      y: 25,
       size: 7.5,
       font,
       color: rgb(148 / 255, 163 / 255, 184 / 255),
