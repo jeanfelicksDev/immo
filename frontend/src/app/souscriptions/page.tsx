@@ -182,189 +182,416 @@ const DEMO_LOCATAIRES_S = [
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Contrat de Bail Conforme Loi 2019-576 — ${item.Ids || 'N/A'}</title>
+  <title>Contrat de Bail Officiel — ${item.Ids || 'N/A'}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Lora:ital,wght@0,400..600;1,400..600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #222; margin: 0; padding: 25px; font-size: 11px; line-height: 1.4; }
-    .page-header { text-align: center; margin-bottom: 20px; border-bottom: 3px double #1a3a5c; padding-bottom: 10px; }
-    .page-header h1 { font-size: 16px; font-weight: bold; color: #1a3a5c; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
-    .page-header p { font-size: 10px; color: #555; margin: 2px 0; font-weight: 500; }
-    .law-badge { display: inline-block; background-color: #f0f4f8; border: 1px solid #1a3a5c; color: #1a3a5c; font-size: 9px; font-weight: bold; padding: 3px 8px; margin-top: 5px; border-radius: 3px; }
-    .soussignes { font-weight: bold; text-align: center; text-transform: uppercase; margin: 15px 0 10px 0; font-size: 11px; color: #1a3a5c; letter-spacing: 0.5px; }
+    @page {
+      size: A4;
+      margin: 15mm 20mm;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      font-size: 10.5px;
+      line-height: 1.5;
+      background-color: #fff;
+    }
     
-    .parties-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-    .partie-box { border: 1px solid #ccc; border-radius: 4px; padding: 10px; background-color: #fafafa; }
-    .partie-box h2 { font-size: 10px; font-weight: bold; color: #1a3a5c; margin: 0 0 8px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px; text-transform: uppercase; }
-    .partie-row { display: flex; margin-bottom: 4px; }
-    .partie-label { font-weight: bold; width: 120px; color: #555; }
-    .partie-value { flex: 1; }
-
-    .transition-text { text-align: center; font-weight: bold; margin: 15px 0; font-size: 10px; color: #333; text-transform: uppercase; }
+    /* Header & Title */
+    .contract-header {
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+    .republique-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .republique-devise {
+      font-size: 7.5px;
+      font-style: italic;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    .decor-line {
+      width: 60px;
+      height: 1px;
+      background-color: #d97706;
+      margin: 8px auto;
+    }
+    .contract-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 10px 0;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+    .law-badge {
+      display: inline-block;
+      background-color: #0f172a;
+      border: 1px solid #d97706;
+      color: #fef08a;
+      font-size: 8.5px;
+      font-weight: 600;
+      padding: 4px 12px;
+      margin-top: 5px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
     
-    .article { margin-bottom: 12px; border-left: 2.5px solid #1a3a5c; padding-left: 8px; }
-    .article h3 { font-size: 10.5px; font-weight: bold; color: #1a3a5c; margin: 0 0 4px 0; text-transform: uppercase; }
-    .article p { margin: 0 0 4px 0; text-align: justify; }
-    .article ul { margin: 2px 0; padding-left: 15px; }
-    .article li { margin-bottom: 2px; }
-
-    .law-note { background-color: #fff9e6; border: 1px solid #ffe0b2; color: #b78103; padding: 6px; border-radius: 4px; font-size: 9px; margin-bottom: 10px; line-height: 1.3; }
-
-    .signatures-section { margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px; }
-    .signatures-intro { font-size: 10px; font-style: italic; margin-bottom: 15px; }
-    .signatures-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-    .signature-box { border: 1px solid #eee; border-radius: 4px; padding: 10px; min-height: 90px; text-align: center; position: relative; }
-    .signature-box h4 { font-size: 10px; font-weight: bold; color: #1a3a5c; margin: 0 0 5px 0; text-transform: uppercase; }
-    .signature-box p.instructions { font-size: 8px; color: #888; font-style: italic; margin-bottom: 30px; }
-    .signature-placeholder { border-top: 1px dashed #ccc; width: 80%; margin: 40px auto 0 auto; padding-top: 5px; font-size: 8px; color: #999; }
-
-    .footer { text-align: center; margin-top: 30px; font-size: 8px; color: #777; border-top: 1px solid #eee; padding-top: 5px; }
-
+    .preamble {
+      text-align: center;
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 11px;
+      color: #0f172a;
+      margin: 20px 0 15px 0;
+      font-weight: 600;
+    }
+    
+    /* Parties Section */
+    .parties-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .party-card {
+      border: 1px solid #e2e8f0;
+      border-top: 3px solid #0f172a;
+      background-color: #fafaf9;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .party-card h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 10px 0;
+      padding-bottom: 4px;
+      border-bottom: 1px double #cbd5e1;
+      letter-spacing: 0.5px;
+    }
+    .party-row {
+      display: flex;
+      margin-bottom: 6px;
+      font-size: 10px;
+    }
+    .party-label {
+      font-weight: 600;
+      width: 100px;
+      color: #475569;
+    }
+    .party-value {
+      flex: 1;
+      color: #0f172a;
+      border-bottom: 1px dotted #cbd5e1;
+      padding-bottom: 1px;
+    }
+    
+    .transition-clause {
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 10px;
+      color: #d97706;
+      margin: 20px 0;
+      letter-spacing: 1px;
+    }
+    
+    /* Articles formatting */
+    .article {
+      margin-bottom: 16px;
+      page-break-inside: avoid;
+    }
+    .article-title {
+      font-family: 'Lora', serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+      text-transform: uppercase;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 3px;
+      display: flex;
+      align-items: center;
+    }
+    .article-title::before {
+      content: "•";
+      color: #d97706;
+      font-size: 14px;
+      margin-right: 6px;
+    }
+    .article p {
+      margin: 0 0 6px 0;
+      text-align: justify;
+      color: #334155;
+    }
+    .article ul {
+      margin: 4px 0;
+      padding-left: 20px;
+    }
+    .article li {
+      margin-bottom: 3px;
+      color: #334155;
+    }
+    .article u {
+      text-underline-offset: 2px;
+      color: #0f172a;
+      font-weight: 500;
+    }
+    
+    .law-note-box {
+      background-color: #fefcf5;
+      border-left: 3px solid #d97706;
+      border-right: 1px solid #fef08a;
+      border-top: 1px solid #fef08a;
+      border-bottom: 1px solid #fef08a;
+      color: #854d0e;
+      padding: 8px 12px;
+      font-size: 9px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      text-align: justify;
+    }
+    
+    /* Signatures Section */
+    .signatures-block {
+      margin-top: 30px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 15px;
+      page-break-inside: avoid;
+    }
+    .signatures-place {
+      font-size: 10px;
+      font-style: italic;
+      color: #475569;
+      margin-bottom: 15px;
+    }
+    .signatures-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    .signature-card {
+      border: 1px solid #f1f5f9;
+      background-color: #f8fafc;
+      padding: 15px;
+      min-height: 100px;
+      text-align: center;
+      position: relative;
+    }
+    .signature-card h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+      letter-spacing: 0.5px;
+    }
+    .signature-card .handwritten-hint {
+      font-size: 8px;
+      color: #64748b;
+      font-style: italic;
+      margin-bottom: 25px;
+    }
+    .signature-line {
+      border-top: 1px dashed #cbd5e1;
+      width: 70%;
+      margin: 45px auto 0 auto;
+      padding-top: 4px;
+      font-size: 8px;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    
+    .document-footer {
+      text-align: center;
+      margin-top: 35px;
+      font-size: 8px;
+      color: #94a3b8;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 8px;
+      letter-spacing: 0.5px;
+    }
+    
     @media print {
-      body { padding: 15px; font-size: 10.5px; }
-      .no-print { display: none; }
-      .page-break { page-break-before: always; }
+      body {
+        font-size: 10px;
+        color: #000;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .party-card {
+        background-color: transparent !important;
+        border: 1px solid #000;
+      }
+      .signature-card {
+        background-color: transparent !important;
+        border: 1px solid #ddd;
+      }
+      .law-note-box {
+        background-color: transparent !important;
+        border: 1px solid #999;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="page-header">
-    <h1>CONTRAT DE BAIL À USAGE D'HABITATION</h1>
-    <p>République de Côte d'Ivoire — Union · Discipline · Travail</p>
-    <div class="law-badge">Régie par la Loi n° 2019-576 du 26 juin 2019</div>
+  <div class="contract-header">
+    <div class="republique-title">République de Côte d'Ivoire</div>
+    <div class="republique-devise">Union · Discipline · Travail</div>
+    <div class="decor-line"></div>
+    <h1 class="contract-title">CONTRAT DE BAIL À USAGE D'HABITATION</h1>
+    <div class="law-badge">Réglementé par la Loi n° 2019-576 du 26 juin 2019</div>
   </div>
 
-  <div class="soussignes">Entre les soussignés :</div>
+  <div class="preamble">Entre les soussignés dûment identifiés :</div>
 
-  <div class="parties-grid">
-    <div class="partie-box">
+  <div class="parties-container">
+    <div class="party-card">
       <h2>1. LE BAILLEUR (PROPRIÉTAIRE)</h2>
-      <div class="partie-row"><div class="partie-label">Nom / Raison Sociale :</div><div class="partie-value">${nomProprietaire}</div></div>
-      <div class="partie-row"><div class="partie-label">Date & Lieu Nais. :</div><div class="partie-value">________________________</div></div>
-      <div class="partie-row"><div class="partie-label">Nationalité :</div><div class="partie-value">Ivoirienne</div></div>
-      <div class="partie-row"><div class="partie-label">Pièce d'Identité :</div><div class="partie-value">________________________</div></div>
-      <div class="partie-row"><div class="partie-label">Adresse :</div><div class="partie-value">${adresseProprietaire}</div></div>
-      <div class="partie-row"><div class="partie-label">Téléphone :</div><div class="partie-value">${contactProprietaire}</div></div>
-      <div class="partie-row"><div class="partie-label">Email :</div><div class="partie-value">${emailProprietaire}</div></div>
-      <div class="partie-row"><div class="partie-label">Représenté par :</div><div class="partie-value">Agence Immobilière</div></div>
+      <div class="party-row"><div class="party-label">Nom complet :</div><div class="party-value">${nomProprietaire}</div></div>
+      <div class="party-row"><div class="party-label">Né(e) le / à :</div><div class="party-value">________________________</div></div>
+      <div class="party-row"><div class="party-label">Nationalité :</div><div class="party-value">Ivoirienne</div></div>
+      <div class="party-row"><div class="party-label">Pièce d'Identité :</div><div class="party-value">________________________</div></div>
+      <div class="party-row"><div class="party-label">Adresse :</div><div class="party-value">${adresseProprietaire}</div></div>
+      <div class="party-row"><div class="party-label">Téléphone :</div><div class="party-value">${contactProprietaire}</div></div>
+      <div class="party-row"><div class="party-label">Adresse Email :</div><div class="party-value">${emailProprietaire}</div></div>
+      <div class="party-row"><div class="party-label">Représenté par :</div><div class="party-value">Agence Immobilière Mandataire</div></div>
     </div>
 
-    <div class="partie-box">
+    <div class="party-card">
       <h2>2. LE LOCATAIRE (PRENEUR)</h2>
-      <div class="partie-row"><div class="partie-label">Nom & Prénoms :</div><div class="partie-value">${nomLocataire}</div></div>
-      <div class="partie-row"><div class="partie-label">Date & Lieu Nais. :</div><div class="partie-value">________________________</div></div>
-      <div class="partie-row"><div class="partie-label">Nationalité :</div><div class="partie-value">________________________</div></div>
-      <div class="partie-row"><div class="partie-label">Pièce d'Identité :</div><div class="partie-value">${pieceLocataire}</div></div>
-      <div class="partie-row"><div class="partie-label">Profession / Emp. :</div><div class="partie-value">${professionLocataire}</div></div>
-      <div class="partie-row"><div class="partie-label">Adresse Domicile :</div><div class="partie-value">${adresseLocataire}</div></div>
-      <div class="partie-row"><div class="partie-label">Téléphone :</div><div class="partie-value">${contactLocataire}</div></div>
-      <div class="partie-row"><div class="partie-label">Email :</div><div class="partie-value">________________________</div></div>
+      <div class="party-row"><div class="party-label">Nom complet :</div><div class="party-value">${nomLocataire}</div></div>
+      <div class="party-row"><div class="party-label">Né(e) le / à :</div><div class="party-value">________________________</div></div>
+      <div class="party-row"><div class="party-label">Nationalité :</div><div class="party-value">________________________</div></div>
+      <div class="party-row"><div class="party-label">Pièce d'Identité :</div><div class="party-value">${pieceLocataire}</div></div>
+      <div class="party-row"><div class="party-label">Profession / Emp. :</div><div class="party-value">${professionLocataire}</div></div>
+      <div class="party-row"><div class="party-label">Adresse Domicile :</div><div class="party-value">${adresseLocataire}</div></div>
+      <div class="party-row"><div class="party-label">Téléphone :</div><div class="party-value">${contactLocataire}</div></div>
+      <div class="party-row"><div class="party-label">Adresse Email :</div><div class="party-value">________________________</div></div>
     </div>
   </div>
 
-  <div class="transition-text">Il a été convenu et arrêté ce qui suit :</div>
+  <div class="transition-clause">Il a été expressément convenu et arrêté les clauses suivantes :</div>
 
   <div class="article">
-    <h3>Article 1 : Objet du contrat et désignation des lieux</h3>
-    <p>Le Bailleur donne à bail à usage exclusif d'habitation au Locataire, qui accepte, l'immeuble/logement désigné ci-après :</p>
+    <h3 class="article-title">Article 1 : Objet du contrat et désignation des lieux</h3>
+    <p>Le Bailleur donne à bail à usage exclusif d'habitation au Locataire, qui accepte, le logement décrit ci-après :</p>
     <ul>
-      <li><strong>Situation géographique :</strong> Ville de <u>${villeMaison}</u>, Commune de <u>_________________</u>, Quartier <u>_________________</u>, Code Bien <u>${codeMaison}</u>.</li>
-      <li><strong>Description du logement :</strong> Un bien de type <u>${typeMaison}</u> comprenant <u>${piecesMaison}</u> pièce(s) principale(s). Description : <i>${descMaison}</i>.</li>
-      <li><strong>Compteurs :</strong> Électricité CIE N° <u>___________________</u> | Eau SODECI N° <u>___________________</u>.</li>
-      <li><strong>Destination :</strong> Exclusivité d'habitation principale à l'exclusion de tout usage commercial ou professionnel.</li>
+      <li><strong>Situation géographique :</strong> Ville de <u>${villeMaison}</u>, Commune de <u>_________________</u>, Quartier <u>_________________</u>, Code Unique Bien <u>${codeMaison}</u>.</li>
+      <li><strong>Description :</strong> Bien immobilier de type <u>${typeMaison}</u> de <u>${piecesMaison}</u> pièces principales. Description technique : <i>${descMaison}</i>.</li>
+      <li><strong>Compteurs administratifs :</strong> Électricité CIE N° <u>___________________</u> | Eau SODECI N° <u>___________________</u>.</li>
+      <li><strong>Destination exclusive :</strong> Le logement est destiné uniquement à l'habitation principale du Locataire et de sa famille, excluant toute activité commerciale, professionnelle ou libérale.</li>
     </ul>
   </div>
 
   <div class="article">
-    <h3>Article 2 : Durée et prise d'effet</h3>
-    <p>Le présent contrat est conclu pour une durée de <u>${item.NbMoisContrat || 12}</u> mois, à compter du <strong>${dateDebut}</strong> pour se terminer le <strong>${dateFin}</strong>. Il se renouvellera ensuite par tacite reconduction pour une durée égale, sauf congé délivré dans les conditions prévues au présent contrat.</p>
+    <h3 class="article-title">Article 2 : Durée du bail et prise d'effet</h3>
+    <p>Le présent contrat est conclu pour une durée déterminée de <strong><u>${item.NbMoisContrat || 12}</u> mois</strong>, à compter du <strong>${dateDebut}</strong> pour se terminer le <strong>${dateFin}</strong>. Il se renouvellera ensuite par tacite reconduction pour une durée égale, sauf congé préalablement signifié.</p>
   </div>
 
   <div class="article">
-    <h3>Article 3 : Loyer et charges locatives</h3>
-    <p>Le loyer mensuel principal est fixé à la somme de <strong>${Number(item.MontantLoyer || 0).toLocaleString('fr-FR')} FCFA</strong>. Les charges communes mensuelles (nettoyage, ordures) sont fixées à <strong>0 FCFA</strong>. Le montant total mensuel est payable d'avance au plus tard le <strong>5</strong> de chaque mois contre délivrance systématique d'une quittance de loyer signée par le Bailleur.</p>
-    <div class="law-note">
-      <strong>Révision du loyer (Article 32 de la loi) :</strong> Le loyer ne peut faire l'objet d'aucune révision avant un délai minimal de trois (3) ans, sauf travaux d'amélioration significatifs réalisés par le bailleur.
+    <h3 class="article-title">Article 3 : Conditions financières (Loyer et charges)</h3>
+    <p>Le loyer mensuel principal et net est fixé d'accord parties à la somme de <strong>${Number(item.MontantLoyer || 0).toLocaleString('fr-FR')} FCFA</strong>. Les charges communes (ordures, entretien) sont fixées à <strong>0 FCFA</strong>. Le loyer global est payable d'avance au plus tard le <strong>5</strong> de chaque mois civil contre quittance obligatoire signée par le Bailleur.</p>
+    <div class="law-note-box">
+      <strong>Réglementation sur la Révision (Art. 32 de la loi 2019-576) :</strong> Le montant du loyer ne peut subir de révision ou d'ajustement avant l'expiration d'un délai minimal de trois (3) ans à compter de la signature, sauf travaux d'amélioration importants réalisés par le bailleur en concertation avec le locataire.
     </div>
   </div>
 
   <div class="page-break"></div>
 
   <div class="article">
-    <h3>Article 4 : Dépôt de garantie et avances de loyer</h3>
-    <p>À la signature du présent contrat, le Locataire verse au Bailleur les sommes suivantes conformément aux plafonds fixés par la Loi n° 2019-576 :</p>
+    <h3 class="article-title">Article 4 : Dépôt de garantie et avances sur loyer</h3>
+    <p>À titre de garantie de l'exécution de ses obligations, le Locataire verse à la signature les sommes suivantes plafonnées par la loi :</p>
     <ul>
-      <li><strong>Dépôt de garantie (Caution) :</strong> <strong>${Number(item.MontantCaution || 0).toLocaleString('fr-FR')} FCFA</strong> (soit <u>${cautionMois || 2}</u> mois de loyer - max 2 mois autorisés).</li>
-      <li><strong>Avance de loyer :</strong> <strong>${Number(item.MontantAvance || 0).toLocaleString('fr-FR')} FCFA</strong> (soit <u>${avanceMois || 1}</u> mois de loyer - max 2 mois autorisés).</li>
+      <li><strong>Dépôt de garantie (Caution) :</strong> <strong>${Number(item.MontantCaution || 0).toLocaleString('fr-FR')} FCFA</strong> (soit <u>${cautionMois || 2}</u> mois de loyer - maximum légal de 2 mois).</li>
+      <li><strong>Avance de loyer :</strong> <strong>${Number(item.MontantAvance || 0).toLocaleString('fr-FR')} FCFA</strong> (soit <u>${avanceMois || 1}</u> mois d'avance - maximum légal de 2 mois).</li>
     </ul>
-    <p>Le dépôt de garantie sera restitué au Locataire dans un délai maximal d'un (1) mois à compter de la remise des clés et de l'état des lieux de sortie, déduction faite des créances locatives ou frais de remise en état imputables au Locataire.</p>
+    <p>Le dépôt de garantie sera restitué au Locataire dans un délai maximum d'un (1) mois à compter de la restitution des clés, après déduction faite des réparations locatives justifiées et éventuels impayés.</p>
   </div>
 
   <div class="article">
-    <h3>Article 5 : État des lieux</h3>
-    <p>Un état des lieux contradictoire est dressé à la remise des clés (entrée) et lors de la restitution des locaux (sortie). Cet acte est signé par les deux parties et annexé obligatoirement au présent contrat.</p>
+    <h3 class="article-title">Article 5 : État des lieux d'entrée et de sortie</h3>
+    <p>Un état des lieux contradictoire et écrit est établi obligatoirement lors de la remise des clés au Locataire, puis lors de la libération des locaux. Cet état des lieux est paraphé et annexé aux présentes.</p>
   </div>
 
   <div class="article">
-    <h3>Article 6 : Obligations du bailleur</h3>
-    <p>Le Bailleur s'oblige à :</p>
+    <h3 class="article-title">Article 6 : Obligations générales du Bailleur</h3>
+    <p>Le Bailleur est tenu aux obligations principales suivantes :</p>
     <ul>
-      <li>Délivrer le logement en bon état d'usage, d'étanchéité, de sécurité et de salubrité.</li>
-      <li>Assurer au Locataire la jouissance paisible des locaux pendant toute la durée du bail.</li>
-      <li>Prendre en charge les gros travaux et réparations majeures (structure, toiture, assainissement lourd, étanchéité).</li>
-      <li>Délivrer gratuitement et sans frais une quittance écrite pour chaque paiement reçu.</li>
-    </ul>
-  </div>
-
-  <div class="article">
-    <h3>Article 7 : Obligations du locataire</h3>
-    <p>Le Locataire s'oblige à :</p>
-    <ul>
-      <li>Payer le loyer et les charges aux échéances convenues.</li>
-      <li>User paisiblement du logement selon sa destination exclusive d'habitation.</li>
-      <li>Assurer l'entretien courant du logement et effectuer les menues réparations locatives.</li>
-      <li>Ne pas transformer les lieux sans l'accord écrit préalable du Bailleur.</li>
-      <li><strong>Cession & Sous-location :</strong> Ne pas céder le bail ni sous-louer tout ou partie du logement sans l'accord écrit du Bailleur.</li>
+      <li>Délivrer un logement décent en bon état de réparation, de propreté et d'étanchéité.</li>
+      <li>Assurer au Locataire une jouissance paisible des locaux et le garantir des vices cachés.</li>
+      <li>Effectuer à ses frais exclusifs les grosses réparations de structure et de maintien en état (gros œuvre, toiture, réseaux).</li>
+      <li>Délivrer gratuitement une quittance de loyer pour chaque règlement effectué par le Locataire.</li>
     </ul>
   </div>
 
   <div class="article">
-    <h3>Article 8 : Congé, résiliation et préavis</h3>
+    <h3 class="article-title">Article 7 : Obligations générales du Locataire</h3>
+    <p>Le Locataire est tenu aux obligations principales suivantes :</p>
     <ul>
-      <li><strong>Préavis ordinaire :</strong> Chaque partie peut résilier le contrat en notifiant à l'autre un préavis écrit de <strong>trois (3) mois</strong> par lettre recommandée ou acte de Commissaire de Justice (Huissier).</li>
-      <li><strong>Inexécution :</strong> En cas de non-paiement du loyer ou d'inexécution d'une obligation, le Bailleur délivre un commandement de payer par huissier. À défaut de régularisation dans un délai d'un (1) mois, le Bailleur pourra saisir la juridiction compétente. Toute expulsion forcée hors décision de justice est strictement interdite.</li>
+      <li>Régler ponctuellement le loyer principal et les charges aux échéances convenues.</li>
+      <li>User paisiblement des locaux loués selon leur destination contractuelle d'habitation.</li>
+      <li>Prendre à sa charge l'entretien courant du logement et les menues réparations locatives.</li>
+      <li>Ne faire aucun changement de distribution ou transformation sans l'accord écrit du Bailleur.</li>
+      <li><strong>Interdiction absolue :</strong> Ne pas céder le présent droit au bail, ni sous-louer le logement sans le consentement écrit préalable du Bailleur.</li>
     </ul>
   </div>
 
   <div class="article">
-    <h3>Article 9 : Enregistrement fiscal</h3>
-    <p>Le présent contrat sera enregistré par le Bailleur ou son mandataire auprès des services compétents de la Direction Générale des Impôts (DGI) de Côte d'Ivoire dans le délai légal d'un (1) mois à compter de sa signature.</p>
+    <h3 class="article-title">Article 8 : Résiliation du contrat et clause résolutoire</h3>
+    <ul>
+      <li><strong>Préavis ordinaire :</strong> Chacune des parties peut résilier le contrat en notifiant sa décision avec un préavis écrit de <strong>trois (3) mois</strong> par exploit de commissaire de justice ou lettre recommandée.</li>
+      <li><strong>Clause résolutoire :</strong> En cas de non-paiement du loyer ou de violation grave des conditions, le présent contrat sera résilié de plein droit un (1) mois après un commandement de payer ou une mise en demeure demeurés infructueux.</li>
+    </ul>
   </div>
 
   <div class="article">
-    <h3>Article 10 : Élection de domicile et litiges</h3>
-    <p>Pour l'exécution des présentes, le Bailleur élit domicile à son adresse sus-indiquée et le Locataire dans les lieux loués. En cas de différend, les parties s'engagent à privilégier un règlement amiable. À défaut, le litige sera soumis au Tribunal de Première Instance compétent du lieu de situation de l'immeuble.</p>
+    <h3 class="article-title">Article 9 : Formalités d'enregistrement fiscal</h3>
+    <p>Le présent bail sera obligatoirement soumis à l'enregistrement fiscal par le Bailleur auprès des services de la Direction Générale des Impôts (DGI) compétents, conformément aux délais et taxes légaux.</p>
   </div>
 
-  <div class="signatures-section">
-    <div class="signatures-intro">
-      Fait à <u>${villeMaison}</u>, le <u>${dateNow}</u>, en 3 exemplaires originaux (un pour chaque partie et un pour l'enregistrement fiscal).
+  <div class="article">
+    <h3 class="article-title">Article 10 : Élection de domicile et attribution de juridiction</h3>
+    <p>Les parties élisent domicile : le Bailleur à son adresse sus-mentionnée, et le Locataire dans les lieux loués. En cas de contestation sur l'exécution des présentes, et à défaut de résolution amiable, compétence exclusive est attribuée aux tribunaux civils du lieu de situation de l'immeuble.</p>
+  </div>
+
+  <div class="signatures-block">
+    <div class="signatures-place">
+      Fait à <u>${villeMaison}</u>, le <u>${dateNow}</u>, rédigé en trois (3) exemplaires originaux et signés de bonne foi.
     </div>
     <div class="signatures-grid">
-      <div class="signature-box">
-        <h4>LE BAILLEUR</h4>
-        <p class="instructions">("Lu et approuvé" écrit à la main + Signature)</p>
-        <div class="signature-placeholder">Emplacement signature Bailleur</div>
+      <div class="signature-card">
+        <h4>LE BAILLEUR (PROPRIÉTAIRE)</h4>
+        <div class="handwritten-hint">Mention manuscrite "Lu et approuvé" + Signature</div>
+        <div class="signature-line">Signature & Cachet</div>
       </div>
-      <div class="signature-box">
-        <h4>LE LOCATEUR (LOCATAIRE)</h4>
-        <p class="instructions">("Lu et approuvé" écrit à la main + Signature)</p>
-        <div class="signature-placeholder">Emplacement signature Locataire</div>
+      <div class="signature-card">
+        <h4>LE LOCATAIRE (PRENEUR)</h4>
+        <div class="handwritten-hint">Mention manuscrite "Lu et approuvé" + Signature</div>
+        <div class="signature-line">Signature du Preneur</div>
       </div>
     </div>
   </div>
 
-  <div class="footer">
-    Modèle de contrat de bail à usage d'habitation conforme à la Loi n° 2019-576 du 26 juin 2019 (République de Côte d'Ivoire). Réf. contrat : ${item.Ids || 'N/A'}.
+  <div class="document-footer">
+    Contrat de bail à usage d'habitation conforme à la Loi n° 2019-576 (Côte d'Ivoire). ID Contrat : ${item.Ids || 'N/A'} — Document officiel généré par la plateforme ImmoGest.
   </div>
 
 </body>
