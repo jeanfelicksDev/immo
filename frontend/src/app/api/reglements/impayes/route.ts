@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // 1. Règlements enregistrés en base où le reliquat est supérieur à 0
+    // 1. Règlements enregistrés en base ayant un reliquat non soldé (statut non réglé ET montant_a_payer > montant_paye)
     const sqlReglements = `
       SELECT r.id AS "Id", r.idr AS "Idr", r.souscription_id AS "SouscriptionId",
              s.ids AS "IdsSouscription", r.maison_id AS "MaisonId", m.idm AS "IdmMaison", m.ville AS "VilleMaison",
@@ -20,13 +20,16 @@ export async function GET() {
       JOIN immogest.maisons m ON r.maison_id = m.id
       JOIN immogest.locataires l ON r.locataire_id = l.id
       WHERE (COALESCE(r.montant_a_payer, 0) - COALESCE(r.montant_paye, 0)) > 0
-         OR LOWER(COALESCE(r.statut, '')) NOT IN ('regle', 'paye', 'payé')
+        AND LOWER(COALESCE(r.statut, '')) NOT IN ('regle', 'paye', 'payé')
       ORDER BY r.date_paiement DESC
     `;
 
     const { rows: rowsReg } = await query(sqlReglements);
 
-    // 2. Toutes les souscriptions de baux actives dans la base
+    // Identifiants des souscriptions déjà répertoriées avec un règlement partiel
+    const subIdsInReg = new Set(rowsReg.map(r => r.SouscriptionId));
+
+    // 2. Baux et souscriptions actives : déduire la somme de TOUS les encaissements déjà effectués ce mois-ci
     const sqlSouscriptions = `
       SELECT 
         NULL AS "Id",
@@ -42,26 +45,30 @@ export async function GET() {
         CURRENT_DATE AS "DatePaiement",
         DATE_TRUNC('month', CURRENT_DATE) AS "MoisConcerne",
         s.montant_loyer AS "MontantAPayer",
-        0 AS "MontantPaye",
-        s.montant_loyer AS "ResteAPayer",
+        COALESCE(p.total_paye, 0) AS "MontantPaye",
+        GREATEST(0, s.montant_loyer - COALESCE(p.total_paye, 0)) AS "ResteAPayer",
         'En attente' AS "Statut",
         'Loyer mensuel à encaisser' AS "Notes"
       FROM immogest.souscriptions s
       JOIN immogest.maisons m ON s.maison_id = m.id
       JOIN immogest.locataires l ON s.locataire_id = l.id
+      LEFT JOIN (
+        SELECT souscription_id, SUM(montant_paye) AS total_paye
+        FROM immogest.reglements
+        WHERE DATE_TRUNC('month', mois_concerne) = DATE_TRUNC('month', CURRENT_DATE)
+           OR DATE_TRUNC('month', date_paiement) = DATE_TRUNC('month', CURRENT_DATE)
+        GROUP BY souscription_id
+      ) p ON p.souscription_id = s.id
+      WHERE (s.statut IS NULL OR LOWER(s.statut) NOT IN ('résiliée', 'resiliee', 'expirée', 'expiree', 'inactif', 'annulée'))
       ORDER BY s.created_at DESC
     `;
 
     const { rows: rowsSous } = await query(sqlSouscriptions);
 
-    // Identifiants des souscriptions déjà représentées dans les règlements
-    const subIdsInReg = new Set(rowsReg.map(r => r.SouscriptionId));
+    // Conserver uniquement les souscriptions n'ayant pas de reçu partiel actif ET avec un ResteAPayer > 0
+    const rowsSousFiltered = rowsSous.filter(s => !subIdsInReg.has(s.SouscriptionId) && Number(s.ResteAPayer || 0) > 0);
 
-    // Conserver les souscriptions qui n'ont pas encore de règlement partiel ou d'impayé déjà listé
-    const rowsSousFiltered = rowsSous.filter(s => !subIdsInReg.has(s.SouscriptionId));
-
-    // Fusionner et garder uniquement les éléments avec un ResteAPayer > 0
-    const creances = [...rowsReg, ...rowsSousFiltered].filter(c => Number(c.ResteAPayer || 0) > 0);
+    const creances = [...rowsReg, ...rowsSousFiltered];
 
     return NextResponse.json({
       Items: creances,

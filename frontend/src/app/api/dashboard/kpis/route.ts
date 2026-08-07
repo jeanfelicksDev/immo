@@ -5,14 +5,14 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // 1. Nombre total de propriétaires (actifs ou par défaut)
+    // 1. Nombre total de propriétaires
     const props = await query(`
       SELECT COUNT(*)::int AS total 
       FROM immogest.proprietaires 
       WHERE est_actif = TRUE OR est_actif IS NULL
     `);
 
-    // 2. Nombre total de locataires (actifs ou par défaut)
+    // 2. Nombre total de locataires
     const locs = await query(`
       SELECT COUNT(*)::int AS total 
       FROM immogest.locataires 
@@ -38,7 +38,7 @@ export async function GET() {
       WHERE LOWER(COALESCE(statut, '')) IN ('active', 'actif', 'en_cours', 'en cours', '')
     `);
 
-    // 5. Reste à recouvrir (Impayés / Règlements en attente)
+    // 5. Impayés enregistrés sur les règlements non soldés
     const reg = await query(`
       SELECT COALESCE(SUM(GREATEST(0, montant_a_payer - montant_paye)), 0)::numeric AS impaye
       FROM immogest.reglements
@@ -46,12 +46,12 @@ export async function GET() {
         AND (montant_a_payer - montant_paye) > 0
     `);
 
-    // 6. Encaissements du mois en cours
+    // 6. Encaissements réels du mois en cours
     const encaisses = await query(`
       SELECT COALESCE(SUM(montant_paye), 0)::numeric AS total
       FROM immogest.reglements
-      WHERE LOWER(COALESCE(statut, '')) IN ('regle', 'paye', 'payé')
-        AND DATE_TRUNC('month', date_paiement) = DATE_TRUNC('month', CURRENT_DATE)
+      WHERE DATE_TRUNC('month', mois_concerne) = DATE_TRUNC('month', CURRENT_DATE)
+         OR DATE_TRUNC('month', date_paiement) = DATE_TRUNC('month', CURRENT_DATE)
     `);
 
     const propsCount     = props.rows[0]?.total   || 0;
@@ -67,9 +67,9 @@ export async function GET() {
     const impayeReg      = parseFloat(reg.rows[0]?.impaye   || 0);
     const encaissesMois  = parseFloat(encaisses.rows[0]?.total || 0);
 
-    // Reste à recouvrir réels : maximum entre les impayés enregistrés et la différence (loyers mensuels prévus - encaissés ce mois)
+    // Reste à recouvrir réels : différence entre les loyers mensuels prévus et tous les encaissements effectués ce mois-ci
     const resteDuMois    = Math.max(0, loyer - encaissesMois);
-    const resteTotal     = Math.max(impayeReg, resteDuMois);
+    const resteTotal     = impayeReg + resteDuMois;
 
     // Taux d'occupation (en %)
     const tauxOccupation = totalMaisons > 0
@@ -82,7 +82,6 @@ export async function GET() {
       : 0;
 
     return NextResponse.json({
-      // Mappages exacts attendus par la page Dashboard
       TotalProprietaires:        propsCount,
       TotalLocataires:           locsCount,
       TotalMaisons:              totalMaisons,
@@ -105,24 +104,9 @@ export async function GET() {
   } catch (error: any) {
     console.error('Erreur GET /api/dashboard/kpis:', error);
     return NextResponse.json({
-      TotalProprietaires: 0,
-      TotalLocataires: 0,
-      TotalMaisons: 0,
-      TotalMaisonsOccupees: 0,
-      MaisonsDisponibles: 0,
-      TotalSouscriptions: 0,
-      TotalSouscriptionsActives: 0,
-      TotalCaution: 0,
-      TotalCautions: 0,
-      TotalAvance: 0,
-      TotalAvances: 0,
-      TotalLoyerMensuel: 0,
-      TotalLoyersMensuels: 0,
-      TotalResteRecouvrir: 0,
-      ResteARecouvrir: 0,
-      TauxOccupation: 0,
-      RendementBrut: 0,
+      TotalProprietaires: 0, TotalLocataires: 0, TotalMaisons: 0,
+      MaisonsDisponibles: 0, TotalSouscriptions: 0, TotalLoyersMensuels: 0,
+      TotalCautions: 0, TotalAvances: 0, ResteARecouvrir: 0,
     });
   }
 }
-
