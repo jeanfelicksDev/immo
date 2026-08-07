@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import PDFDocument from 'pdfkit';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -26,74 +26,74 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     const data = rows[0];
 
-    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-      const doc = new PDFDocument({ size: 'A4', margin: 50 });
-      const buffers: Buffer[] = [];
-      
-      doc.on('data', (buffer) => buffers.push(buffer));
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
-      doc.on('error', reject);
+    // Creation du PDF avec pdf-lib
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4
+    const { height } = page.getSize();
+    
+    let y = height - 50;
 
-      // Entête
-      doc.fontSize(22).font('Helvetica-Bold').text('CONTRAT DE BAIL A USAGE D\'HABITATION', { align: 'center' });
-      doc.moveDown(2);
+    const drawText = (text: string, options: any) => {
+      const f = options.bold ? fontBold : font;
+      const size = options.size || 12;
+      const x = options.x || 50;
+      page.drawText(text, { x, y: y - size, size, font: f, color: rgb(0, 0, 0) });
+      y -= size + (options.margin || 5);
+    };
 
-      // Infos générales
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Ref. Contrat : ${data.ids}`);
-      doc.text(`Date de souscription : ${new Date(data.date_souscription).toLocaleDateString('fr-FR')}`);
-      if (data.date_fin) {
-        doc.text(`Date de fin : ${new Date(data.date_fin).toLocaleDateString('fr-FR')}`);
-      }
-      doc.moveDown();
+    // Entete
+    drawText('CONTRAT DE BAIL A USAGE D\'HABITATION', { size: 20, bold: true, x: 100, margin: 30 });
 
-      // Les parties
-      doc.fontSize(14).font('Helvetica-Bold').text('ENTRE LES SOUSSIGNES :');
-      doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica');
-      doc.text('Le Bailleurs (Proprietaire / Agence Immobiliere)');
-      doc.moveDown();
-      doc.text('ET');
-      doc.moveDown();
-      doc.text(`Monsieur / Madame : ${data.nom_prenoms}`, { continued: true }).font('Helvetica').text('');
-      if (data.contact) doc.text(`Contact : ${data.contact}`);
-      if (data.piece_identite) doc.text(`Piece d'identite : ${data.piece_identite}`);
-      if (data.profession) doc.text(`Profession : ${data.profession}`);
-      if (data.adresse) doc.text(`Adresse : ${data.adresse}`);
-      doc.text('Ci-apres denomme(e) "Le Preneur".');
-      doc.moveDown(2);
+    // Infos
+    drawText(`Ref. Contrat : ${data.ids || ''}`, {});
+    drawText(`Date de souscription : ${new Date(data.date_souscription).toLocaleDateString('fr-FR')}`, {});
+    if (data.date_fin) {
+      drawText(`Date de fin : ${new Date(data.date_fin).toLocaleDateString('fr-FR')}`, {});
+    }
+    y -= 15;
 
-      // La location
-      doc.fontSize(14).font('Helvetica-Bold').text('OBJET DU CONTRAT :');
-      doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Type de bien : ${data.type_construction || 'Non specifie'}`);
-      doc.text(`Localisation : ${data.ville || 'Non specifiee'}`);
-      doc.text(`Code du bien : ${data.code_maison || 'N/A'}`);
-      doc.moveDown(2);
+    // Parties
+    drawText('ENTRE LES SOUSSIGNES :', { size: 14, bold: true, margin: 10 });
+    drawText('Le Bailleurs (Proprietaire / Agence Immobiliere)', {});
+    y -= 10;
+    drawText('ET', { bold: true });
+    y -= 10;
+    drawText(`Monsieur / Madame : ${data.nom_prenoms || ''}`, {});
+    if (data.contact) drawText(`Contact : ${data.contact}`, {});
+    if (data.piece_identite) drawText(`Piece d'identite : ${data.piece_identite}`, {});
+    if (data.profession) drawText(`Profession : ${data.profession}`, {});
+    if (data.adresse) drawText(`Adresse : ${data.adresse}`, {});
+    drawText('Ci-apres denomme(e) "Le Preneur".', {});
+    y -= 20;
 
-      // Conditions financières
-      doc.fontSize(14).font('Helvetica-Bold').text('CONDITIONS FINANCIERES :');
-      doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Loyer mensuel : ${data.montant_loyer} FCFA`);
-      doc.text(`Caution (Garantie) : ${data.montant_caution} FCFA`);
-      if (data.montant_avance > 0) {
-        doc.text(`Avance sur loyer : ${data.montant_avance} FCFA`);
-      }
-      doc.text(`Duree du contrat : ${data.nb_mois_contrat || 'Non specifie'} mois`);
-      doc.moveDown(2);
+    // Location
+    drawText('OBJET DU CONTRAT :', { size: 14, bold: true, margin: 10 });
+    drawText(`Type de bien : ${data.type_construction || 'Non specifie'}`, {});
+    drawText(`Localisation : ${data.ville || 'Non specifiee'}`, {});
+    drawText(`Code du bien : ${data.code_maison || 'N/A'}`, {});
+    y -= 20;
 
-      // Signatures
-      doc.text('Lu et approuve,');
-      doc.moveDown(1);
-      doc.text('Le Preneur', { continued: true });
-      doc.text('Le Bailleur', { align: 'right' });
+    // Conditions
+    drawText('CONDITIONS FINANCIERES :', { size: 14, bold: true, margin: 10 });
+    drawText(`Loyer mensuel : ${data.montant_loyer || 0} FCFA`, {});
+    drawText(`Caution (Garantie) : ${data.montant_caution || 0} FCFA`, {});
+    if (data.montant_avance > 0) {
+      drawText(`Avance sur loyer : ${data.montant_avance} FCFA`, {});
+    }
+    drawText(`Duree du contrat : ${data.nb_mois_contrat || 'Non specifie'} mois`, {});
+    y -= 40;
 
-      doc.end();
-    });
+    // Signatures
+    drawText('Lu et approuve,', {});
+    y -= 20;
+    drawText('Le Preneur', { x: 50 });
+    drawText('Le Bailleur', { x: 400 });
 
-    return new NextResponse(pdfBuffer, {
+    const pdfBytes = await pdfDoc.save();
+
+    return new NextResponse(pdfBytes, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="contrat_${data.ids || id}.pdf"`,

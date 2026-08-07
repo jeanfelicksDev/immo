@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import PDFDocument from 'pdfkit';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -27,71 +27,69 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     const data = rows[0];
 
-    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-      const doc = new PDFDocument({ size: 'A4', margin: 50 });
-      const buffers: Buffer[] = [];
-      
-      doc.on('data', (buffer) => buffers.push(buffer));
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
-      doc.on('error', reject);
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4
+    const { height } = page.getSize();
+    
+    let y = height - 50;
 
-      // Entête
-      doc.fontSize(22).font('Helvetica-Bold').text('RECU DE PAIEMENT', { align: 'center' });
-      doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica').text('QUITTANCE DE LOYER', { align: 'center' });
-      doc.moveDown(2);
+    const drawText = (text: string, options: any) => {
+      const f = options.bold ? fontBold : font;
+      const size = options.size || 12;
+      const x = options.x || 50;
+      page.drawText(text, { x, y: y - size, size, font: f, color: rgb(0, 0, 0) });
+      y -= size + (options.margin || 5);
+    };
 
-      // Infos générales
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Ref. Recu : ${data.idr}`);
-      doc.text(`Date de paiement : ${new Date(data.date_paiement).toLocaleDateString('fr-FR')}`);
-      doc.text(`Mois concerne : ${new Date(data.mois_concerne).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`);
-      doc.text(`Statut : ${data.statut === 'Regle' ? 'Paye (Solde)' : data.statut}`);
-      doc.moveDown();
+    // Entete
+    drawText('RECU DE PAIEMENT', { size: 22, bold: true, x: 180, margin: 10 });
+    drawText('QUITTANCE DE LOYER', { size: 14, x: 210, margin: 30 });
 
-      // Locataire
-      doc.fontSize(14).font('Helvetica-Bold').text('LOCATAIRE :');
-      doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Nom & Prenoms : ${data.nom_prenoms}`);
-      if (data.contact) doc.text(`Contact : ${data.contact}`);
-      doc.moveDown();
+    // Infos
+    drawText(`Ref. Recu : ${data.idr || ''}`, {});
+    drawText(`Date de paiement : ${new Date(data.date_paiement).toLocaleDateString('fr-FR')}`, {});
+    drawText(`Mois concerne : ${new Date(data.mois_concerne).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`, {});
+    drawText(`Statut : ${data.statut === 'Regle' ? 'Paye (Solde)' : data.statut}`, {});
+    y -= 15;
 
-      // Bien immobilier
-      doc.fontSize(14).font('Helvetica-Bold').text('BIEN IMMOBILIER :');
-      doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Type : ${data.type_construction || 'Non specifie'}`);
-      doc.text(`Localisation : ${data.ville || 'Non specifiee'}`);
-      doc.text(`Code Maison : ${data.code_maison || 'N/A'}`);
-      doc.text(`Code Souscription : ${data.code_souscription || 'N/A'}`);
-      doc.moveDown();
+    // Locataire
+    drawText('LOCATAIRE :', { size: 14, bold: true, margin: 10 });
+    drawText(`Nom & Prenoms : ${data.nom_prenoms || ''}`, {});
+    if (data.contact) drawText(`Contact : ${data.contact}`, {});
+    y -= 15;
 
-      // Montants
-      doc.fontSize(14).font('Helvetica-Bold').text('DETAILS DU PAIEMENT :');
-      doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Montant du loyer : ${data.montant_a_payer} FCFA`);
-      doc.text(`Montant paye : ${data.montant_paye} FCFA`);
-      const reste = data.montant_a_payer - data.montant_paye;
-      if (reste > 0) {
-        doc.text(`Reste a payer : ${reste} FCFA`);
-      }
-      doc.moveDown();
-      if (data.notes) {
-        doc.text(`Notes : ${data.notes}`);
-      }
-      doc.moveDown(3);
+    // Bien
+    drawText('BIEN IMMOBILIER :', { size: 14, bold: true, margin: 10 });
+    drawText(`Type : ${data.type_construction || 'Non specifie'}`, {});
+    drawText(`Localisation : ${data.ville || 'Non specifiee'}`, {});
+    drawText(`Code Maison : ${data.code_maison || 'N/A'}`, {});
+    drawText(`Code Souscription : ${data.code_souscription || 'N/A'}`, {});
+    y -= 15;
 
-      // Signatures
-      doc.text('Cachet et Signature', { align: 'right' });
-      doc.moveDown(1);
-      doc.text('Le Responsable / L\'Agence', { align: 'right' });
+    // Montants
+    drawText('DETAILS DU PAIEMENT :', { size: 14, bold: true, margin: 10 });
+    drawText(`Montant du loyer : ${data.montant_a_payer || 0} FCFA`, {});
+    drawText(`Montant paye : ${data.montant_paye || 0} FCFA`, {});
+    const reste = (data.montant_a_payer || 0) - (data.montant_paye || 0);
+    if (reste > 0) {
+      drawText(`Reste a payer : ${reste} FCFA`, {});
+    }
+    y -= 10;
+    if (data.notes) {
+      drawText(`Notes : ${data.notes}`, {});
+    }
+    y -= 40;
 
-      doc.end();
-    });
+    // Signatures
+    drawText('Cachet et Signature', { x: 400 });
+    y -= 20;
+    drawText('Le Responsable / L\'Agence', { x: 380 });
 
-    return new NextResponse(pdfBuffer, {
+    const pdfBytes = await pdfDoc.save();
+
+    return new NextResponse(pdfBytes, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="recu_${data.idr || id}.pdf"`,
