@@ -22,6 +22,14 @@ export default function ReglementsPage() {
   const [deleteTarget, setDeleteTarget]   = useState<any>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Modal de règlement du reliquat depuis l'édition
+  const [showReliquatModal, setShowReliquatModal]       = useState(false);
+  const [selectedReliquatItem, setSelectedReliquatItem] = useState<any>(null);
+  const [montantReliquat, setMontantReliquat]           = useState<number>(0);
+  const [dateReliquat, setDateReliquat]                 = useState<string>(new Date().toISOString().split('T')[0]);
+  const [modeReliquat, setModeReliquat]                 = useState<string>('Espèces');
+  const [savingReliquat, setSavingReliquat]             = useState(false);
+
   // Filtres Reçus groupés
   const [anneeGroupee, setAnneeGroupee]   = useState<number>(new Date().getFullYear());
   const [moisGroupe, setMoisGroupe]       = useState<number>(new Date().getMonth() + 1);
@@ -158,6 +166,57 @@ const DEMO_SOUSCRIPTIONS_R = [
     } catch (err: any) {
       const msg = err.response?.data?.error || err.response?.data?.message || (err.response ? 'Erreur lors de la sauvegarde.' : 'Serveur API non disponible.');
       toast.error(`Échec d'enregistrement en base : ${msg}`);
+    }
+  };
+
+  const handleOpenReliquatFromEdit = (item: any) => {
+    setShowModal(false);
+    setSelectedReliquatItem(item);
+    const mExigible = parseInputValue(watch('MontantAPayer')) || Number(item.MontantAPayer || 0);
+    const mPaye = parseInputValue(watch('MontantPaye')) || Number(item.MontantPaye || 0);
+    const reste = Math.max(0, mExigible - mPaye);
+    setMontantReliquat(reste > 0 ? reste : (item.MontantAPayer - item.MontantPaye));
+    setDateReliquat(new Date().toISOString().split('T')[0]);
+    setModeReliquat('Espèces');
+    setShowReliquatModal(true);
+  };
+
+  const handleSaveReliquatModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReliquatItem) return;
+    setSavingReliquat(true);
+
+    try {
+      const dejaPaye = Number(selectedReliquatItem.MontantPaye || 0);
+      const montantAPayer = Number(selectedReliquatItem.MontantAPayer || 0);
+      const verser = Number(montantReliquat || 0);
+      const nouveauTotalPaye = dejaPaye + verser;
+      const estSolde = nouveauTotalPaye >= montantAPayer;
+
+      const dateStr = new Date(dateReliquat).toLocaleDateString('fr-FR');
+      const noteUpdate = `Règlement reliquat du ${dateStr} (${modeReliquat}) — Montant du reliquat versé : ${new Intl.NumberFormat('fr-FR').format(verser)} FCFA. ${selectedReliquatItem.Notes || ''}`;
+
+      await reglementsApi.update(selectedReliquatItem.Id || selectedReliquatItem.id, {
+        SouscriptionId: selectedReliquatItem.SouscriptionId,
+        MaisonId: selectedReliquatItem.MaisonId,
+        LocataireId: selectedReliquatItem.LocataireId,
+        DatePaiement: dateReliquat,
+        MoisConcerne: selectedReliquatItem.MoisConcerne,
+        MontantAPayer: montantAPayer,
+        MontantPaye: nouveauTotalPaye,
+        Statut: estSolde ? 'Regle' : 'Partiel',
+        Notes: noteUpdate,
+      });
+
+      toast.success(`✅ Règlement du reliquat de ${new Intl.NumberFormat('fr-FR').format(verser)} FCFA enregistré avec succès !`);
+      setShowReliquatModal(false);
+      setSelectedReliquatItem(null);
+      fetchData();
+    } catch (err: any) {
+      console.error('Erreur sauvegarde reliquat modal:', err);
+      toast.error(err.response?.data?.error || 'Échec d\'enregistrement du reliquat.');
+    } finally {
+      setSavingReliquat(false);
     }
   };
 
@@ -1007,6 +1066,26 @@ const DEMO_SOUSCRIPTIONS_R = [
             title={editItem ? 'Modifier le Règlement' : 'Saisir un Règlement de Loyer'}
           >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Bandeau d'accès rapide au Règlement du Reliquat en mode modification */}
+              {editItem && (parseInputValue(watch('MontantAPayer')) > parseInputValue(watch('MontantPaye')) || (editItem.MontantAPayer > editItem.MontantPaye)) && (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-4 mb-2">
+                  <div>
+                    <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">Règlement avec Reliquat Dû</p>
+                    <p className="text-xs text-amber-700 font-medium mt-0.5">
+                      Reliquat restant à percevoir : <span className="font-extrabold text-amber-900">{formatFCFA(Math.max(0, (parseInputValue(watch('MontantAPayer')) || editItem.MontantAPayer) - (parseInputValue(watch('MontantPaye')) || editItem.MontantPaye)))}</span>
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenReliquatFromEdit(editItem)}
+                    className="btn-gold text-xs py-2 px-3.5 shadow-sm flex items-center gap-1.5 shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-sm">payments</span>
+                    <span>Formulaire du Reliquat</span>
+                  </button>
+                </div>
+              )}
+
               <div className="form-group">
                 <label className="form-label">Contrat de Location (Souscription) *</label>
                 <select {...register('SouscriptionId', { required: true })} className="form-select">
@@ -1126,6 +1205,110 @@ const DEMO_SOUSCRIPTIONS_R = [
                 {deleteLoading ? <><span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> Suppression...</> : <><span className="material-symbols-outlined text-sm">delete</span> Oui, Supprimer</>}
               </button>
             </div>
+          </Modal>
+          {/* ─── Modal Formulaire de Règlement du Reliquat ────────────────────── */}
+          <Modal
+            isOpen={showReliquatModal}
+            onClose={() => setShowReliquatModal(false)}
+            title="💳 Règlement & Ajustement du Reliquat"
+          >
+            <form onSubmit={handleSaveReliquatModal} className="space-y-5">
+              <div className="p-4 rounded-xl bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-sm text-amber-300">
+                    {selectedReliquatItem?.NomLocataire || 'Locataire'}
+                  </p>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Réf. Contrat: {selectedReliquatItem?.IdsSouscription || selectedReliquatItem?.SouscriptionId || '—'}
+                  </p>
+                </div>
+                <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  RELIQUAT DÛ
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 text-center">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Loyer Total Dû</p>
+                  <p className="text-sm font-bold text-slate-900 mt-1">{formatFCFA(selectedReliquatItem?.MontantAPayer || 0)}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
+                  <p className="text-[10px] font-bold text-emerald-700 uppercase">Déjà Versé</p>
+                  <p className="text-sm font-bold text-emerald-800 mt-1">{formatFCFA(selectedReliquatItem?.MontantPaye || 0)}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-center">
+                  <p className="text-[10px] font-bold text-rose-700 uppercase">Reliquat Restant</p>
+                  <p className="text-sm font-bold text-rose-600 mt-1">
+                    {formatFCFA(Math.max(0, (selectedReliquatItem?.MontantAPayer || 0) - (selectedReliquatItem?.MontantPaye || 0)))}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Montant du Reliquat Versé (FCFA) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    value={montantReliquat ? formatInputValue(montantReliquat) : ''}
+                    onChange={(e) => setMontantReliquat(parseInputValue(e.target.value))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-bold focus:ring-2 focus:ring-[#D4AF37] focus:bg-white outline-none transition-all"
+                    placeholder="ex: 30 000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Date du Reliquat (Date de paiement) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={dateReliquat}
+                    onChange={(e) => setDateReliquat(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-semibold focus:ring-2 focus:ring-[#D4AF37] focus:bg-white outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Mode de Règlement / Remarques
+                  </label>
+                  <select
+                    value={modeReliquat}
+                    onChange={(e) => setModeReliquat(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-semibold focus:ring-2 focus:ring-[#D4AF37] focus:bg-white outline-none transition-all"
+                  >
+                    <option value="Espèces">Espèces / Liquide</option>
+                    <option value="Orange Money">Orange Money</option>
+                    <option value="Wave">Wave</option>
+                    <option value="MTN Mobile Money">MTN Mobile Money</option>
+                    <option value="Virement Bancaire">Virement Bancaire</option>
+                    <option value="Chèque">Chèque Bancaire</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowReliquatModal(false)}
+                  className="btn btn-secondary text-xs py-2.5"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingReliquat}
+                  className="btn-gold text-xs py-2.5 px-6 disabled:opacity-50"
+                >
+                  {savingReliquat ? 'Enregistrement...' : 'Valider & Enregistrer le Reliquat'}
+                </button>
+              </div>
+            </form>
           </Modal>
         </PageWrapper>
       </main>

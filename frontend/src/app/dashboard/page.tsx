@@ -93,7 +93,7 @@ export default function DashboardPage() {
           MontantAPayer: montantAPayer,
           MontantPaye: nouveauPaye,
           Statut: estTotalementPaye ? 'Regle' : 'Partiel',
-          Notes: `Règlement reliquat du ${new Date(dateReliquat).toLocaleDateString('fr-FR')} (${modeReliquat}). ${selectedCreance.Notes || ''}`
+          Notes: `Règlement reliquat du ${new Date(dateReliquat).toLocaleDateString('fr-FR')} (${modeReliquat}) — Montant du reliquat versé : ${formatFCFA(montantReliquat)}. ${selectedCreance.Notes || ''}`
         });
       } else {
         // Enregistrement d'un nouveau règlement de loyer en base
@@ -106,7 +106,7 @@ export default function DashboardPage() {
           MontantAPayer: montantAPayer,
           MontantPaye: nouveauPaye,
           Statut: estTotalementPaye ? 'Regle' : 'Partiel',
-          Notes: `Encaissement loyer (${modeReliquat}). ${selectedCreance.Notes || ''}`
+          Notes: `Encaissement loyer (${modeReliquat}) — Montant versé : ${formatFCFA(montantReliquat)}. ${selectedCreance.Notes || ''}`
         });
       }
 
