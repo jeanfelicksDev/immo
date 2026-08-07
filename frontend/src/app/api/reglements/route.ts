@@ -45,11 +45,30 @@ export async function POST(req: Request) {
     const body = await req.json();
     const idr = body.Idr || `REG_${Date.now().toString().slice(-6)}`;
 
+    let maisonId = body.MaisonId;
+    let locataireId = body.LocataireId;
+
+    // Resoudre maison_id et locataire_id a partir de la souscription si non fournies
+    if ((!maisonId || !locataireId) && body.SouscriptionId) {
+      const sRes = await query(
+        `SELECT maison_id, locataire_id FROM immogest.souscriptions WHERE id = $1`,
+        [body.SouscriptionId]
+      );
+      if (sRes.rows.length > 0) {
+        if (!maisonId) maisonId = sRes.rows[0].maison_id;
+        if (!locataireId) locataireId = sRes.rows[0].locataire_id;
+      }
+    }
+
+    if (!maisonId || !locataireId) {
+      return NextResponse.json({ error: 'Contrat de souscription introuvable ou invalide.' }, { status: 400 });
+    }
+
     const { rows } = await query(
       `INSERT INTO immogest.reglements (idr, souscription_id, maison_id, locataire_id, date_paiement, mois_concerne, montant_a_payer, montant_paye, statut, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id AS "Id", idr AS "Idr", montant_paye AS "MontantPaye", statut AS "Statut"`,
-      [idr, body.SouscriptionId, body.MaisonId, body.LocataireId, body.DatePaiement || new Date().toISOString().split('T')[0], body.MoisConcerne || new Date().toISOString().split('T')[0], body.MontantAPayer || 0, body.MontantPaye || 0, body.Statut || 'Regle', body.Notes || null]
+      [idr, body.SouscriptionId, maisonId, locataireId, body.DatePaiement || new Date().toISOString().split('T')[0], body.MoisConcerne || new Date().toISOString().split('T')[0], body.MontantAPayer || 0, body.MontantPaye || 0, body.Statut || 'Regle', body.Notes || null]
     );
 
     return NextResponse.json(rows[0], { status: 201 });
