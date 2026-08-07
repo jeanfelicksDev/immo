@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

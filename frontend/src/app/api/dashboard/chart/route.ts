@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   const url  = new URL(req.url);
   const year = parseInt(url.searchParams.get('year') || String(new Date().getFullYear()), 10);

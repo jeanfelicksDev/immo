@@ -196,9 +196,9 @@ ${ lignes.length === 0
                 </button>
               </div>
 
-              <button onClick={handleGenerateReport} className="btn btn-primary shadow-lg shadow-slate-900/10">
+              <button onClick={handlePDF} disabled={reportLoading} className="btn btn-primary shadow-lg shadow-slate-900/10 disabled:opacity-60">
                 <span className="material-symbols-outlined text-sm">file_download</span>
-                <span>Générer Rapport PDF</span>
+                <span>{reportLoading ? 'Chargement...' : 'Générer Rapport PDF'}</span>
               </button>
             </div>
           }
