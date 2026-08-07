@@ -25,12 +25,32 @@ export default function ProfilPage() {
   });
 
   const [saasClients, setSaasClients] = useState<any[]>([]);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const { register, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: entreprise
   });
 
   const logoWatch = watch('LogoUrl');
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const role = parsed.role !== undefined ? parsed.role : parsed.Role;
+        const roleStr = String(role || '').trim().toLowerCase();
+        const adminCheck = (
+          role === 0 ||
+          roleStr === 'administrateur' ||
+          roleStr === 'administrateur système' ||
+          roleStr === 'administrateursysteme' ||
+          roleStr === 'admin'
+        );
+        setIsAdmin(adminCheck);
+      }
+    } catch (e) {}
+  }, []);
 
   // Charger le profil de l'entreprise et la liste SaaS
   const loadData = async () => {
@@ -217,17 +237,19 @@ export default function ProfilPage() {
               <span>Sécurité & Mot de Passe</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('saas')}
-              className={`pb-3 text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all ${
-                activeTab === 'saas'
-                  ? 'border-slate-900 text-slate-900'
-                  : 'border-transparent text-slate-400 hover:text-slate-700'
-              }`}
-            >
-              <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
-              <span>Administration SaaS & Comptes Clients</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setActiveTab('saas')}
+                className={`pb-3 text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all ${
+                  activeTab === 'saas'
+                    ? 'border-slate-900 text-slate-900'
+                    : 'border-transparent text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
+                <span>Administration SaaS & Comptes Clients</span>
+              </button>
+            )}
           </div>
 
           {/* ════════════════════════════════════════════════════════════
@@ -319,12 +341,43 @@ export default function ProfilPage() {
 
                   <div className="pt-6 border-t border-slate-100">
                     <label className="form-label font-bold block mb-2">URL du Logo Officiel de l'Entreprise</label>
-                    <input
-                      type="text"
-                      placeholder="Ex: https://votre-site.com/logo.png"
-                      {...register('LogoUrl')}
-                      className="form-input mb-3"
-                    />
+                    <div className="flex gap-2.5 mb-3">
+                      <input
+                        type="text"
+                        placeholder="Ex: https://votre-site.com/logo.png ou chargez une image"
+                        {...register('LogoUrl')}
+                        className="form-input flex-1"
+                      />
+                      <label
+                        htmlFor="logo-file-input"
+                        className="px-4 py-2.5 rounded-xl bg-slate-900 text-[#FFE088] font-extrabold text-xs flex items-center gap-2 shrink-0 cursor-pointer hover:bg-slate-800 transition-colors shadow-md border border-[#D4AF37]/30"
+                      >
+                        <span className="material-symbols-outlined text-base">upload_file</span>
+                        <span>Charger Image</span>
+                      </label>
+                      <input
+                        id="logo-file-input"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 3 * 1024 * 1024) {
+                              toast.error('L\'image du logo est trop volumineuse (max 3 Mo).');
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const base64 = event.target?.result as string;
+                              setValue('LogoUrl', base64);
+                              toast.success('Logo officiel chargé avec succès !');
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </div>
                     <p className="text-xs text-slate-500 font-medium">
                       Ce logo sera automatiquement affiché en haut de l'application et imprimé sur tous vos <strong>contrats de location et reçus de paiement PDF</strong>.
                     </p>
@@ -397,7 +450,7 @@ export default function ProfilPage() {
           {/* ════════════════════════════════════════════════════════════
              ONGLET 3 : ADMINISTRATION SAAS & COMPTES CLIENTS
              ════════════════════════════════════════════════════════════ */}
-          {activeTab === 'saas' && (
+          {activeTab === 'saas' && isAdmin && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
