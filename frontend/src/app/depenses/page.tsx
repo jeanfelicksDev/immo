@@ -27,6 +27,8 @@ export default function DepensesPage() {
   const [extraFilters, setExtraFilters] = useState<FilterState>({});
   const [showModal, setShowModal]   = useState(false);
   const [editItem, setEditItem]     = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [pjFile, setPjFile]         = useState<File | null>(null);
 
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm({
@@ -150,14 +152,13 @@ const DEMO_LOCATAIRES_D = [
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!id) return;
-    if (typeof window !== 'undefined' && !window.confirm('Confirmer la suppression de cette dépense ?')) return;
-
-    setDepenses((prev) => prev.filter((d) => (d.Id || d.id) !== id));
-
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.Id || deleteTarget.id;
+    setDeleteLoading(true);
     try {
       await depensesApi.delete(id);
+      setDepenses((prev) => prev.filter((d) => (d.Id || d.id) !== id));
       toast.success('Dépense supprimée avec succès.');
       fetchData();
     } catch (err: any) {
@@ -169,6 +170,9 @@ const DEMO_LOCATAIRES_D = [
         err.message ||
         'Suppression en base impossible.';
       toast.error(`Échec de suppression : ${errorMessage}`);
+    } finally {
+      setDeleteLoading(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -204,7 +208,7 @@ const DEMO_LOCATAIRES_D = [
       render: (r: any) => (
         <div className="flex justify-end gap-1.5">
           <button onClick={() => openEdit(r)} className="btn btn-secondary btn-sm">✏️</button>
-          <button onClick={() => handleDelete(r.Id || r.id)} className="btn btn-danger btn-sm">🗑️</button>
+          <button onClick={() => setDeleteTarget(r)} className="btn btn-danger btn-sm">🗑️</button>
         </div>
       )
     },
@@ -435,6 +439,26 @@ const DEMO_LOCATAIRES_D = [
                 </button>
               </div>
             </form>
+          </Modal>
+
+          {/* ─── Modal Confirmation Suppression ────────────────────── */}
+          <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirmer la Suppression">
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-3xl text-rose-600">delete_forever</span>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Supprimer cette dépense ?</h3>
+              <p className="text-sm text-slate-600 mb-1">Vous êtes sur le point de supprimer définitivement :</p>
+              <p className="text-base font-extrabold text-slate-900 bg-slate-50 px-4 py-2 rounded-xl inline-block border border-slate-200 my-2">
+                {deleteTarget?.Article || 'Cette dépense'}
+              </p>
+            </div>
+            <div className="modal-footer -mx-7 -mb-7 mt-4">
+              <button type="button" onClick={() => setDeleteTarget(null)} disabled={deleteLoading} className="btn btn-secondary">Annuler</button>
+              <button type="button" onClick={confirmDelete} disabled={deleteLoading} className="btn bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-600/20">
+                {deleteLoading ? <><span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> Suppression...</> : <><span className="material-symbols-outlined text-sm">delete</span> Oui, Supprimer</>}
+              </button>
+            </div>
           </Modal>
         </PageWrapper>
       </main>
