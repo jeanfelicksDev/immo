@@ -10,7 +10,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 
     const sql = `
-      SELECT s.id, s.ids, s.maison_id, m.idm AS code_maison, m.ville, m.type_construction, m.loyer_mensuel,
+      SELECT s.id, s.ids, s.maison_id, m.idm AS code_maison, m.ville, m.type_construction, m.cout_loyer,
              l.nom_prenoms, l.contact, l.piece_identite, l.profession, l.adresse,
              s.date_souscription, s.date_fin, s.montant_loyer, s.montant_caution, s.montant_avance, s.nb_mois_contrat
       FROM immogest.souscriptions s
