@@ -222,44 +222,44 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   <Link href="/proprietaires">
-                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-indigo-50/40 hover:bg-indigo-50/70 backdrop-blur-md text-indigo-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-indigo-100/40 border border-indigo-200/40 group">
+                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-indigo-100/60 hover:bg-indigo-100/80 backdrop-blur-md text-indigo-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-indigo-100/60 border-2 border-indigo-200/50 group">
                       <span className="text-3xl group-hover:rotate-12 transition-transform">👤</span>
-                      <span className="text-xs font-bold">Propriétaires</span>
+                      <span className="text-xs font-black">Propriétaires</span>
                     </button>
                   </Link>
 
                   <Link href="/maisons">
-                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-purple-50/40 hover:bg-purple-50/70 backdrop-blur-md text-purple-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-purple-100/40 border border-purple-200/40 group">
+                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-purple-100/60 hover:bg-purple-100/80 backdrop-blur-md text-purple-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-purple-100/60 border-2 border-purple-200/50 group">
                       <span className="text-3xl group-hover:rotate-12 transition-transform">🏠</span>
-                      <span className="text-xs font-bold">Maisons</span>
+                      <span className="text-xs font-black">Maisons</span>
                     </button>
                   </Link>
 
                   <Link href="/locataires">
-                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-teal-50/40 hover:bg-teal-50/70 backdrop-blur-md text-teal-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-teal-100/40 border border-teal-200/40 group">
+                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-teal-100/60 hover:bg-teal-100/80 backdrop-blur-md text-teal-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-teal-100/60 border-2 border-teal-200/50 group">
                       <span className="text-3xl group-hover:rotate-12 transition-transform">🔑</span>
-                      <span className="text-xs font-bold">Locataires</span>
+                      <span className="text-xs font-black">Locataires</span>
                     </button>
                   </Link>
 
                   <Link href="/souscriptions">
-                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-amber-50/40 hover:bg-amber-50/70 backdrop-blur-md text-amber-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-amber-100/40 border border-amber-200/40 group">
+                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-amber-100/60 hover:bg-amber-100/80 backdrop-blur-md text-amber-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-amber-100/60 border-2 border-amber-200/50 group">
                       <span className="text-3xl group-hover:rotate-12 transition-transform">📋</span>
-                      <span className="text-xs font-bold">Contrats</span>
+                      <span className="text-xs font-black">Contrats</span>
                     </button>
                   </Link>
 
                   <Link href="/reglements">
-                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-rose-50/40 hover:bg-rose-50/70 backdrop-blur-md text-rose-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-rose-100/40 border border-rose-200/40 group">
+                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-rose-100/60 hover:bg-rose-100/80 backdrop-blur-md text-rose-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-rose-100/60 border-2 border-rose-200/50 group">
                       <span className="text-3xl group-hover:rotate-12 transition-transform">💰</span>
-                      <span className="text-xs font-bold">Paiements</span>
+                      <span className="text-xs font-black">Paiements</span>
                     </button>
                   </Link>
 
                   <Link href="/depenses">
-                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-slate-100/40 hover:bg-slate-100/70 backdrop-blur-md text-slate-900 hover:scale-105 active:scale-95 transition-all shadow-md shadow-slate-200/40 border border-slate-300/40 group">
+                    <button className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-slate-200/60 hover:bg-slate-200/80 backdrop-blur-md text-slate-950 hover:scale-105 active:scale-95 transition-all shadow-md shadow-slate-200/60 border-2 border-slate-300/50 group">
                       <span className="text-3xl group-hover:rotate-12 transition-transform">📉</span>
-                      <span className="text-xs font-bold">Dépenses</span>
+                      <span className="text-xs font-black">Dépenses</span>
                     </button>
                   </Link>
                 </div>
