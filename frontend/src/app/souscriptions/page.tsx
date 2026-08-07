@@ -149,15 +149,113 @@ const DEMO_LOCATAIRES_S = [
     }
   };
 
-  const handlePrint = async (item: any) => {
-    try {
-      const blob = await souscriptionsApi.printContrat(item.Id);
-      downloadPdf(blob, `Contrat_${item.Ids}.pdf`);
-      toast.success('Contrat téléchargé.');
-    } catch {
-      toast.error('Erreur lors de la génération du PDF.');
+  const handlePrint = (item: any) => {
+    // Récupérer les données du maison et locataire correspondants
+    const maison = maisons.find((m) => m.Id === item.MaisonId || m.Id === item.maison_id) || {};
+    const locataire = locataires.find((l) => l.Id === item.LocataireId || l.Id === item.locataire_id) || {};
+
+    const dateNow = new Date().toLocaleDateString('fr-FR');
+    const dateDebut = item.DateSouscription ? new Date(item.DateSouscription).toLocaleDateString('fr-FR') : '—';
+    const dateFin = item.DateFin ? new Date(item.DateFin).toLocaleDateString('fr-FR') : 'Indéterminée';
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Contrat de Bail — ${item.Ids || item.ids || 'N/A'}</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #111; margin: 0; padding: 40px; font-size: 13px; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+    .header p { color: #555; font-size: 12px; }
+    .ref-box { border: 1px solid #ddd; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; background: #f9f9f9; }
+    .ref-box span { font-weight: bold; }
+    .section { margin-bottom: 24px; }
+    .section h2 { font-size: 14px; text-transform: uppercase; color: #1a3a5c; border-bottom: 2px solid #1a3a5c; padding-bottom: 6px; margin-bottom: 12px; }
+    .section table { width: 100%; border-collapse: collapse; }
+    .section table td { padding: 6px 8px; vertical-align: top; }
+    .section table td:first-child { font-weight: bold; width: 45%; color: #333; }
+    .fin { margin-top: 60px; }
+    .sig-row { display: flex; justify-content: space-between; margin-top: 40px; }
+    .sig-box { text-align: center; width: 40%; }
+    .sig-box .sig-line { border-top: 1px solid #333; margin-top: 50px; padding-top: 8px; font-size: 11px; color: #555; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Contrat de Bail à Usage d'Habitation</h1>
+    <p>Généré le ${dateNow}</p>
+  </div>
+
+  <div class="ref-box">
+    <span>Référence du Contrat :</span> ${item.Ids || item.ids || 'N/A'} &nbsp;&nbsp;|&nbsp;&nbsp;
+    <span>Statut :</span> ${item.Statut || item.statut || 'Actif'}
+  </div>
+
+  <div class="section">
+    <h2>Informations des Parties</h2>
+    <table>
+      <tr><td>Bailleur / Agence :</td><td>Agence Immobilière</td></tr>
+      <tr><td>Locataire :</td><td>${locataire.NomPrenoms || item.NomLocataire || '—'}</td></tr>
+      <tr><td>Contact Locataire :</td><td>${locataire.Contact || item.ContactLocataire || '—'}</td></tr>
+      <tr><td>Pièce d'Identité :</td><td>${locataire.PieceIdentite || '—'}</td></tr>
+      <tr><td>Profession :</td><td>${locataire.Profession || '—'}</td></tr>
+      <tr><td>Adresse du Locataire :</td><td>${locataire.Adresse || '—'}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Objet du Contrat — Bien Immobilier</h2>
+    <table>
+      <tr><td>Code Maison :</td><td>${maison.Idm || item.IdmMaison || '—'}</td></tr>
+      <tr><td>Type de Bien :</td><td>${maison.TypeConstruction || item.TypeConstructionMaison || '—'}</td></tr>
+      <tr><td>Localisation :</td><td>${maison.Ville || item.VilleMaison || '—'} ${maison.Quartier ? '— ' + maison.Quartier : ''}</td></tr>
+      <tr><td>Adresse Complète :</td><td>${maison.AdresseComplete || maison.Quartier || '—'}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Conditions du Contrat</h2>
+    <table>
+      <tr><td>Date de Début :</td><td>${dateDebut}</td></tr>
+      <tr><td>Date de Fin :</td><td>${dateFin}</td></tr>
+      <tr><td>Durée :</td><td>${item.NbMoisContrat || item.nb_mois_contrat || '—'} mois</td></tr>
+      <tr><td>Loyer Mensuel :</td><td><strong>${Number(item.MontantLoyer || item.montant_loyer || 0).toLocaleString('fr-FR')} FCFA</strong></td></tr>
+      <tr><td>Caution / Garantie :</td><td>${Number(item.MontantCaution || item.montant_caution || 0).toLocaleString('fr-FR')} FCFA</td></tr>
+      <tr><td>Avance sur Loyer :</td><td>${Number(item.MontantAvance || item.montant_avance || 0).toLocaleString('fr-FR')} FCFA</td></tr>
+      ${item.Conditions || item.conditions ? `<tr><td>Clauses Particulières :</td><td>${item.Conditions || item.conditions}</td></tr>` : ''}
+    </table>
+  </div>
+
+  <div class="fin">
+    <p>Lu et approuvé par les deux parties.</p>
+    <div class="sig-row">
+      <div class="sig-box">
+        <div class="sig-line">Signature du Locataire<br/>${locataire.NomPrenoms || item.NomLocataire || ''}</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line">Signature &amp; Cachet du Bailleur</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    if (!printWindow) {
+      toast.error('Veuillez autoriser les pop-ups pour télécharger le contrat.');
+      return;
     }
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+    toast.success('Contrat ouvert — Choisissez "Enregistrer en PDF" dans la boîte d\'impression.');
   };
+
 
   const handleDelete = async (id: string) => {
     if (!id) return;
@@ -222,7 +320,7 @@ const DEMO_LOCATAIRES_S = [
     { key: 'actions', label: 'Actions',
       render: (r: any) => (
         <div className="flex justify-end gap-1.5">
-          <button onClick={() => handlePrint(r.Id || r.id)} className="btn btn-secondary btn-sm" title="Télécharger le contrat PDF">📄 PDF</button>
+          <button onClick={() => handlePrint(r)} className="btn btn-secondary btn-sm" title="Télécharger le contrat PDF">📄 PDF</button>
           <button onClick={() => openEdit(r)} className="btn btn-secondary btn-sm" title="Modifier">✏️</button>
           <button onClick={() => handleDelete(r.Id || r.id)} className="btn btn-danger btn-sm" title="Supprimer">🗑️</button>
         </div>

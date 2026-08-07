@@ -131,25 +131,161 @@ const DEMO_SOUSCRIPTIONS_R = [
     }
   };
 
-  const handlePrintRecu = async (item: any) => {
-    try {
-      const blob = await reglementsApi.getRecu(item.Id);
-      downloadPdf(blob, `Recu_${item.Idr}.pdf`);
-      toast.success('Reçu téléchargé.');
-    } catch {
-      toast.error('Erreur lors de la génération du reçu PDF.');
+  const handlePrintRecu = (item: any) => {
+    const dateNow = new Date().toLocaleDateString('fr-FR');
+    const datePaiement = item.DatePaiement ? new Date(item.DatePaiement).toLocaleDateString('fr-FR') : '—';
+    const moisConcerne = item.MoisConcerne
+      ? new Date(item.MoisConcerne).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+      : '—';
+    const reste = (Number(item.MontantAPayer || 0) - Number(item.MontantPaye || 0));
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reçu de Paiement — ${item.Idr || item.idr || 'N/A'}</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #111; margin: 0; padding: 40px; font-size: 13px; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+    .header p { color: #555; font-size: 12px; }
+    .ref-box { border: 1px solid #ddd; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; background: #f9f9f9; }
+    .ref-box span { font-weight: bold; }
+    .section { margin-bottom: 24px; }
+    .section h2 { font-size: 14px; text-transform: uppercase; color: #1a3a5c; border-bottom: 2px solid #1a3a5c; padding-bottom: 6px; margin-bottom: 12px; }
+    .section table { width: 100%; border-collapse: collapse; }
+    .section table td { padding: 6px 8px; vertical-align: top; }
+    .section table td:first-child { font-weight: bold; width: 45%; color: #333; }
+    .total-box { border: 2px solid #1a3a5c; padding: 12px 16px; border-radius: 6px; margin-top: 16px; background: #f0f4f8; }
+    .sig-row { display: flex; justify-content: flex-end; margin-top: 60px; }
+    .sig-box { text-align: center; width: 40%; }
+    .sig-box .sig-line { border-top: 1px solid #333; margin-top: 50px; padding-top: 8px; font-size: 11px; color: #555; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Reçu de Paiement</h1>
+    <p>Quittance de Loyer — Généré le ${dateNow}</p>
+  </div>
+
+  <div class="ref-box">
+    <span>N° Reçu :</span> ${item.Idr || item.idr || 'N/A'} &nbsp;|&nbsp;
+    <span>Statut :</span> ${item.Statut || item.statut || '—'} &nbsp;|&nbsp;
+    <span>Mois :</span> ${moisConcerne}
+  </div>
+
+  <div class="section">
+    <h2>Informations du Locataire</h2>
+    <table>
+      <tr><td>Nom & Prénoms :</td><td>${item.NomLocataire || '—'}</td></tr>
+      <tr><td>Bien Immobilier :</td><td>${item.IdmMaison || '—'} (${item.VilleMaison || '—'})</td></tr>
+      <tr><td>N° Contrat :</td><td>${item.IdsSouscription || '—'}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Détails du Paiement</h2>
+    <table>
+      <tr><td>Date de Paiement :</td><td>${datePaiement}</td></tr>
+      <tr><td>Montant du Loyer :</td><td>${Number(item.MontantAPayer || 0).toLocaleString('fr-FR')} FCFA</td></tr>
+      <tr><td>Montant Payé :</td><td><strong>${Number(item.MontantPaye || 0).toLocaleString('fr-FR')} FCFA</strong></td></tr>
+      ${reste > 0 ? `<tr><td>Reste à Payer :</td><td style="color:red;">${reste.toLocaleString('fr-FR')} FCFA</td></tr>` : ''}
+      ${item.Notes ? `<tr><td>Notes :</td><td>${item.Notes}</td></tr>` : ''}
+    </table>
+    <div class="total-box">
+      Paiement <strong>${reste <= 0 ? 'SOLDÉ' : 'PARTIEL'}</strong> — 
+      ${Number(item.MontantPaye || 0).toLocaleString('fr-FR')} FCFA encaissés sur ${Number(item.MontantAPayer || 0).toLocaleString('fr-FR')} FCFA
+    </div>
+  </div>
+
+  <div class="sig-row">
+    <div class="sig-box">
+      <div class="sig-line">Cachet & Signature<br/>Le Responsable</div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    if (!printWindow) {
+      toast.error('Veuillez autoriser les pop-ups pour télécharger le reçu.');
+      return;
     }
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.onload = () => { printWindow.print(); };
+    toast.success('Reçu ouvert — Choisissez "Enregistrer en PDF" dans la boîte d\'impression.');
   };
 
-  const handlePrintGroupes = async () => {
-    try {
-      const blob = await reglementsApi.getRecusGroupes(anneeGroupee, moisGroupe);
-      downloadPdf(blob, `Recus_Groupes_${anneeGroupee}_${moisGroupe}.pdf`);
-      toast.success('Reçus groupés téléchargés.');
-    } catch {
-      toast.error('Erreur lors du téléchargement des reçus groupés.');
+  const handlePrintGroupes = () => {
+    const moisNom = new Date(anneeGroupee, moisGroupe - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const lignes = reglements.filter((r: any) => {
+      const d = new Date(r.MoisConcerne || r.DatePaiement);
+      return d.getFullYear() === anneeGroupee && (d.getMonth() + 1) === moisGroupe;
+    });
+
+    if (lignes.length === 0) {
+      toast.error('Aucun règlement trouvé pour ce mois.');
+      return;
     }
+
+    let totalPayer = 0;
+    let totalPaye = 0;
+    let rows = '';
+    lignes.forEach((r: any, i: number) => {
+      totalPayer += Number(r.MontantAPayer || 0);
+      totalPaye += Number(r.MontantPaye || 0);
+      rows += `<tr>
+        <td>${i + 1}</td>
+        <td>${r.Idr || '—'}</td>
+        <td>${r.NomLocataire || '—'}</td>
+        <td>${r.IdmMaison || '—'}</td>
+        <td>${Number(r.MontantAPayer || 0).toLocaleString('fr-FR')} FCFA</td>
+        <td>${Number(r.MontantPaye || 0).toLocaleString('fr-FR')} FCFA</td>
+        <td>${r.Statut || '—'}</td>
+      </tr>`;
+    });
+
+    const htmlContent = `
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/>
+<title>Relevé Groupé — ${moisNom}</title>
+<style>
+  body { font-family: Arial, sans-serif; color: #111; margin: 0; padding: 30px; font-size: 12px; }
+  h1 { font-size: 18px; text-align: center; text-transform: uppercase; }
+  p.sub { text-align: center; color: #555; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1a3a5c; color: white; padding: 8px; text-align: left; }
+  td { border: 1px solid #ddd; padding: 7px; }
+  tr:nth-child(even) { background: #f5f7fa; }
+  .total { margin-top: 20px; border: 2px solid #1a3a5c; padding: 12px; border-radius: 6px; background: #f0f4f8; }
+</style>
+</head><body>
+  <h1>Relevé des Règlements</h1>
+  <p class="sub">Période : ${moisNom}</p>
+  <table>
+    <thead><tr><th>#</th><th>N° Reçu</th><th>Locataire</th><th>Bien</th><th>Loyer</th><th>Payé</th><th>Statut</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="total">
+    <strong>Total attendu :</strong> ${totalPayer.toLocaleString('fr-FR')} FCFA &nbsp;|&nbsp;
+    <strong>Total encaissé :</strong> ${totalPaye.toLocaleString('fr-FR')} FCFA &nbsp;|&nbsp;
+    <strong>Reste :</strong> ${(totalPayer - totalPaye).toLocaleString('fr-FR')} FCFA
+  </div>
+</body></html>`;
+
+    const printWindow = window.open('', '_blank', 'width=1100,height=700');
+    if (!printWindow) {
+      toast.error('Veuillez autoriser les pop-ups pour télécharger le relevé.');
+      return;
+    }
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.onload = () => { printWindow.print(); };
+    toast.success('Relevé groupé ouvert — Choisissez "Enregistrer en PDF".');
   };
+
 
   const handleDelete = async (id: string) => {
     if (!id) return;
@@ -212,7 +348,7 @@ const DEMO_SOUSCRIPTIONS_R = [
     { key: 'actions', label: 'Actions',
       render: (r: any) => (
         <div className="flex justify-end gap-1.5">
-          <button onClick={() => handlePrintRecu(r.Id || r.id)} className="btn btn-secondary btn-sm" title="Imprimer le reçu PDF">🧾 Reçu</button>
+          <button onClick={() => handlePrintRecu(r)} className="btn btn-secondary btn-sm" title="Imprimer le reçu PDF">🧾 Reçu</button>
           <button onClick={() => openEdit(r)} className="btn btn-secondary btn-sm" title="Modifier">✏️</button>
           <button onClick={() => handleDelete(r.Id || r.id)} className="btn btn-danger btn-sm" title="Supprimer">🗑️</button>
         </div>
